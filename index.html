@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>UXILIUM Portal – Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --ux-blue: #0077e4;
+      --ux-blue-soft: #e7f2ff;
+      --ux-border: #d3d7e3;
+      --ux-text-main: #1f2933;
+      --ux-text-sub: #6b7280;
+      --ux-danger: #d33;
+      --ux-radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #ffffff;
+      color: var(--ux-text-main);
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ========== BACKGROUND CANVAS (ANIMASI) ========== */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    /* Overlay tipis supaya tetap putih & soft */
+    .white-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top left, #f7fbff 0, #ffffff 55%);
+      opacity: 0.92;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ========== LAYOUT UTAMA ========== */
+    .page-wrapper {
+      position: relative;
+      z-index: 2; /* di atas canvas */
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      height: 100vh;
+      padding: 24px;
+    }
+
+    .auth-shell {
+      max-width: 1040px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 28px;
+      box-shadow:
+        0 24px 60px rgba(15, 23, 42, 0.12),
+        0 0 0 1px rgba(226, 232, 240, 0.8);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    /* ========== PANEL BRANDING ========== */
+    .brand-panel {
+      padding: 28px 32px;
+      border-right: 1px solid rgba(226, 232, 240, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: linear-gradient(145deg, #ffffff 0%, #f3f7ff 40%, #ffffff 100%);
+    }
+
+    .brand-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ux-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #0077e4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 12px 30px rgba(0, 119, 228, 0.45);
+    }
+
+    .brand-text-main {
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
+    .brand-text-sub {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .brand-mid {
+      margin-top: 32px;
+    }
+
+    .brand-mid h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mid p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--ux-text-sub);
+      max-width: 320px;
+    }
+
+    .highlight-box {
+      margin-top: 26px;
+      border-radius: 18px;
+      padding: 14px 14px 14px 14px;
+      background: linear-gradient(
+        135deg,
+        rgba(0, 119, 228, 0.06),
+        rgba(0, 119, 228, 0.02)
+      );
+      border: 1px solid rgba(191, 219, 254, 0.9);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .highlight-pill {
+      min-width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .highlight-body {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #4b5563;
+    }
+
+    .brand-bottom {
+      margin-top: 32px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .brand-bottom strong {
+      color: #4b5563;
+    }
+
+    /* ========== PANEL FORM ========== */
+    .form-panel {
+      padding: 28px 30px 26px 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .form-header {
+      display: flex;
+      justify-content: flex-end;
+      font-size: 12px;
+      color: var(--ux-text-sub);
+      margin-bottom: 8px;
+    }
+
+    .form-header span {
+      margin-right: 6px;
+    }
+
+    .form-toggle-link {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      color: var(--ux-blue);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .form-main {
+      margin-top: 10px;
+    }
+
+    .form-main h2 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .form-main p {
+      margin: 0 0 18px;
+      font-size: 13px;
+      color: var(--ux-text-sub);
+    }
+
+    .field-group {
+      margin-bottom: 12px;
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    .field-label span.optional {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .field-control {
+      position: relative;
+    }
+
+    .field-control input {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--ux-border);
+      font-size: 13px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.96);
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .field-control input:focus {
+      border-color: var(--ux-blue);
+      box-shadow: 0 0 0 1px rgba(0, 119, 228, 0.25);
+      background: #ffffff;
+    }
+
+    .field-control input::placeholder {
+      color: #c4c4d0;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .field-row .field-group {
+      flex: 1;
+    }
+
+    .helper-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: var(--ux-text-sub);
+    }
+
+    .checkbox-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .checkbox-inline input {
+      width: 13px;
+      height: 13px;
+    }
+
+    .forgot-link {
+      color: var(--ux-blue);
+      text-decoration: none;
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    .submit-btn {
+      margin-top: 4px;
+      width: 100%;
+      border-radius: 999px;
+      border: none;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #0077e4, #005ac1);
+      color: #ffffff;
+      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.35);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .submit-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+    }
+
+    .submit-btn span.icon {
+      font-size: 14px;
+      margin-top: 1px;
+    }
+
+    .info-box {
+      margin-top: 10px;
+      padding: 8px 11px;
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      font-size: 11px;
+      color: #6b7280;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .info-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      margin-top: 3px;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.22);
+    }
+
+    .info-dot.pending {
+      background: #f97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.22);
+    }
+
+    .small-text {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #a1a1aa;
+      line-height: 1.5;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 880px) {
+      .page-wrapper {
+        padding: 16px;
+      }
+
+      .auth-shell {
+        grid-template-columns: minmax(0, 1fr);
+        max-width: 480px;
+      }
+
+      .brand-panel {
+        display: none;
+      }
+
+      .form-panel {
+        padding: 22px 20px 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        overflow-y: auto;
+      }
+      .page-wrapper {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- CANVAS ANIMASI -->
+  <canvas id="bgCanvas"></canvas>
+  <div class="white-overlay"></div>
+
+  <div class="page-wrapper">
+    <div class="auth-shell">
+      <!-- PANEL BRANDING / INFO -->
+      <div class="brand-panel">
+        <div>
+          <div class="brand-top">
+            <div class="ux-badge">UX</div>
+            <div>
+              <div class="brand-text-main">UXILIUM PORTAL</div>
+              <div class="brand-text-sub">CV. Sukses Jaya</div>
+            </div>
+          </div>
+
+          <div class="brand-mid">
+            <h1>Welcome Back</h1>
+            <p>
+              Kelola order, produksi, dan penerimaan coil dalam satu portal yang
+              rapi dan terintegrasi dengan Google Sheets & Xero.
+            </p>
+
+            <div class="highlight-box">
+              <div class="highlight-pill">●</div>
+              <div class="highlight-body">
+                Akun baru tidak langsung aktif. Tim kami akan melakukan verifikasi
+                dan melakukan <strong>approval manual</strong> sebelum akses penuh
+                diberikan.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="brand-bottom">
+          <div><strong>UXILIUM</strong> Internal System</div>
+          <div>Version 1.0 · Protected access only</div>
+        </div>
+      </div>
+
+      <!-- PANEL FORM LOGIN / REGISTER -->
+      <div class="form-panel">
+        <div>
+          <div class="form-header">
+            <span id="toggleMessage">Belum punya akun?</span>
+            <button class="form-toggle-link" id="toggleModeBtn">Daftar sekarang</button>
+          </div>
+
+          <!-- LOGIN FORM -->
+          <div class="form-main" id="loginForm">
+            <h2>Sign in</h2>
+            <p>Masuk ke portal UXILIUM dengan akun yang sudah aktif.</p>
+
+            <form onsubmit="handleLogin(event)">
+              <div class="field-group">
+                <div class="field-label">
+                  <label for="loginEmail">Email</label>
+                </div>
+                <div class="field-control">
+                  <input id="loginEmail" type="email" placeholder="email@company.com" required />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <div class="field-label">
+                  <label for="loginPassword">Password</label>
+                </div>
+                <div class="field-control">
+                  <input id="loginPassword" type="password" placeholder="••••••••" required />
+                </div>
+              </div>
+
+              <div class="helper-row">
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="rememberMe" />
+                  <span>Ingat saya di perangkat ini</span>
+                </label>
+                <a href="#" class="forgot-link">Lupa password?</a>
+              </div>
+
+              <button type="submit" class="submit-btn">
+                <span>Masuk ke Portal</span>
+                <span class="icon">→</span>
+              </button>
+
+              <div class="info-box" id="loginInfo">
+                <div class="info-dot"></div>
+                <div>
+                  Gunakan email yang sudah diverifikasi. Jika akun belum di-approve,
+                  silakan hubungi admin UXILIUM.
+                </div>
+              </div>
+
+              <div class="small-text">
+                Dengan melanjutkan, Anda menyetujui internal policy dan aturan akses data
+                perusahaan.
+              </div>
+            </form>
+          </div>
+
+          <!-- REGISTER FORM -->
+          <div class="form-main" id="registerForm" style="display:none;">
+            <h2>Buat akun baru</h2>
+            <p>
+              Daftarkan akun untuk tim CV. Sukses Jaya. Akses akan aktif setelah disetujui admin.
+            </p>
+
+            <form onsubmit="handleRegister(event)">
+              <div class="field-row">
+                <div class="field-group">
+                  <div class="field-label">
+                    <label for="regName">Nama lengkap</label>
+                  </div>
+                  <div class="field-control">
+                    <input id="regName" type="text" placeholder="Nama sesuai sistem" required />
+                  </div>
+                </div>
+
+                <div class="field-group">
+                  <div class="field-label">
+                    <label for="regRole">Divisi / Role</label>
+                    <span class="optional">Opsional</span>
+                  </div>
+                  <div class="field-control">
+                    <input id="regRole" type="text" placeholder="Admin, Gudang, Finance, dll." />
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <div class="field-label">
+                  <label for="regEmail">Email kerja</label>
+                </div>
+                <div class="field-control">
+                  <input id="regEmail" type="email" placeholder="nama@cvsuksesjaya.co.id" required />
+                </div>
+              </div>
+
+              <div class="field-group">
+                <div class="field-label">
+                  <label for="regPhone">No. WhatsApp</label>
+                  <span class="optional">Opsional</span>
+                </div>
+                <div class="field-control">
+                  <input id="regPhone" type="tel" placeholder="+62 8xx xxxx xxxx" />
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <div class="field-label">
+                    <label for="regPassword">Password</label>
+                  </div>
+                  <div class="field-control">
+                    <input id="regPassword" type="password" placeholder="Minimal 8 karakter" required />
+                  </div>
+                </div>
+
+                <div class="field-group">
+                  <div class="field-label">
+                    <label for="regPassword2">Konfirmasi Password</label>
+                  </div>
+                  <div class="field-control">
+                    <input id="regPassword2" type="password" placeholder="Ulangi password" required />
+                  </div>
+                </div>
+              </div>
+
+              <div class="helper-row">
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="regPolicy" required />
+                  <span>
+                    Saya memahami bahwa akun akan aktif setelah <strong>disetujui admin</strong>.
+                  </span>
+                </label>
+              </div>
+
+              <button type="submit" class="submit-btn">
+                <span>Kirim untuk Approval</span>
+                <span class="icon">✓</span>
+              </button>
+
+              <div class="info-box">
+                <div class="info-dot pending"></div>
+                <div>
+                  Setelah form dikirim, data Anda akan masuk ke daftar <strong>Pending User</strong>.
+                  Admin akan review dan mengaktifkan akses jika disetujui.
+                </div>
+              </div>
+
+              <div class="small-text">
+                Jika membutuhkan akses urgent, informasikan ke admin UXILIUM melalui internal chat.
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div style="text-align:right; margin-top:8px; font-size:10px; color:#9ca3af;">
+          UXILIUM · Internal Portal · &copy; <span id="yearNow"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== TOGGLE LOGIN / REGISTER ==========
+    const loginFormEl = document.getElementById("loginForm");
+    const registerFormEl = document.getElementById("registerForm");
+    const toggleBtn = document.getElementById("toggleModeBtn");
+    const toggleMessage = document.getElementById("toggleMessage");
+
+    let mode = "login";
+
+    toggleBtn.addEventListener("click", () => {
+      if (mode === "login") {
+        mode = "register";
+        loginFormEl.style.display = "none";
+        registerFormEl.style.display = "block";
+        toggleMessage.textContent = "Sudah punya akun?";
+        toggleBtn.textContent = "Masuk sekarang";
+      } else {
+        mode = "login";
+        loginFormEl.style.display = "block";
+        registerFormEl.style.display = "none";
+        toggleMessage.textContent = "Belum punya akun?";
+        toggleBtn.textContent = "Daftar sekarang";
+      }
+    });
+
+    document.getElementById("yearNow").textContent = new Date().getFullYear();
+
+    // ========== HANDLER LOGIN / REGISTER (frontend only) ==========
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      // TODO: sambungkan ke backend (Apps Script / API) di sini
+      // Contoh pseudo:
+      // fetch("YOUR_ENDPOINT?action=login", { method: "POST", body: JSON.stringify({ email, password }) })
+
+      alert("Login clicked untuk: " + email + "\n\nSambungkan ke endpoint backend-mu di fungsi handleLogin().");
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById("regName").value.trim();
+      const role = document.getElementById("regRole").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const phone = document.getElementById("regPhone").value.trim();
+      const pwd = document.getElementById("regPassword").value;
+      const pwd2 = document.getElementById("regPassword2").value;
+
+      if (pwd.length < 8) {
+        alert("Password minimal 8 karakter.");
+        return;
+      }
+      if (pwd !== pwd2) {
+        alert("Konfirmasi password tidak sama.");
+        return;
+      }
+
+      // TODO: kirim ke backend sebagai "Pending User"
+      // fetch("YOUR_ENDPOINT?action=requestSignup", {...})
+
+      alert(
+        "Request akun terkirim.\n\nNama: " + name +
+        "\nEmail: " + email +
+        "\nRole: " + role +
+        "\nPhone: " + phone +
+        "\n\nSilakan tunggu approval dari admin."
+      );
+    }
+
+    // ========== CANVAS ANIMATION (blob mengikuti kursor) ==========
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let w, h;
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    // Blob objects
+    const blobs = [];
+    const BLOB_COUNT = 16;
+
+    function createBlob() {
+      return {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 60 + Math.random() * 120,
+        dx: (Math.random() - 0.5) * 0.25,
+        dy: (Math.random() - 0.5) * 0.25,
+        offset: Math.random() * Math.PI * 2
+      };
+    }
+
+    for (let i = 0; i < BLOB_COUNT; i++) {
+      blobs.push(createBlob());
+    }
+
+    let mouse = { x: w / 2, y: h / 3 };
+
+    canvas.addEventListener("mousemove", e => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    });
+
+    canvas.addEventListener("touchmove", e => {
+      if (e.touches.length > 0) {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.touches[0].clientX - rect.left;
+        mouse.y = e.touches[0].clientY - rect.top;
+      }
+    }, { passive: true });
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+
+      // Background putih tipis
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+
+      blobs.forEach((b, idx) => {
+        // sedikit gerak organik
+        b.x += b.dx;
+        b.y += b.dy;
+        b.offset += 0.005;
+
+        // tarik pelan ke arah mouse
+        const strength = 0.015;
+        b.x += (mouse.x - b.x) * strength;
+        b.y += (mouse.y - b.y) * strength * 0.75;
+
+        // bounce di edge
+        if (b.x < -200) b.x = w + 200;
+        if (b.x > w + 200) b.x = -200;
+        if (b.y < -200) b.y = h + 200;
+        if (b.y > h + 200) b.y = -200;
+
+        const radius = b.r + Math.sin(b.offset + idx) * 12;
+
+        const gradient = ctx.createRadialGradient(
+          b.x - radius * 0.2,
+          b.y - radius * 0.2,
+          radius * 0.1,
+          b.x,
+          b.y,
+          radius
+        );
+
+        gradient.addColorStop(0, "rgba(0, 119, 228, 0.18)");
+        gradient.addColorStop(0.45, "rgba(0, 119, 228, 0.06)");
+        gradient.addColorStop(1, "rgba(0, 119, 228, 0)");
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  </script>
+</body>
+</html>
