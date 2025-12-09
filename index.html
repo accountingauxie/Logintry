@@ -1,777 +1,350 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>UXILIUM Portal – Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Approval and Work Effort</title>
   <style>
-    :root {
-      --ux-blue: #0077e4;
-      --ux-blue-soft: #e7f2ff;
-      --ux-border: #d3d7e3;
-      --ux-text-main: #1f2933;
-      --ux-text-sub: #6b7280;
-      --ux-danger: #d33;
-      --ux-radius-lg: 18px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
       margin: 0;
-      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-      background: #ffffff;
-      color: var(--ux-text-main);
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
+      padding: 20px;
     }
 
-    /* ========== BACKGROUND CANVAS (ANIMASI) ========== */
-    #bgCanvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
+    h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 20px;
     }
 
-    /* Overlay tipis supaya tetap putih & soft */
-    .white-overlay {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(circle at top left, #f7fbff 0, #ffffff 55%);
-      opacity: 0.92;
-      z-index: 1;
-      pointer-events: none;
+    .filter-buttons {
+      margin-bottom: 20px;
     }
 
-    /* ========== LAYOUT UTAMA ========== */
-    .page-wrapper {
-      position: relative;
-      z-index: 2; /* di atas canvas */
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      height: 100vh;
-      padding: 24px;
+    .filter-buttons button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      font-size: 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
-    .auth-shell {
-      max-width: 1040px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 28px;
-      box-shadow:
-        0 24px 60px rgba(15, 23, 42, 0.12),
-        0 0 0 1px rgba(226, 232, 240, 0.8);
-      overflow: hidden;
-      backdrop-filter: blur(12px);
+    .filter-buttons button.active {
+      background-color: #0056b3;
     }
 
-    /* ========== PANEL BRANDING ========== */
-    .brand-panel {
-      padding: 28px 32px;
-      border-right: 1px solid rgba(226, 232, 240, 0.9);
+    .search-bar {
+      margin-bottom: 20px;
+      padding: 10px;
+      font-size: 14px;
+      width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .invoice-list {
       display: flex;
       flex-direction: column;
+    }
+
+    .invoice-card {
+      background-color: white;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border: 1px solid #ddd;
+    }
+
+    .invoice-header {
+      display: flex;
       justify-content: space-between;
-      background: linear-gradient(145deg, #ffffff 0%, #f3f7ff 40%, #ffffff 100%);
+      margin-bottom: 15px;
     }
 
-    .brand-top {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .invoice-header .status {
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
     }
 
-    .ux-badge {
-      width: 34px;
-      height: 34px;
-      border-radius: 14px;
-      background: radial-gradient(circle at 30% 20%, #ffffff, #0077e4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 18px;
-      box-shadow: 0 12px 30px rgba(0, 119, 228, 0.45);
+    .status-pending {
+      background-color: #ffc107;
     }
 
-    .brand-text-main {
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      font-size: 11px;
-      color: #6b7280;
-      text-transform: uppercase;
+    .status-approved {
+      background-color: #28a745;
     }
 
-    .brand-text-sub {
-      font-size: 13px;
-      color: #9ca3af;
+    .status-canceled {
+      background-color: #dc3545;
     }
 
-    .brand-mid {
-      margin-top: 32px;
-    }
-
-    .brand-mid h1 {
-      margin: 0 0 8px;
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .brand-mid p {
-      margin: 0;
+    .invoice-details {
       font-size: 14px;
-      color: var(--ux-text-sub);
-      max-width: 320px;
+      color: #666;
     }
 
-    .highlight-box {
-      margin-top: 26px;
-      border-radius: 18px;
-      padding: 14px 14px 14px 14px;
-      background: linear-gradient(
-        135deg,
-        rgba(0, 119, 228, 0.06),
-        rgba(0, 119, 228, 0.02)
-      );
-      border: 1px solid rgba(191, 219, 254, 0.9);
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
-
-    .highlight-pill {
-      min-width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      color: #2563eb;
-      background: #eff6ff;
-    }
-
-    .highlight-body {
-      font-size: 12px;
-      line-height: 1.5;
-      color: #4b5563;
-    }
-
-    .brand-bottom {
-      margin-top: 32px;
-      font-size: 11px;
-      color: #9ca3af;
-    }
-
-    .brand-bottom strong {
-      color: #4b5563;
-    }
-
-    /* ========== PANEL FORM ========== */
-    .form-panel {
-      padding: 28px 30px 26px 30px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .form-header {
-      display: flex;
-      justify-content: flex-end;
-      font-size: 12px;
-      color: var(--ux-text-sub);
-      margin-bottom: 8px;
-    }
-
-    .form-header span {
-      margin-right: 6px;
-    }
-
-    .form-toggle-link {
-      background: none;
-      border: none;
-      padding: 0;
-      font: inherit;
-      color: var(--ux-blue);
-      cursor: pointer;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-
-    .form-main {
+    .expand-button {
       margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
-    .form-main h2 {
-      margin: 0 0 4px;
-      font-size: 20px;
-      letter-spacing: -0.01em;
+    .expand-button:hover {
+      background-color: #218838;
     }
 
-    .form-main p {
-      margin: 0 0 18px;
-      font-size: 13px;
-      color: var(--ux-text-sub);
-    }
-
-    .field-group {
-      margin-bottom: 12px;
-    }
-
-    .field-label {
+    .status-actions {
+      margin-top: 15px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-      font-size: 12px;
-      color: #4b5563;
-    }
-
-    .field-label span.optional {
-      font-size: 11px;
-      color: #9ca3af;
-    }
-
-    .field-control {
-      position: relative;
-    }
-
-    .field-control input {
-      width: 100%;
-      padding: 9px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--ux-border);
-      font-size: 13px;
-      outline: none;
-      background: rgba(255, 255, 255, 0.96);
-      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-    }
-
-    .field-control input:focus {
-      border-color: var(--ux-blue);
-      box-shadow: 0 0 0 1px rgba(0, 119, 228, 0.25);
-      background: #ffffff;
-    }
-
-    .field-control input::placeholder {
-      color: #c4c4d0;
-    }
-
-    .field-row {
-      display: flex;
+      justify-content: flex-start;
       gap: 10px;
     }
 
-    .field-row .field-group {
-      flex: 1;
-    }
-
-    .helper-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      font-size: 11px;
-      color: var(--ux-text-sub);
-    }
-
-    .checkbox-inline {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+    .status-actions button {
+      padding: 8px 16px;
       cursor: pointer;
-    }
-
-    .checkbox-inline input {
-      width: 13px;
-      height: 13px;
-    }
-
-    .forgot-link {
-      color: var(--ux-blue);
-      text-decoration: none;
-    }
-
-    .forgot-link:hover {
-      text-decoration: underline;
-    }
-
-    .submit-btn {
-      margin-top: 4px;
-      width: 100%;
-      border-radius: 999px;
+      background-color: #007bff;
+      color: white;
       border: none;
-      padding: 9px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      background: linear-gradient(135deg, #0077e4, #005ac1);
-      color: #ffffff;
-      box-shadow: 0 14px 28px rgba(37, 99, 235, 0.35);
-      display: inline-flex;
-      align-items: center;
+      border-radius: 5px;
+    }
+
+    .status-actions button:hover {
+      background-color: #0056b3;
+    }
+
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .invoice-table th, .invoice-table td {
+      padding: 10px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    .invoice-table th {
+      background-color: #f4f4f4;
+    }
+
+    /* Loading Spinner Styles */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
       justify-content: center;
-      gap: 6px;
+      align-items: center;
+      z-index: 9999;
     }
 
-    .submit-btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #3498db;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
     }
 
-    .submit-btn span.icon {
-      font-size: 14px;
-      margin-top: 1px;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
-    .info-box {
-      margin-top: 10px;
-      padding: 8px 11px;
-      border-radius: 12px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      font-size: 11px;
-      color: #6b7280;
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
-    }
-
-    .info-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #22c55e;
-      margin-top: 3px;
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.22);
-    }
-
-    .info-dot.pending {
-      background: #f97316;
-      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.22);
-    }
-
-    .small-text {
-      margin-top: 6px;
-      font-size: 10px;
-      color: #a1a1aa;
-      line-height: 1.5;
-    }
-
-    /* ========== RESPONSIVE ========== */
-    @media (max-width: 880px) {
-      .page-wrapper {
-        padding: 16px;
-      }
-
-      .auth-shell {
-        grid-template-columns: minmax(0, 1fr);
-        max-width: 480px;
-      }
-
-      .brand-panel {
-        display: none;
-      }
-
-      .form-panel {
-        padding: 22px 20px 20px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body {
-        overflow-y: auto;
-      }
-      .page-wrapper {
-        align-items: flex-start;
-      }
+    .readonly {
+      background-color: #f3f3f3;
     }
   </style>
 </head>
+
 <body>
-  <!-- CANVAS ANIMASI -->
-  <canvas id="bgCanvas"></canvas>
-  <div class="white-overlay"></div>
 
-  <div class="page-wrapper">
-    <div class="auth-shell">
-      <!-- PANEL BRANDING / INFO -->
-      <div class="brand-panel">
-        <div>
-          <div class="brand-top">
-            <div class="ux-badge">UX</div>
-            <div>
-              <div class="brand-text-main">UXILIUM PORTAL</div>
-              <div class="brand-text-sub">CV. Sukses Jaya</div>
-            </div>
-          </div>
+<h1>Invoice Approval and Work Effort</h1>
 
-          <div class="brand-mid">
-            <h1>Welcome Back</h1>
-            <p>
-              Kelola order, produksi, dan penerimaan coil dalam satu portal yang
-              rapi dan terintegrasi dengan Google Sheets & Xero.
-            </p>
+<!-- Filter Buttons -->
+<div class="filter-buttons">
+  <button onclick="filterByStatus('All')" class="active">All</button>
+  <button onclick="filterByStatus('Pending')">Awaiting Approval</button>
+  <button onclick="filterByStatus('Approved')">Approved</button>
+  <button onclick="filterByStatus('Canceled')">Deleted</button>
+</div>
 
-            <div class="highlight-box">
-              <div class="highlight-pill">●</div>
-              <div class="highlight-body">
-                Akun baru tidak langsung aktif. Tim kami akan melakukan verifikasi
-                dan melakukan <strong>approval manual</strong> sebelum akses penuh
-                diberikan.
-              </div>
-            </div>
-          </div>
-        </div>
+<!-- Search Bar -->
+<input type="text" id="searchInput" class="search-bar" placeholder="Search Invoice, Customer or Product" onkeyup="searchInvoices()">
 
-        <div class="brand-bottom">
-          <div><strong>UXILIUM</strong> Internal System</div>
-          <div>Version 1.0 · Protected access only</div>
-        </div>
-      </div>
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
 
-      <!-- PANEL FORM LOGIN / REGISTER -->
-      <div class="form-panel">
-        <div>
-          <div class="form-header">
-            <span id="toggleMessage">Belum punya akun?</span>
-            <button class="form-toggle-link" id="toggleModeBtn">Daftar sekarang</button>
-          </div>
+<div class="invoice-list" id="invoiceList"></div>
 
-          <!-- LOGIN FORM -->
-          <div class="form-main" id="loginForm">
-            <h2>Sign in</h2>
-            <p>Masuk ke portal UXILIUM dengan akun yang sudah aktif.</p>
+<script>
+const API = "https://script.google.com/macros/s/AKfycbxSBRBLIOx74b88ESfthZJJnSYxRzmKnc34cJolVQlS70T9wcVLs5cFwFXlOjuuc1Gu/exec";
+let invoiceData = [];
 
-            <form onsubmit="handleLogin(event)">
-              <div class="field-group">
-                <div class="field-label">
-                  <label for="loginEmail">Email</label>
-                </div>
-                <div class="field-control">
-                  <input id="loginEmail" type="email" placeholder="email@company.com" required />
-                </div>
-              </div>
+function showLoading() {
+  document.getElementById('loadingOverlay').style.display = 'flex'; // Show the loading spinner
+}
 
-              <div class="field-group">
-                <div class="field-label">
-                  <label for="loginPassword">Password</label>
-                </div>
-                <div class="field-control">
-                  <input id="loginPassword" type="password" placeholder="••••••••" required />
-                </div>
-              </div>
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none'; // Hide the loading spinner
+}
 
-              <div class="helper-row">
-                <label class="checkbox-inline">
-                  <input type="checkbox" id="rememberMe" />
-                  <span>Ingat saya di perangkat ini</span>
-                </label>
-                <a href="#" class="forgot-link">Lupa password?</a>
-              </div>
-
-              <button type="submit" class="submit-btn">
-                <span>Masuk ke Portal</span>
-                <span class="icon">→</span>
-              </button>
-
-              <div class="info-box" id="loginInfo">
-                <div class="info-dot"></div>
-                <div>
-                  Gunakan email yang sudah diverifikasi. Jika akun belum di-approve,
-                  silakan hubungi admin UXILIUM.
-                </div>
-              </div>
-
-              <div class="small-text">
-                Dengan melanjutkan, Anda menyetujui internal policy dan aturan akses data
-                perusahaan.
-              </div>
-            </form>
-          </div>
-
-          <!-- REGISTER FORM -->
-          <div class="form-main" id="registerForm" style="display:none;">
-            <h2>Buat akun baru</h2>
-            <p>
-              Daftarkan akun untuk tim CV. Sukses Jaya. Akses akan aktif setelah disetujui admin.
-            </p>
-
-            <form onsubmit="handleRegister(event)">
-              <div class="field-row">
-                <div class="field-group">
-                  <div class="field-label">
-                    <label for="regName">Nama lengkap</label>
-                  </div>
-                  <div class="field-control">
-                    <input id="regName" type="text" placeholder="Nama sesuai sistem" required />
-                  </div>
-                </div>
-
-                <div class="field-group">
-                  <div class="field-label">
-                    <label for="regRole">Divisi / Role</label>
-                    <span class="optional">Opsional</span>
-                  </div>
-                  <div class="field-control">
-                    <input id="regRole" type="text" placeholder="Admin, Gudang, Finance, dll." />
-                  </div>
-                </div>
-              </div>
-
-              <div class="field-group">
-                <div class="field-label">
-                  <label for="regEmail">Email kerja</label>
-                </div>
-                <div class="field-control">
-                  <input id="regEmail" type="email" placeholder="nama@cvsuksesjaya.co.id" required />
-                </div>
-              </div>
-
-              <div class="field-group">
-                <div class="field-label">
-                  <label for="regPhone">No. WhatsApp</label>
-                  <span class="optional">Opsional</span>
-                </div>
-                <div class="field-control">
-                  <input id="regPhone" type="tel" placeholder="+62 8xx xxxx xxxx" />
-                </div>
-              </div>
-
-              <div class="field-row">
-                <div class="field-group">
-                  <div class="field-label">
-                    <label for="regPassword">Password</label>
-                  </div>
-                  <div class="field-control">
-                    <input id="regPassword" type="password" placeholder="Minimal 8 karakter" required />
-                  </div>
-                </div>
-
-                <div class="field-group">
-                  <div class="field-label">
-                    <label for="regPassword2">Konfirmasi Password</label>
-                  </div>
-                  <div class="field-control">
-                    <input id="regPassword2" type="password" placeholder="Ulangi password" required />
-                  </div>
-                </div>
-              </div>
-
-              <div class="helper-row">
-                <label class="checkbox-inline">
-                  <input type="checkbox" id="regPolicy" required />
-                  <span>
-                    Saya memahami bahwa akun akan aktif setelah <strong>disetujui admin</strong>.
-                  </span>
-                </label>
-              </div>
-
-              <button type="submit" class="submit-btn">
-                <span>Kirim untuk Approval</span>
-                <span class="icon">✓</span>
-              </button>
-
-              <div class="info-box">
-                <div class="info-dot pending"></div>
-                <div>
-                  Setelah form dikirim, data Anda akan masuk ke daftar <strong>Pending User</strong>.
-                  Admin akan review dan mengaktifkan akses jika disetujui.
-                </div>
-              </div>
-
-              <div class="small-text">
-                Jika membutuhkan akses urgent, informasikan ke admin UXILIUM melalui internal chat.
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div style="text-align:right; margin-top:8px; font-size:10px; color:#9ca3af;">
-          UXILIUM · Internal Portal · &copy; <span id="yearNow"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // ========== TOGGLE LOGIN / REGISTER ==========
-    const loginFormEl = document.getElementById("loginForm");
-    const registerFormEl = document.getElementById("registerForm");
-    const toggleBtn = document.getElementById("toggleModeBtn");
-    const toggleMessage = document.getElementById("toggleMessage");
-
-    let mode = "login";
-
-    toggleBtn.addEventListener("click", () => {
-      if (mode === "login") {
-        mode = "register";
-        loginFormEl.style.display = "none";
-        registerFormEl.style.display = "block";
-        toggleMessage.textContent = "Sudah punya akun?";
-        toggleBtn.textContent = "Masuk sekarang";
-      } else {
-        mode = "login";
-        loginFormEl.style.display = "block";
-        registerFormEl.style.display = "none";
-        toggleMessage.textContent = "Belum punya akun?";
-        toggleBtn.textContent = "Daftar sekarang";
-      }
-    });
-
-    document.getElementById("yearNow").textContent = new Date().getFullYear();
-
-    // ========== HANDLER LOGIN / REGISTER (frontend only) ==========
-    function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value.trim();
-
-      // TODO: sambungkan ke backend (Apps Script / API) di sini
-      // Contoh pseudo:
-      // fetch("YOUR_ENDPOINT?action=login", { method: "POST", body: JSON.stringify({ email, password }) })
-
-      alert("Login clicked untuk: " + email + "\n\nSambungkan ke endpoint backend-mu di fungsi handleLogin().");
-    }
-
-    function handleRegister(e) {
-      e.preventDefault();
-      const name = document.getElementById("regName").value.trim();
-      const role = document.getElementById("regRole").value.trim();
-      const email = document.getElementById("regEmail").value.trim();
-      const phone = document.getElementById("regPhone").value.trim();
-      const pwd = document.getElementById("regPassword").value;
-      const pwd2 = document.getElementById("regPassword2").value;
-
-      if (pwd.length < 8) {
-        alert("Password minimal 8 karakter.");
-        return;
-      }
-      if (pwd !== pwd2) {
-        alert("Konfirmasi password tidak sama.");
+function loadInvoices() {
+  showLoading(); // Show loading spinner when fetching invoices
+  fetch(API + "?action=listInvoices")
+    .then(r => r.json())
+    .then(res => {
+      hideLoading(); // Hide loading spinner once data is loaded
+      if (!res.ok) {
+        alert("Error loading invoices.");
         return;
       }
 
-      // TODO: kirim ke backend sebagai "Pending User"
-      // fetch("YOUR_ENDPOINT?action=requestSignup", {...})
-
-      alert(
-        "Request akun terkirim.\n\nNama: " + name +
-        "\nEmail: " + email +
-        "\nRole: " + role +
-        "\nPhone: " + phone +
-        "\n\nSilakan tunggu approval dari admin."
-      );
-    }
-
-    // ========== CANVAS ANIMATION (blob mengikuti kursor) ==========
-    const canvas = document.getElementById("bgCanvas");
-    const ctx = canvas.getContext("2d");
-
-    let w, h;
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resize);
-    resize();
-
-    // Blob objects
-    const blobs = [];
-    const BLOB_COUNT = 16;
-
-    function createBlob() {
-      return {
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r: 60 + Math.random() * 120,
-        dx: (Math.random() - 0.5) * 0.25,
-        dy: (Math.random() - 0.5) * 0.25,
-        offset: Math.random() * Math.PI * 2
-      };
-    }
-
-    for (let i = 0; i < BLOB_COUNT; i++) {
-      blobs.push(createBlob());
-    }
-
-    let mouse = { x: w / 2, y: h / 3 };
-
-    canvas.addEventListener("mousemove", e => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left;
-      mouse.y = e.clientY - rect.top;
+      invoiceData = res.data;
+      displayInvoices(invoiceData);
     });
+}
 
-    canvas.addEventListener("touchmove", e => {
-      if (e.touches.length > 0) {
-        const rect = canvas.getBoundingClientRect();
-        mouse.x = e.touches[0].clientX - rect.left;
-        mouse.y = e.touches[0].clientY - rect.top;
-      }
-    }, { passive: true });
+function displayInvoices(invoices) {
+  const container = document.getElementById("invoiceList");
+  container.innerHTML = "";
 
-    function draw() {
-      ctx.clearRect(0, 0, w, h);
+  invoices.forEach(invoice => {
+    const invoiceDiv = document.createElement("div");
+    invoiceDiv.className = "invoice-card";
 
-      // Background putih tipis
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, w, h);
+    const invoiceHeader = document.createElement("div");
+    invoiceHeader.className = "invoice-header";
+    invoiceHeader.innerHTML = `
+      <div><b>Invoice: ${invoice.invoiceNumber}</b> - ${invoice.customer}</div>
+      <div class="status ${getStatusClass(invoice.status)}">${invoice.status || "Pending"}</div>
+    `;
 
-      blobs.forEach((b, idx) => {
-        // sedikit gerak organik
-        b.x += b.dx;
-        b.y += b.dy;
-        b.offset += 0.005;
+    // Displaying customer info, PO number, date, and total on the invoice card
+    const invoiceDetails = document.createElement("div");
+    invoiceDetails.className = "invoice-details";
+    invoiceDetails.innerHTML = `
+      Date: ${invoice.invoiceDate}<br>
+      PO Number: ${invoice.orderNumber}<br>
+      Total: ${invoice.grandTotal}<br>
+    `;
 
-        // tarik pelan ke arah mouse
-        const strength = 0.015;
-        b.x += (mouse.x - b.x) * strength;
-        b.y += (mouse.y - b.y) * strength * 0.75;
+    // Append the invoice card elements
+    invoiceDiv.appendChild(invoiceHeader);
+    invoiceDiv.appendChild(invoiceDetails);
 
-        // bounce di edge
-        if (b.x < -200) b.x = w + 200;
-        if (b.x > w + 200) b.x = -200;
-        if (b.y < -200) b.y = h + 200;
-        if (b.y > h + 200) b.y = -200;
+    // "Expand Items" button to view detailed items of the invoice
+    const expandButton = document.createElement("button");
+    expandButton.className = "expand-button";
+    expandButton.innerText = "Expand Items";
+    expandButton.onclick = () => {
+      showInvoiceItems(invoice, invoiceDiv);  // Pass the invoice and invoiceDiv to display details and buttons
+    };
 
-        const radius = b.r + Math.sin(b.offset + idx) * 12;
+    invoiceDiv.appendChild(expandButton);
+    container.appendChild(invoiceDiv);
+  });
+}
 
-        const gradient = ctx.createRadialGradient(
-          b.x - radius * 0.2,
-          b.y - radius * 0.2,
-          radius * 0.1,
-          b.x,
-          b.y,
-          radius
-        );
+function showInvoiceItems(invoice, invoiceDiv) {
+  // Filter the invoice items based on the PO number
+  const filteredItems = invoice.items.filter(item => item.orderNumber === invoice.orderNumber);
 
-        gradient.addColorStop(0, "rgba(0, 119, 228, 0.18)");
-        gradient.addColorStop(0.45, "rgba(0, 119, 228, 0.06)");
-        gradient.addColorStop(1, "rgba(0, 119, 228, 0)");
+  // This will create and show the detailed items of the invoice
+  const itemsDiv = document.createElement("div");
+  itemsDiv.className = "invoice-items-details";
+  
+  itemsDiv.innerHTML = `
+    <table class="invoice-table">
+      <thead>
+        <tr><th>Item</th><th>Quantity</th><th>Price</th><th>Total</th><th>Machine</th><th>KPC Number</th></tr>
+      </thead>
+      <tbody>
+        ${filteredItems.map(item => ` 
+          <tr>
+            <td>${item.product}</td>
+            <td>${item.qty}</td>
+            <td>${item.unitPrice}</td>
+            <td>${item.total}</td>
+            <td><input type="text" value="${item.type === 'Spandek' ? item.machine : ''}" ${item.type === 'Non Spandek' ? 'readonly' : ''}></td>
+            <td><input type="text" value="${item.type === 'Spandek' ? item.kpcNumber : ''}" ${item.type === 'Non Spandek' ? 'readonly' : ''}></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  
+  // Create the "Approve" and "Cancel" buttons to appear after expanding items
+  const statusActions = document.createElement("div");
+  statusActions.className = "status-actions";
 
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, radius, 0, Math.PI * 2);
-        ctx.fill();
-      });
+  const approveButton = document.createElement("button");
+  approveButton.innerText = "Approve";
+  approveButton.onclick = () => updateStatus(invoice, "Approved");
 
-      requestAnimationFrame(draw);
+  const cancelButton = document.createElement("button");
+  cancelButton.innerText = "Cancel";
+  cancelButton.onclick = () => updateStatus(invoice, "Canceled");
+
+  statusActions.appendChild(approveButton);
+  statusActions.appendChild(cancelButton);
+
+  // Append the items and buttons to the invoice card
+  invoiceDiv.appendChild(itemsDiv);
+  invoiceDiv.appendChild(statusActions);
+}
+
+function updateStatus(invoice, newStatus) {
+  showLoading(); // Show loading spinner when updating status
+  fetch(API, {
+    method: "POST",
+    body: new URLSearchParams({
+      action: "updateStatus",
+      invoiceNumber: invoice.invoiceNumber,
+      status: newStatus
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    hideLoading(); // Hide loading spinner after updating
+    if (res.ok) {
+      const statusElement = document.getElementById(`status_${invoice.invoiceNumber}`);
+      statusElement.className = `status ${getStatusClass(newStatus)}`;
+      statusElement.textContent = newStatus;
+    } else {
+      alert("Error updating invoice status.");
     }
+  });
+}
 
-    draw();
-  </script>
+function getStatusClass(status) {
+  if (status === "Pending") return "status-pending";
+  if (status === "Approved") return "status-approved";
+  if (status === "Canceled") return "status-canceled";
+  return "status-pending";
+}
+
+window.onload = loadInvoices; // Automatically load invoices on page load
+</script>
+
 </body>
 </html>
