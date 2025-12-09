@@ -1,344 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice Approval and Work Effort</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f7fa;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      font-size: 28px;
-      color: #333;
-      margin-bottom: 20px;
-    }
-
-    .filter-buttons {
-      margin-bottom: 20px;
-    }
-
-    .filter-buttons button {
-      padding: 10px 20px;
-      margin-right: 10px;
-      font-size: 14px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .filter-buttons button.active {
-      background-color: #0056b3;
-    }
-
-    .search-bar {
-      margin-bottom: 20px;
-      padding: 10px;
-      font-size: 14px;
-      width: 300px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-
-    .invoice-list {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .invoice-card {
-      background-color: white;
-      padding: 20px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      border: 1px solid #ddd;
-    }
-
-    .invoice-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 15px;
-    }
-
-    .invoice-header .status {
-      padding: 5px 10px;
-      border-radius: 5px;
-      color: white;
-      font-weight: bold;
-    }
-
-    .status-pending {
-      background-color: #ffc107;
-    }
-
-    .status-approved {
-      background-color: #28a745;
-    }
-
-    .status-canceled {
-      background-color: #dc3545;
-    }
-
-    .invoice-details {
-      font-size: 14px;
-      color: #666;
-    }
-
-    .expand-button {
-      margin-top: 10px;
-      padding: 8px 16px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .expand-button:hover {
-      background-color: #218838;
-    }
-
-    .status-actions {
-      margin-top: 15px;
-      display: flex;
-      justify-content: flex-start;
-      gap: 10px;
-    }
-
-    .status-actions button {
-      padding: 8px 16px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-
-    .status-actions button:hover {
-      background-color: #0056b3;
-    }
-
-    .invoice-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    .invoice-table th, .invoice-table td {
-      padding: 10px;
-      text-align: left;
-      border: 1px solid #ddd;
-    }
-
-    .invoice-table th {
-      background-color: #f4f4f4;
-    }
-
-    /* Loading Spinner Styles */
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .spinner {
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #3498db;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .readonly {
-      background-color: #f3f3f3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO Review System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .approve {
+            background-color: #28a745;
+            color: white;
+        }
+        .reject {
+            background-color: #dc3545;
+            color: white;
+        }
+        .pending {
+            background-color: #ffc107;
+            color: white;
+        }
+    </style>
 </head>
-
 <body>
-
-<h1>Invoice Approval and Work Effort</h1>
-
-<!-- Filter Buttons -->
-<div class="filter-buttons">
-  <button onclick="filterByStatus('All')" class="active">All</button>
-  <button onclick="filterByStatus('Pending')">Awaiting Approval</button>
-  <button onclick="filterByStatus('Approved')">Approved</button>
-  <button onclick="filterByStatus('Canceled')">Canceled</button>
-</div>
-
-<!-- Search Bar -->
-<input type="text" id="searchInput" class="search-bar" placeholder="Search Invoice, Customer or Product" onkeyup="searchInvoices()">
-
-<!-- Loading Overlay -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-</div>
-
-<div class="invoice-list" id="invoiceList"></div>
-
-<script>
-const API = "https://script.google.com/macros/s/AKfycbw2TE8Xxo118DFFTMSLCnhTxBz4OY95NJsBOCccCDxjUFm7enrUfv0TJkv3YyxNGNnc8w/exec";
-let invoiceData = [];
-
-function showLoading() {
-  document.getElementById('loadingOverlay').style.display = 'flex'; // Show the loading spinner
-}
-
-function hideLoading() {
-  document.getElementById('loadingOverlay').style.display = 'none'; // Hide the loading spinner
-}
-
-function loadInvoices() {
-  showLoading(); // Show loading spinner when fetching invoices
-  fetch(API + "?action=listInvoices")
-    .then(r => r.json())
-    .then(res => {
-      hideLoading(); // Hide loading spinner once data is loaded
-      if (!res.ok) {
-        alert("Error loading invoices.");
-        return;
-      }
-
-      invoiceData = res.data;
-      displayInvoices(invoiceData);
-    });
-}
-
-function displayInvoices(invoices) {
-  const container = document.getElementById("invoiceList");
-  container.innerHTML = "";
-
-  invoices.forEach(invoice => {
-    const invoiceDiv = document.createElement("div");
-    invoiceDiv.className = "invoice-card";
-
-    const invoiceHeader = document.createElement("div");
-    invoiceHeader.className = "invoice-header";
-    invoiceHeader.innerHTML = `
-      <div><b>Invoice: ${invoice.invoiceNumber}</b> - ${invoice.customer}</div>
-      <div class="status ${getStatusClass(invoice.status)}">${invoice.status || "Pending"}</div>
-    `;
-
-    const invoiceDetails = document.createElement("div");
-    invoiceDetails.className = "invoice-details";
-    invoiceDetails.innerHTML = `
-      Date: ${invoice.invoiceDate}<br>
-      PO Number: ${invoice.orderNumber}<br>
-      Total: ${invoice.grandTotal}<br>
-    `;
-
-    invoiceDiv.appendChild(invoiceHeader);
-    invoiceDiv.appendChild(invoiceDetails);
-
-    const expandButton = document.createElement("button");
-    expandButton.className = "expand-button";
-    expandButton.innerText = "Expand Items";
-    expandButton.onclick = () => {
-      showInvoiceItems(invoice, invoiceDiv);  // Pass the invoice and invoiceDiv to display details and buttons
-    };
-
-    invoiceDiv.appendChild(expandButton);
-    container.appendChild(invoiceDiv);
-  });
-}
-
-function showInvoiceItems(invoice, invoiceDiv) {
-  const filteredItems = invoice.items.filter(item => item.orderNumber === invoice.orderNumber);
-
-  const itemsDiv = document.createElement("div");
-  itemsDiv.className = "invoice-items-details";
-  
-  itemsDiv.innerHTML = `
-    <table class="invoice-table">
-      <thead>
-        <tr><th>PO Number</th><th>Item Code</th><th>Description</th><th>Ordered</th><th>Received</th><th>Remaining</th><th>Unit Amount</th></tr>
-      </thead>
-      <tbody>
-        ${filteredItems.map(item => ` 
-          <tr>
-            <td>${item.poNumber}</td>
-            <td>${item.itemCode}</td>
-            <td>${item.description}</td>
-            <td>${item.ordered}</td>
-            <td>${item.received}</td>
-            <td>${item.remaining}</td>
-            <td>${item.unitAmount}</td>
-          </tr>
-        `).join('')}
-      </tbody>
+    <h1>PO Review System</h1>
+    <table id="poTable">
+        <thead>
+            <tr>
+                <th>PO Number</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- PO entries will go here -->
+        </tbody>
     </table>
-  `;
-  
-  const statusActions = document.createElement("div");
-  statusActions.className = "status-actions";
 
-  const approveButton = document.createElement("button");
-  approveButton.innerText = "Approve";
-  approveButton.onclick = () => updateStatus(invoice, "Approved");
+    <script>
+        // Sample PO Data (replace this with dynamic data)
+        const poData = [
+            { poNumber: '1000001', customer: 'Venny', date: '2025-12-09', status: 'Pending' },
+            { poNumber: '1000002', customer: 'Veve', date: '2025-12-09', status: 'Pending' },
+            { poNumber: '1000003', customer: 'Marco', date: '2025-12-09', status: 'Pending' },
+            { poNumber: '1000004', customer: 'Pak Daddy', date: '2025-12-09', status: 'Pending' },
+            { poNumber: '1000005', customer: 'Robi', date: '2025-12-09', status: 'Pending' },
+        ];
 
-  const cancelButton = document.createElement("button");
-  cancelButton.innerText = "Cancel";
-  cancelButton.onclick = () => updateStatus(invoice, "Canceled");
+        // Function to populate the table
+        function loadPOData() {
+            const tableBody = document.querySelector('#poTable tbody');
+            tableBody.innerHTML = ''; // Clear any existing rows
 
-  statusActions.appendChild(approveButton);
-  statusActions.appendChild(cancelButton);
+            poData.forEach(po => {
+                const row = document.createElement('tr');
 
-  invoiceDiv.appendChild(itemsDiv);
-  invoiceDiv.appendChild(statusActions);
-}
+                // PO Number
+                const poCell = document.createElement('td');
+                poCell.textContent = po.poNumber;
+                row.appendChild(poCell);
 
-function updateStatus(invoice, newStatus) {
-  showLoading(); // Show loading spinner when updating status
-  fetch(API, {
-    method: "POST",
-    body: new URLSearchParams({
-      action: "updateStatus",
-      invoiceNumber: invoice.invoiceNumber,
-      status: newStatus
-    })
-  })
-  .then(r => r.json())
-  .then(res => {
-    hideLoading(); // Hide loading spinner after updating
-    if (res.ok) {
-      const statusElement = document.getElementById(`status_${invoice.invoiceNumber}`);
-      statusElement.className = `status ${getStatusClass(newStatus)}`;
-      statusElement.textContent = newStatus;
-    } else {
-      alert("Error updating invoice status.");
-    }
-  });
-}
+                // Customer
+                const customerCell = document.createElement('td');
+                customerCell.textContent = po.customer;
+                row.appendChild(customerCell);
 
-function getStatusClass(status) {
-  if (status === "Pending") return "status-pending";
-  if (status === "Approved") return "status-approved";
-  if (status === "Canceled") return "status-canceled";
-  return "status-pending";
-}
+                // Date
+                const dateCell = document.createElement('td');
+                dateCell.textContent = po.date;
+                row.appendChild(dateCell);
 
-window.onload = loadInvoices; // Automatically load invoices on page load
-</script>
+                // Status
+                const statusCell = document.createElement('td');
+                statusCell.textContent = po.status;
+                row.appendChild(statusCell);
 
+                // Action Buttons
+                const actionCell = document.createElement('td');
+                const approveButton = document.createElement('button');
+                approveButton.textContent = 'Approve';
+                approveButton.className = 'approve';
+                approveButton.onclick = () => updateStatus(po.poNumber, 'Approved');
+                const rejectButton = document.createElement('button');
+                rejectButton.textContent = 'Reject';
+                rejectButton.className = 'reject';
+                rejectButton.onclick = () => updateStatus(po.poNumber, 'Rejected');
+                actionCell.appendChild(approveButton);
+                actionCell.appendChild(rejectButton);
+
+                row.appendChild(actionCell);
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to update the status
+        function updateStatus(poNumber, newStatus) {
+            const po = poData.find(p => p.poNumber === poNumber);
+            if (po) {
+                po.status = newStatus;
+                loadPOData(); // Refresh the table
+            }
+        }
+
+        // Initial load
+        loadPOData();
+    </script>
 </body>
 </html>
