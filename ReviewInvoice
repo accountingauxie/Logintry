@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8" />
+  <title>Review Invoice</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f5f7; padding: 20px; }
+    .header { font-size: 24px; margin-bottom: 20px; color: #333; }
+    .invoice-card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 15px; }
+    .card-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #0077e4; }
+    .card-detail { font-size: 14px; margin-bottom: 5px; }
+    .action-buttons button { padding: 8px 15px; margin-right: 10px; cursor: pointer; border: none; border-radius: 4px; font-weight: 600; }
+    .approve-btn { background: #4CAF50; color: white; }
+    .cancel-btn { background: #f44336; color: white; }
+    .detail-toggle { color: #0077e4; cursor: pointer; font-size: 12px; margin-top: 10px; display: inline-block;}
+    .line-details { margin-top: 10px; padding: 10px; border-top: 1px dashed #ccc; display: none; }
+    .line-details div { font-size: 12px; margin-bottom: 3px; }
+    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: flex; justify-content: center; align-items: center; font-size: 20px; z-index: 1000; }
+  </style>
+</head>
+<body>
+
+<div id="loading">Loading Invoices...</div>
+
+<div class="topnav">
+  </div>
+
+<div class="header">Review Invoice (Approve / Cancel)</div>
+<div id="invoiceList"></div>
+
+<script>
+  function showLoading() { document.getElementById('loading').style.display = 'flex'; }
+  function hideLoading() { document.getElementById('loading').style.display = 'none'; }
+  
+  function toggleDetails(invNumber) {
+    const details = document.getElementById('details-' + invNumber);
+    if (details.style.display === 'none') {
+      details.style.display = 'block';
+    } else {
+      details.style.display = 'none';
+    }
+  }
+
+  function renderInvoices(invoices) {
+    hideLoading();
+    const listDiv = document.getElementById('invoiceList');
+    listDiv.innerHTML = '';
+    if (invoices.length === 0) {
+      listDiv.innerHTML = '<p>Tidak ada Invoice yang perlu di-review.</p>';
+      return;
+    }
+
+    invoices.forEach(inv => {
+      const card = document.createElement('div');
+      card.className = 'invoice-card';
+      card.innerHTML = `
+        <div class="card-title">${inv.invNumber} (${inv.lineCount} items)</div>
+        <div class="card-detail"><strong>Customer:</strong> ${inv.customer}</div>
+        <div class="card-detail"><strong>Date:</strong> ${inv.date}</div>
+        <div class="card-detail"><strong>Grand Total:</strong> ${inv.grandTotal}</div>
+        
+        <div class="action-buttons" style="margin-top:15px;">
+          <button class="approve-btn" onclick="handleAction('${inv.invNumber}', 'Approved')">Approve</button>
+          <button class="cancel-btn" onclick="handleAction('${inv.invNumber}', 'Canceled')">Cancel</button>
+          <span class="detail-toggle" onclick="toggleDetails('${inv.invNumber}')">Show Details (${inv.lineCount})</span>
+        </div>
+
+        <div class="line-details" id="details-${inv.invNumber}" style="display:none;">
+          <strong>Line Items:</strong>
+          ${inv.lines.map(line => `
+            <div>
+              [Row ${line.rowIndex}] ${line.product} / ${line.type} — Qty: ${line.qty} @ ${line.unitPrice} = ${line.total}
+            </div>
+          `).join('')}
+        </div>
+      `;
+      listDiv.appendChild(card);
+    });
+  }
+
+  function handleAction(invNumber, action) {
+    if (!confirm(`Yakin ingin set Invoice ${invNumber} sebagai '${action}'?`)) return;
+    showLoading();
+    
+    // Panggil Apps Script: handleInvoiceApproval(invNumber, action)
+    google.script.run
+      .withSuccessHandler(res => {
+        hideLoading();
+        alert(res.message);
+        if (res.success) {
+          // Muat ulang daftar setelah aksi berhasil
+          loadInvoices(); 
+        }
+      })
+      .withFailureHandler(err => {
+        hideLoading();
+        alert('Aksi gagal: ' + err.message);
+      })
+      .handleInvoiceApproval(invNumber, action);
+  }
+
+  function loadInvoices() {
+    showLoading();
+    // Panggil Apps Script: getInvoicesForReview()
+    google.script.run
+      .withSuccessHandler(renderInvoices)
+      .withFailureHandler(err => {
+        hideLoading();
+        document.getElementById('invoiceList').innerHTML = '<p style="color:red;">Gagal memuat data Invoice: ' + err.message + '</p>';
+        console.error("Error loading invoices: ", err);
+      })
+      .getInvoicesForReview();
+  }
+
+  window.addEventListener('load', loadInvoices);
+</script>
+</body>
+</html>
