@@ -59,17 +59,22 @@
     </table>
 
     <script>
-        // Sample PO Data (replace this with dynamic data)
-        const poData = [
-            { poNumber: '1000001', customer: 'Venny', date: '2025-12-09', status: 'Pending' },
-            { poNumber: '1000002', customer: 'Veve', date: '2025-12-09', status: 'Pending' },
-            { poNumber: '1000003', customer: 'Marco', date: '2025-12-09', status: 'Pending' },
-            { poNumber: '1000004', customer: 'Pak Daddy', date: '2025-12-09', status: 'Pending' },
-            { poNumber: '1000005', customer: 'Robi', date: '2025-12-09', status: 'Pending' },
-        ];
+        // URL of the deployed Apps Script Web App
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbzL1GmHqL5G_IK7SEVDDti1D9KTrtVXRisGBNnLRPASCIePqY77XgCtDnFW_hmiP380Xg/exec';
+        
+        // Function to fetch PO data from Apps Script
+        function fetchPOData() {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const poData = data.poData;
+                    renderTable(poData);
+                })
+                .catch(error => console.error('Error fetching PO data:', error));
+        }
 
-        // Function to populate the table
-        function loadPOData() {
+        // Render PO data in the table
+        function renderTable(poData) {
             const tableBody = document.querySelector('#poTable tbody');
             tableBody.innerHTML = ''; // Clear any existing rows
 
@@ -101,31 +106,39 @@
                 const approveButton = document.createElement('button');
                 approveButton.textContent = 'Approve';
                 approveButton.className = 'approve';
-                approveButton.onclick = () => updateStatus(po.poNumber, 'Approved');
+                approveButton.onclick = () => updatePOStatus(po.poNumber, 'Approved');
                 const rejectButton = document.createElement('button');
                 rejectButton.textContent = 'Reject';
                 rejectButton.className = 'reject';
-                rejectButton.onclick = () => updateStatus(po.poNumber, 'Rejected');
+                rejectButton.onclick = () => updatePOStatus(po.poNumber, 'Rejected');
                 actionCell.appendChild(approveButton);
                 actionCell.appendChild(rejectButton);
 
                 row.appendChild(actionCell);
-
                 tableBody.appendChild(row);
             });
         }
 
-        // Function to update the status
-        function updateStatus(poNumber, newStatus) {
-            const po = poData.find(p => p.poNumber === poNumber);
-            if (po) {
-                po.status = newStatus;
-                loadPOData(); // Refresh the table
-            }
+        // Function to update PO status
+        function updatePOStatus(poNumber, newStatus) {
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ poNumber, status: newStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    fetchPOData(); // Refresh the table after updating the status
+                }
+            })
+            .catch(error => console.error('Error updating PO status:', error));
         }
 
-        // Initial load
-        loadPOData();
+        // Initial load of PO data
+        fetchPOData();
     </script>
 </body>
 </html>
