@@ -239,7 +239,6 @@ function displayInvoices(invoices) {
       <div class="status ${getStatusClass(invoice.status)}">${invoice.status || "Pending"}</div>
     `;
 
-    // Displaying customer info, PO number, date, and total on the invoice card
     const invoiceDetails = document.createElement("div");
     invoiceDetails.className = "invoice-details";
     invoiceDetails.innerHTML = `
@@ -248,11 +247,9 @@ function displayInvoices(invoices) {
       Total: ${invoice.grandTotal}<br>
     `;
 
-    // Append the invoice card elements
     invoiceDiv.appendChild(invoiceHeader);
     invoiceDiv.appendChild(invoiceDetails);
 
-    // "Expand Items" button to view detailed items of the invoice
     const expandButton = document.createElement("button");
     expandButton.className = "expand-button";
     expandButton.innerText = "Expand Items";
@@ -266,10 +263,8 @@ function displayInvoices(invoices) {
 }
 
 function showInvoiceItems(invoice, invoiceDiv) {
-  // Filter the invoice items based on the PO number
   const filteredItems = invoice.items.filter(item => item.orderNumber === invoice.orderNumber);
 
-  // This will create and show the detailed items of the invoice
   const itemsDiv = document.createElement("div");
   itemsDiv.className = "invoice-items-details";
   
@@ -294,7 +289,6 @@ function showInvoiceItems(invoice, invoiceDiv) {
     </table>
   `;
   
-  // Create the "Approve" and "Cancel" buttons to appear after expanding items
   const statusActions = document.createElement("div");
   statusActions.className = "status-actions";
 
@@ -309,7 +303,6 @@ function showInvoiceItems(invoice, invoiceDiv) {
   statusActions.appendChild(approveButton);
   statusActions.appendChild(cancelButton);
 
-  // Append the items and buttons to the invoice card
   invoiceDiv.appendChild(itemsDiv);
   invoiceDiv.appendChild(statusActions);
 }
