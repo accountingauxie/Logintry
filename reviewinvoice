@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Review Invoice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .invoice-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+
+    .invoice-card h3 {
+      margin: 0;
+    }
+
+    .invoice-card button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .invoice-card button.cancel {
+      background-color: #f44336;
+    }
+
+    .invoice-card button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Review Invoice</h1>
+  <div id="invoice-list">
+    <!-- Daftar invoice akan dimuat di sini -->
+  </div>
+
+  <script>
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzzvsHwNZzdcZeI4rC8BgW2GTeusbgbgUKpbQPLVMan7figUZxJRQiCN8i2z-1IoCbKQg/exec';  // Ganti dengan URL Web App Google Apps Script
+
+    // Fungsi untuk mengambil data invoice dari Google Apps Script (Spreadsheet 1)
+    async function loadInvoices() {
+      const response = await fetch(scriptUrl);  // Mengambil data dari Web App
+      const invoices = await response.json();  // Data invoice dalam format JSON
+
+      // Render daftar invoice
+      const container = document.getElementById('invoice-list');
+      container.innerHTML = '';  // Bersihkan daftar sebelumnya
+
+      invoices.forEach(invoice => {
+        const card = document.createElement('div');
+        card.classList.add('invoice-card');
+        card.innerHTML = `
+          <h3>Invoice: ${invoice.invoiceNumber}</h3>
+          <p>Supplier: ${invoice.supplier}</p>
+          <p>Date: ${invoice.date}</p>
+          <p>Total Amount: ${invoice.totalAmount}</p>
+          <p>Status: ${invoice.status}</p>
+          <button onclick="approveInvoice('${invoice.invoiceNumber}')">Approve</button>
+          <button class="cancel" onclick="cancelInvoice('${invoice.invoiceNumber}')">Cancel</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Fungsi untuk menyetujui invoice
+    function approveInvoice(invoiceNumber) {
+      const invoice = invoices.find(inv => inv.invoiceNumber === invoiceNumber);
+      if (invoice) {
+        invoice.status = 'Approved';
+        sendToGoogleSheets(invoice);  // Kirim data ke Google Sheets
+        loadInvoices();  // Render ulang daftar invoice
+      }
+    }
+
+    // Fungsi untuk membatalkan invoice
+    function cancelInvoice(invoiceNumber) {
+      const invoice = invoices.find(inv => inv.invoiceNumber === invoiceNumber);
+      if (invoice) {
+        invoice.status = 'Canceled';
+        loadInvoices();  // Render ulang daftar invoice
+      }
+    }
+
+    // Fungsi untuk mengirimkan data yang disetujui ke Google Apps Script
+    async function sendToGoogleSheets(invoice) {
+      const response = await fetch(scriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceNumber: invoice.invoiceNumber,
+          supplier: invoice.supplier,
+          date: invoice.date,
+          totalAmount: invoice.totalAmount,
+          status: invoice.status
+        })
+      });
+      const result = await response.json();
+      if (result.status === 'success') {
+        alert('Invoice has been approved and sent to Google Sheets');
+      } else {
+        alert('Error: ' + result.message);
+      }
+    }
+
+    // Panggil fungsi loadInvoices untuk menampilkan daftar invoice saat halaman dimuat
+    loadInvoices();
+  </script>
+</body>
+</html>
