@@ -183,7 +183,7 @@
   <button onclick="filterByStatus('All')" class="active">All</button>
   <button onclick="filterByStatus('Pending')">Awaiting Approval</button>
   <button onclick="filterByStatus('Approved')">Approved</button>
-  <button onclick="filterByStatus('Canceled')">Deleted</button>
+  <button onclick="filterByStatus('Canceled')">Canceled</button>
 </div>
 
 <!-- Search Bar -->
@@ -197,7 +197,7 @@
 <div class="invoice-list" id="invoiceList"></div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxSBRBLIOx74b88ESfthZJJnSYxRzmKnc34cJolVQlS70T9wcVLs5cFwFXlOjuuc1Gu/exec";
+const API = "https://script.google.com/macros/s/AKfycbw2TE8Xxo118DFFTMSLCnhTxBz4OY95NJsBOCccCDxjUFm7enrUfv0TJkv3YyxNGNnc8w/exec";
 let invoiceData = [];
 
 function showLoading() {
@@ -276,17 +276,18 @@ function showInvoiceItems(invoice, invoiceDiv) {
   itemsDiv.innerHTML = `
     <table class="invoice-table">
       <thead>
-        <tr><th>Item</th><th>Quantity</th><th>Price</th><th>Total</th><th>Machine</th><th>KPC Number</th></tr>
+        <tr><th>PO Number</th><th>Item Code</th><th>Description</th><th>Ordered</th><th>Received</th><th>Remaining</th><th>Unit Amount</th></tr>
       </thead>
       <tbody>
         ${filteredItems.map(item => ` 
           <tr>
-            <td>${item.product}</td>
-            <td>${item.qty}</td>
-            <td>${item.unitPrice}</td>
-            <td>${item.total}</td>
-            <td><input type="text" value="${item.type === 'Spandek' ? item.machine : ''}" ${item.type === 'Non Spandek' ? 'readonly' : ''}></td>
-            <td><input type="text" value="${item.type === 'Spandek' ? item.kpcNumber : ''}" ${item.type === 'Non Spandek' ? 'readonly' : ''}></td>
+            <td>${item.poNumber}</td>
+            <td>${item.itemCode}</td>
+            <td>${item.description}</td>
+            <td>${item.ordered}</td>
+            <td>${item.received}</td>
+            <td>${item.remaining}</td>
+            <td>${item.unitAmount}</td>
           </tr>
         `).join('')}
       </tbody>
