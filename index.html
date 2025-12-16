@@ -21,75 +21,44 @@
             --bg-light: #f4f6f8;
             --text-dark: #333;
         }
-
-        body { 
-            background-color: var(--bg-light); 
-            font-family: 'Inter', sans-serif; 
-            color: var(--text-dark); 
-        }
-        
-        /* NAVBAR */
+        body { background-color: var(--bg-light); font-family: 'Inter', sans-serif; color: var(--text-dark); }
         .navbar-custom { background-color: #1e293b; padding: 10px 20px; color: white; }
         .navbar-brand { font-weight: 700; letter-spacing: 0.5px; margin: 0; }
         .status-badge { background-color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 10px; }
-
-        /* DASHBOARD STYLE */
+        
+        /* List Style */
         .stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .stat-value { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
         .stat-label { font-size: 12px; text-transform: uppercase; color: #888; font-weight: 600; }
-        
         .table-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e0e0e0; }
         .table-header-custom { background-color: #f9fafb; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
         .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; }
         .status-pill.waiting { background-color: #eff6ff; color: #3b82f6; } 
         .status-pill.done { background-color: #ecfdf5; color: #10b981; }
 
-        /* FORM STYLE */
+        /* Form Style */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .page-title { font-size: 24px; font-weight: 700; margin: 0; color: #111; }
-        .breadcrumb-text { font-size: 13px; color: #666; margin-top: 2px; }
-
-        .btn-back {
-            background: white; border: 1px solid #d1d5db; color: #374151; font-weight: 500; padding: 8px 16px; border-radius: 6px; font-size: 14px;
-        }
+        .btn-back { background: white; border: 1px solid #d1d5db; color: #374151; font-weight: 500; padding: 8px 16px; border-radius: 6px; font-size: 14px; }
         .btn-back:hover { background: #f3f4f6; color: #111; }
-
         .form-container { background: white; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 20px 25px; }
         .form-label-custom { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
         .form-control-custom { border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; font-size: 14px; width: 100%; }
         
-        /* Select2 Customization to match theme */
-        .select2-container--bootstrap-5 .select2-selection {
-            border-color: #d1d5db !important;
-            padding: 10px 12px !important;
-            min-height: 42px; /* Match standard input height */
-            font-size: 14px;
-        }
-        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
-            color: #333;
-        }
-
-        .btn-confirm {
-            background-color: var(--primary-teal); color: white; font-weight: 600; border: none; padding: 10px 24px; border-radius: 6px; font-size: 14px; height: 100%; display: flex; align-items: center; gap: 8px; justify-content: center;
-        }
+        /* Select2 Tweak */
+        .select2-container--bootstrap-5 .select2-selection { border-color: #d1d5db !important; padding: 10px 12px !important; min-height: 42px; font-size: 14px; }
+        .btn-confirm { background-color: var(--primary-teal); color: white; font-weight: 600; border: none; padding: 10px 24px; border-radius: 6px; font-size: 14px; height: 100%; display: flex; align-items: center; gap: 8px; justify-content: center; }
         .btn-confirm:hover { background-color: var(--primary-teal-hover); color: white; }
-
-        .section-title {
-            font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;
-        }
-
+        .section-title { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
         .table-form th { font-size: 13px; color: #111; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding: 10px; background-color: #f9fafb; }
         .table-form td { padding: 10px; vertical-align: top; border-bottom: 1px solid #f3f4f6; }
-        
         .input-table { border: 1px solid #d1d5db; border-radius: 4px; padding: 8px; font-size: 14px; width: 100%; }
         .input-table:focus { border-color: var(--primary-teal); outline: none; }
-        
-        .btn-add-product {
-            color: #2563eb; font-weight: 600; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; cursor: pointer;
-        }
+        .btn-add-product { color: #2563eb; font-weight: 600; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; cursor: pointer; }
         .btn-add-product:hover { text-decoration: underline; color: #1d4ed8; }
-
         .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        
+        .edit-badge { background-color: #fff3cd; color: #856404; font-size: 0.8rem; padding: 5px 10px; border-radius: 4px; border: 1px solid #ffeeba; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -113,7 +82,7 @@
                     <h3 class="page-title">Purchase Orders</h3>
                     <div class="breadcrumb-text">Dashboard / List</div>
                 </div>
-                <button class="btn btn-confirm" style="width: auto;" onclick="switchView('form')">
+                <button class="btn btn-confirm" style="width: auto;" onclick="createNewPO()">
                     <i class="bi bi-plus-lg"></i> NEW PO
                 </button>
             </div>
@@ -140,10 +109,10 @@
                             <th class="py-3">Created At</th>
                             <th class="py-3 text-center">Items</th>
                             <th class="py-3">Status</th>
-                        </tr>
+                            <th class="py-3 text-center">Action</th> </tr>
                     </thead>
                     <tbody id="listTableBody">
-                        <tr><td colspan="6" class="text-center py-5 text-muted">Loading data...</td></tr>
+                        <tr><td colspan="7" class="text-center py-5 text-muted">Loading data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -152,9 +121,14 @@
         <div id="view-form" class="d-none">
             
             <div class="page-header">
-                <div>
-                    <h3 class="page-title">New Quote</h3>
-                    <div class="breadcrumb-text">Dashboard / New</div>
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h3 class="page-title" id="formTitle">New Quote</h3>
+                        <div class="breadcrumb-text">Dashboard / Entry</div>
+                    </div>
+                    <div id="editBadge" class="d-none edit-badge">
+                        <i class="bi bi-pencil-square"></i> Editing Mode
+                    </div>
                 </div>
                 <button class="btn btn-back" onclick="switchView('list')">
                     <i class="bi bi-arrow-left me-1"></i> Back to List
@@ -162,7 +136,6 @@
             </div>
 
             <div class="form-container">
-                
                 <div class="row g-3 align-items-end mb-4">
                     <div class="col-md-6">
                         <label class="form-label-custom">Vendor</label>
@@ -176,7 +149,7 @@
                     </div>
                     <div class="col-md-3">
                         <button class="btn btn-confirm w-100" onclick="submitPO()">
-                            <i class="bi bi-cloud-upload"></i> CONFIRM PO
+                            <i class="bi bi-cloud-upload"></i> <span id="btnSubmitText">CONFIRM PO</span>
                         </button>
                     </div>
                 </div>
@@ -195,15 +168,13 @@
                                 <th style="width: 50px;"></th>
                             </tr>
                         </thead>
-                        <tbody id="entryTableBody">
-                            </tbody>
+                        <tbody id="entryTableBody"></tbody>
                     </table>
                 </div>
 
                 <div onclick="addNewRow()" class="btn-add-product">
                     <i class="bi bi-plus-circle-fill"></i> Add a product
                 </div>
-
             </div>
         </div>
 
@@ -211,7 +182,7 @@
 
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner-border text-primary mb-2" role="status"></div>
-        <div class="fw-bold text-dark">Processing...</div>
+        <div class="fw-bold text-dark" id="loadingText">Processing...</div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -219,12 +190,15 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-        // URL SCRIPT TERBARU YANG ANDA BERIKAN
-        const API_URL = "https://script.google.com/macros/s/AKfycbwS-8BhHKpme6oKV7W42bfQQ4oz32YWoWOoNTsKA41lebU8JYRbrjx2Wo-sXa-yEU1dBA/exec"; 
+        // GANTI URL INI DENGAN URL APPS SCRIPT ANDA
+        const API_URL = "https://script.google.com/macros/s/AKfycbwID9VzA7-uLxQ35J0JPu3Wc4v14zcMOYYFekjxL1JPDS8gOvIIrGQyiRWylaxD-Ho3Qw/exec"; 
         
         let vendorData = {};
         let savedOrders = [];
         let isVendorLoaded = false;
+        
+        // --- LOGIKA EDIT ---
+        let currentEditId = null; // Jika null = New, jika berisi String = Edit Mode
 
         window.onload = function() {
             fetchListPO();
@@ -242,17 +216,37 @@
             } else {
                 formDiv.classList.add("d-none");
                 listDiv.classList.remove("d-none");
+                // Reset mode edit saat kembali ke list
+                resetFormState();
             }
         }
 
-        function showLoading(show) {
+        function createNewPO() {
+            resetFormState();
+            switchView('form');
+        }
+
+        function resetFormState() {
+            currentEditId = null;
+            document.getElementById("formTitle").innerText = "New Quote";
+            document.getElementById("btnSubmitText").innerText = "CONFIRM PO";
+            document.getElementById("editBadge").classList.add("d-none");
+            
+            // Reset Inputs
+            $('#vendorSelect').val(null).trigger('change');
+            document.getElementById("entryTableBody").innerHTML = "";
+            setDefaultDate();
+        }
+
+        function showLoading(show, text = "Processing...") {
+            document.getElementById("loadingText").innerText = text;
             document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
         }
 
-        // --- LIST FUNCTIONS ---
+        // --- LIST & FETCHING ---
         function fetchListPO() {
             const tbody = document.getElementById("listTableBody");
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-secondary spinner-border-sm me-2"></div>Updating...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-secondary spinner-border-sm me-2"></div>Updating...</td></tr>`;
 
             fetch(API_URL + "?action=getSavedOrders")
             .then(res => res.json())
@@ -262,19 +256,17 @@
                     renderListTable(savedOrders);
                     calculateStats(savedOrders);
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${res.message}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${res.message}</td></tr>`;
                 }
             })
-            .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Connection Error</td></tr>`;
-            });
+            .catch(err => tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Error Connection</td></tr>`);
         }
 
         function renderListTable(data) {
             const tbody = document.getElementById("listTableBody");
             tbody.innerHTML = "";
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No orders found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No orders found.</td></tr>`;
                 return;
             }
 
@@ -283,6 +275,16 @@
                 let created = new Date(po.createdAt).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
                 let statusClass = po.status.includes("Waiting") || po.status.includes("Menunggu") ? "waiting" : "done";
                 
+                // LOGIC EDIT: Tombol edit hanya muncul jika status BUKAN Billed
+                let editBtn = "";
+                if(po.status !== "Billed") {
+                    editBtn = `<button class="btn btn-sm btn-outline-primary border-0" onclick="editPO('${po.id}')" title="Edit PO">
+                                <i class="bi bi-pencil-square fs-6"></i>
+                               </button>`;
+                } else {
+                    editBtn = `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Locked</span>`;
+                }
+
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td class="ps-4 fw-bold text-dark">${po.id}</td>
@@ -291,162 +293,165 @@
                     <td class="text-muted small">${created}</td>
                     <td class="text-center"><span class="badge bg-light text-dark border">${po.itemsCount}</span></td>
                     <td><span class="status-pill ${statusClass}">${po.status}</span></td>
+                    <td class="text-center">${editBtn}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function calculateStats(data) {
-            document.getElementById("statTotal").innerText = data.length;
-            const today = new Date().toDateString();
-            document.getElementById("statToday").innerText = data.filter(po => new Date(po.createdAt).toDateString() === today).length;
-            document.getElementById("statWaiting").innerText = data.filter(po => po.status.includes("Menunggu") || po.status.includes("Waiting")).length;
-            document.getElementById("statItems").innerText = data.reduce((sum, po) => sum + po.itemsCount, 0);
-        }
+        // --- LOGIC UTAMA EDIT ---
+        function editPO(poId) {
+            showLoading(true, "Fetching PO Details...");
+            
+            // 1. Set ID
+            currentEditId = poId;
 
-        function filterTable() {
-            const term = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = savedOrders.filter(po => 
-                po.id.toLowerCase().includes(term) || 
-                po.vendor.toLowerCase().includes(term)
-            );
-            renderListTable(filtered);
-        }
-
-        // --- FORM & SELECT2 LOGIC ---
-
-        function fetchVendorData() {
-            showLoading(true);
-            fetch(API_URL + "?action=getData")
+            // 2. Fetch Data dari Server
+            fetch(API_URL + "?action=getPoDetails&id=" + poId)
             .then(res => res.json())
             .then(res => {
                 showLoading(false);
-                if(res.status === 'success'){
-                    vendorData = res.data;
-                    isVendorLoaded = true;
-                    populateVendorSelect();
+                if(res.status === 'success') {
+                    const data = res.data;
+                    
+                    // 3. Pastikan Vendor Data sudah ada dulu
+                    if(!isVendorLoaded) {
+                        fetchVendorData().then(() => populateEditForm(data, poId));
+                    } else {
+                        populateEditForm(data, poId);
+                    }
+                } else {
+                    Swal.fire("Error", "Gagal mengambil detail PO", "error");
                 }
             })
-            .catch(e => {
+            .catch(err => {
                 showLoading(false);
-                Swal.fire("Error", "Failed to load vendors", "error");
+                Swal.fire("Error", "Koneksi Error", "error");
+            });
+        }
+
+        function populateEditForm(data, poId) {
+            // UI Adjustment
+            switchView('form');
+            document.getElementById("formTitle").innerText = "Edit Quote: " + poId;
+            document.getElementById("btnSubmitText").innerText = "UPDATE PO";
+            document.getElementById("editBadge").classList.remove("d-none");
+
+            // Fill Header
+            $('#vendorSelect').val(data.info.vendor).trigger('change');
+            document.getElementById("poDate").value = data.info.date;
+
+            // Clear & Fill Items
+            document.getElementById("entryTableBody").innerHTML = "";
+            
+            // Loop Items
+            data.items.forEach(item => {
+                // Cari index item dari nama item
+                let vendorName = data.info.vendor;
+                let itemIndex = -1;
+                
+                // Cari index di vendorData (agak tricky karena kita simpan nama, bukan index di DB)
+                if(vendorData[vendorName]) {
+                    itemIndex = vendorData[vendorName].findIndex(x => x.item === item.itemName);
+                }
+
+                if(itemIndex !== -1) {
+                    addNewRow(itemIndex, item.qty, item.note);
+                } else {
+                    console.warn("Item tidak ditemukan di master data: " + item.itemName);
+                }
+            });
+        }
+
+        // --- FORM & SELECT2 LOGIC ---
+        function fetchVendorData() {
+            return new Promise((resolve, reject) => {
+                fetch(API_URL + "?action=getData")
+                .then(res => res.json())
+                .then(res => {
+                    if(res.status === 'success'){
+                        vendorData = res.data;
+                        isVendorLoaded = true;
+                        populateVendorSelect();
+                        resolve();
+                    } else reject();
+                });
             });
         }
 
         function populateVendorSelect() {
-            const select = $('#vendorSelect'); // Gunakan jQuery selector
+            const select = $('#vendorSelect');
             select.empty();
             select.append('<option value="" disabled selected>-- Select Vendor --</option>');
+            Object.keys(vendorData).sort().forEach(v => { select.append(new Option(v, v)); });
             
-            Object.keys(vendorData).sort().forEach(v => {
-                select.append(new Option(v, v));
-            });
-
-            // INISIALISASI SELECT2 PADA VENDOR
-            select.select2({
-                theme: 'bootstrap-5',
-                placeholder: "-- Select Vendor --",
-                width: '100%'
-            });
-
-            // Event Listener khusus Select2 saat vendor berubah
+            select.select2({ theme: 'bootstrap-5', placeholder: "-- Select Vendor --", width: '100%' });
             select.on('select2:select', function (e) {
                 document.getElementById("entryTableBody").innerHTML = ""; 
                 addNewRow(); 
             });
         }
 
-        function setDefaultDate() {
-            const date = new Date();
-            const local = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
-            document.getElementById("poDate").value = local;
-        }
-
-        function addNewRow() {
-            // Ambil value vendor menggunakan jQuery Select2 agar aman
+        function addNewRow(preselectIndex = null, preQty = null, preNote = null) {
             var vendor = $('#vendorSelect').val(); 
-
-            if(!vendor) {
-                if(Object.keys(vendorData).length > 0) Swal.fire("Vendor Required", "Please select a vendor first.", "warning");
-                return;
-            }
+            if(!vendor && !preselectIndex) return Swal.fire("Vendor Required", "Select vendor first.", "warning");
 
             var tbody = document.getElementById("entryTableBody");
             var rowIdx = tbody.children.length; 
+            var newSelectId = "product-select-" + rowIdx + "-" + Date.now();
 
-            // Create Product Options
             var itemOptions = '<option value="" disabled selected>Select Product</option>';
             vendorData[vendor].forEach((obj, index) => {
-                itemOptions += `<option value="${index}">${obj.item}</option>`;
+                let selected = (preselectIndex !== null && preselectIndex == index) ? "selected" : "";
+                itemOptions += `<option value="${index}" ${selected}>${obj.item}</option>`;
             });
-
-            // Buat ID unik untuk select baru agar bisa di-init Select2
-            var newSelectId = "product-select-" + rowIdx + "-" + Date.now();
 
             var tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="text-center text-muted align-middle row-number">${rowIdx + 1}</td>
-                <td>
-                    <select id="${newSelectId}" class="form-select input-table item-select" style="width:100%">${itemOptions}</select>
-                </td>
-                <td>
-                    <input type="number" class="input-table qty-input text-center" placeholder="0.00" min="0">
-                </td>
-                <td>
-                    <input type="text" class="input-table unit-input bg-light text-muted" readonly tabindex="-1">
-                </td>
-                <td>
-                    <input type="text" class="input-table note-input" placeholder="Note">
-                </td>
-                <td class="text-center align-middle">
-                    <i class="bi bi-trash3-fill text-danger" style="cursor:pointer;" onclick="removeRow(this)"></i>
-                </td>
+                <td><select id="${newSelectId}" class="form-select input-table item-select" style="width:100%">${itemOptions}</select></td>
+                <td><input type="number" class="input-table qty-input text-center" value="${preQty || ''}" placeholder="0.00" min="0"></td>
+                <td><input type="text" class="input-table unit-input bg-light text-muted" readonly tabindex="-1"></td>
+                <td><input type="text" class="input-table note-input" value="${preNote || ''}" placeholder="Note"></td>
+                <td class="text-center align-middle"><i class="bi bi-trash3-fill text-danger" style="cursor:pointer;" onclick="removeRow(this)"></i></td>
             `;
             tbody.appendChild(tr);
 
-            // --- INISIALISASI SELECT2 PADA PRODUK BARU INI ---
-            $(`#${newSelectId}`).select2({
-                theme: 'bootstrap-5',
-                placeholder: "Search Product...",
-                width: '100%',
-                dropdownAutoWidth: true
-            });
+            $(`#${newSelectId}`).select2({ theme: 'bootstrap-5', placeholder: "Search Product...", width: '100%', dropdownAutoWidth: true });
+            
+            // Trigger update unit jika preselected (saat edit)
+            if(preselectIndex !== null) {
+                // Manual call update logic
+                let mockEl = document.getElementById(newSelectId);
+                let unitInput = tr.querySelector(".unit-input");
+                if(vendorData[vendor][preselectIndex]) unitInput.value = vendorData[vendor][preselectIndex].unit;
+            }
 
-            // Event listener saat produk dipilih
-            $(`#${newSelectId}`).on('select2:select', function (e) {
-                // Panggil fungsi update logic kita, 'this' di sini adalah elemen select HTML asli
-                updateUnit(this);
-            });
+            $(`#${newSelectId}`).on('select2:select', function (e) { updateUnit(this); });
         }
 
         function updateUnit(selectElement) {
-            // Check Duplicate
             var selectedValue = selectElement.value;
-            // Kita perlu loop semua select item untuk cek duplikat
-            // Karena kita pakai select2, value di HTML select asli tetap terupdate
+            // Check Duplicates
             var allSelects = document.querySelectorAll(".item-select");
             var duplicateCount = 0;
             allSelects.forEach(el => { if(el.value === selectedValue && selectedValue !== "") duplicateCount++; });
 
             if(duplicateCount > 1) {
-                Swal.fire("Duplicate Item", "This product is already in the list.", "warning");
-                // Reset Select2 value
+                Swal.fire("Duplicate Item", "Item already in list.", "warning");
                 $(selectElement).val(null).trigger('change');
                 selectElement.closest("tr").querySelector(".unit-input").value = "";
                 return;
             }
 
             var vendor = $('#vendorSelect').val();
-            var idx = selectedValue; 
-            if(vendorData[vendor] && vendorData[vendor][idx]){
-                selectElement.closest("tr").querySelector(".unit-input").value = vendorData[vendor][idx].unit;
+            if(vendorData[vendor] && vendorData[vendor][selectedValue]){
+                selectElement.closest("tr").querySelector(".unit-input").value = vendorData[vendor][selectedValue].unit;
             }
         }
 
         function removeRow(icon) {
-            // Hapus row
             icon.closest("tr").remove();
-            // Re-numbering
             document.querySelectorAll("#entryTableBody tr .row-number").forEach((td, index) => td.innerText = index + 1);
         }
 
@@ -454,8 +459,8 @@
             var vendor = $('#vendorSelect').val();
             var poDate = document.getElementById("poDate").value;
 
-            if(!vendor) return Swal.fire("Missing Data", "Please select a vendor.", "error");
-            if(!poDate) return Swal.fire("Missing Data", "Please select order date.", "error");
+            if(!vendor) return Swal.fire("Missing Data", "Select vendor.", "error");
+            if(!poDate) return Swal.fire("Missing Data", "Select date.", "error");
 
             var rows = document.querySelectorAll("#entryTableBody tr");
             var itemsToSave = [];
@@ -477,29 +482,31 @@
                 }
             });
 
-            if(rows.length === 0) return Swal.fire("Empty List", "Please add at least one product.", "warning");
-            if(!isValid) return Swal.fire("Invalid Data", "Check products marked in red (Qty must be > 0).", "error");
+            if(rows.length === 0) return Swal.fire("Empty", "Add at least one product.", "warning");
+            if(!isValid) return Swal.fire("Invalid", "Check Qty fields.", "error");
 
-            showLoading(true);
+            showLoading(true, "Saving PO...");
+
+            // PAYLOAD: Kirim poId jika sedang edit
+            let payload = { 
+                vendor: vendor, 
+                poDate: poDate, 
+                items: itemsToSave,
+                poId: currentEditId // Kirim ID lama (jika ada)
+            };
 
             fetch(API_URL + "?action=saveOrder", {
                 method: "POST",
-                body: JSON.stringify({ vendor: vendor, poDate: poDate, items: itemsToSave })
+                body: JSON.stringify(payload)
             })
             .then(res => res.json())
             .then(res => {
                 showLoading(false);
                 if(res.status === 'success') {
-                    Swal.fire({
-                        title: 'Success!', 
-                        text: 'PO ID: ' + res.id, 
-                        icon: 'success',
-                        confirmButtonColor: '#008080'
-                    }).then(() => {
-                        // Reset & Return to List
-                        $('#vendorSelect').val(null).trigger('change'); // Reset Select2 Vendor
-                        document.getElementById("entryTableBody").innerHTML = "";
-                        setDefaultDate();
+                    let msg = currentEditId ? "PO Updated Successfully!" : "PO Created Successfully!";
+                    Swal.fire({ title: 'Success!', text: msg, icon: 'success', confirmButtonColor: '#008080' })
+                    .then(() => {
+                        resetFormState();
                         switchView('list');
                         fetchListPO();
                     });
@@ -511,6 +518,26 @@
                 showLoading(false);
                 Swal.fire('Failed', err.message, 'error');
             });
+        }
+
+        function calculateStats(data) {
+            document.getElementById("statTotal").innerText = data.length;
+            const today = new Date().toDateString();
+            document.getElementById("statToday").innerText = data.filter(po => new Date(po.createdAt).toDateString() === today).length;
+            document.getElementById("statWaiting").innerText = data.filter(po => po.status.includes("Menunggu") || po.status.includes("Waiting")).length;
+            document.getElementById("statItems").innerText = data.reduce((sum, po) => sum + po.itemsCount, 0);
+        }
+
+        function filterTable() {
+            const term = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = savedOrders.filter(po => po.id.toLowerCase().includes(term) || po.vendor.toLowerCase().includes(term));
+            renderListTable(filtered);
+        }
+
+        function setDefaultDate() {
+            const date = new Date();
+            const local = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+            document.getElementById("poDate").value = local;
         }
     </script>
 </body>
