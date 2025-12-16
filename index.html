@@ -98,24 +98,28 @@
             <div class="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
                 <div id="banner-container"></div>
 
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-5 mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     <div class="md:col-span-1">
                         <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Vendor Name</label>
                         <input type="text" id="bill-vendor" readonly class="w-full font-bold text-slate-800 bg-transparent border-b border-transparent focus:border-primary outline-none py-1 text-base truncate">
                     </div>
-                    <div>
+                     <div class="md:col-span-1">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Type Produk</label>
+                        <input type="text" id="bill-type-produk" readonly class="w-full font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-sm truncate">
+                    </div>
+                    <div class="md:col-span-1">
                         <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Number <span class="text-red-500">*</span></label>
                         <input type="text" id="bill-inv-number" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
                     </div>
-                    <div>
+                    <div class="md:col-span-1">
                         <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Date</label>
                         <input type="date" id="bill-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
                     </div>
-                    <div>
+                    <div class="md:col-span-1">
                         <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Due Date</label>
                         <input type="date" id="bill-due-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
                     </div>
-                    <div>
+                    <div class="md:col-span-1">
                         <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Tax Mode</label>
                         <div class="relative">
                             <select id="tax-mode" onchange="calculateTotal()" class="bill-input w-full appearance-none border border-slate-300 rounded-md px-3 py-2 text-sm bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer">
@@ -226,7 +230,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwDFsXwYy94QilMNzOECNnm2a5h0s_WCl3wzCOzXS9eGtBERub4nWGDDmSqkaSnWAUB/exec"; // PASTE URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbwlOsBt0v9s9xU4a-LWk8sXTEHGAmEM49O0mfaz3Cw4lIVD5Twg4ROPIrPPKnPTWkYg/exec"; // PASTE URL ANDA DISINI
         const TAX_RATE = 0.11;
 
         let allData = [];
@@ -309,6 +313,11 @@
             // Reset UI
             document.getElementById('bill-po-id').innerText = poFromList.id;
             document.getElementById('bill-vendor').value = poFromList.vendor;
+            
+            // --- LOGIC BARU: ISI TYPE PRODUK ---
+            document.getElementById('bill-type-produk').value = poFromList.typeProduk || ""; 
+            // -----------------------------------
+
             document.getElementById('bill-inv-number').value = '';
             document.getElementById('bill-date').valueAsDate = new Date();
             document.getElementById('bill-due-date').value = '';
@@ -363,6 +372,9 @@
                     document.getElementById('bill-note').value = bill.note || '';
                     document.getElementById('bill-adjustment').value = bill.adjustment || 0;
                     
+                    // Jika ada saved data, timpa tampilan dengan data yang tersimpan
+                    if(bill.typeProduk) document.getElementById('bill-type-produk').value = bill.typeProduk;
+
                     if(bill.fileUrl) {
                         currentFileUrl = bill.fileUrl;
                         document.getElementById('existing-file-container').classList.remove('hidden');
@@ -378,8 +390,7 @@
                         disc: Number(item.disc),
                         checked: true,
                         alreadyBilled: history[item.namaItem] || 0,
-                        isCustom: (item.spec || "").includes("Ad-hoc"),
-                        typeProduk: item.typeProduk || ""
+                        isCustom: (item.spec || "").includes("Ad-hoc") 
                     }));
                     
                     setFormState(false);
@@ -410,8 +421,7 @@
                             maxQty: remaining > 0 ? remaining : 0,
                             price: 0, disc: 0, optionalSpec: '',
                             checked: remaining > 0,
-                            isCustom: false,
-                            typeProduk: item.typeProduk || ""
+                            isCustom: false
                         };
                     });
                     setFormState(true);
@@ -498,8 +508,7 @@
                 poQty: 0,
                 alreadyBilled: 0,
                 checked: true,
-                isCustom: true,
-                typeProduk: product.typeProduk || ""
+                isCustom: true
             });
             renderBillItems();
         }
@@ -516,8 +525,7 @@
                 poQty: 0,
                 alreadyBilled: 0,
                 checked: true,
-                isCustom: true,
-                typeProduk: ""
+                isCustom: true
             });
             renderBillItems();
         }
@@ -655,12 +663,6 @@
             const checked = currentItems.filter(i => i.checked && i.qty > 0);
             if (checked.length === 0) { showNotification("Pilih minimal 1 item (Qty > 0)."); return; }
             
-            for(let item of checked) {
-                if(!item.isCustom && item.qty > item.maxQty && item.maxQty > 0) { 
-                    // Optional warning
-                }
-            }
-
             const invNum = document.getElementById('bill-inv-number').value;
             if(!invNum) { showNotification("Nomor Invoice Wajib."); return; }
             
@@ -694,6 +696,7 @@
                     dueDate: document.getElementById('bill-due-date').value,
                     taxMode: document.getElementById('tax-mode').value,
                     note: document.getElementById('bill-note').value,
+                    typeProduk: document.getElementById('bill-type-produk').value, // <--- KIRIM DATA TYPE PRODUK
                     subtotal: document.getElementById('display-subtotal').dataset.value,
                     ppn: document.getElementById('display-ppn').dataset.value,
                     adjustment: document.getElementById('bill-adjustment').value,
@@ -701,8 +704,7 @@
                     forceClose: isForceClose, 
                     items: checked.map(i => ({
                         namaItem: i.namaItem, satuan: i.satuan, optionalSpec: i.optionalSpec,
-                        qty: i.qty, price: i.price, disc: i.disc,
-                        typeProduk: i.typeProduk || ""
+                        qty: i.qty, price: i.price, disc: i.disc
                     })),
                     fileData, fileName, mimeType, existingFileUrl: currentFileUrl
                 }
@@ -724,7 +726,6 @@
         }
 
         async function requestXeroImport() {
-            // Updated: Mengirim Invoice Number
             const invNum = document.getElementById('bill-inv-number').value;
             if(!invNum) {
                 showNotification("Nomor Invoice tidak ditemukan. Harap Save Bill terlebih dahulu.");
@@ -739,7 +740,7 @@
                     body: JSON.stringify({ 
                         action: 'import_xero', 
                         idPO: currentPOId,
-                        invNumber: invNum // Send invNumber
+                        invNumber: invNum 
                     }) 
                 });
                 const json = await res.json();
