@@ -3,206 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auxilium - PO Dashboard</title>
-    
+    <title>Auxilium PO System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        body { 
-            background-color: #f8f9fa; 
-            font-family: 'Inter', sans-serif; 
-            color: #343a40;
-        }
-
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; color: #343a40; }
+        
         /* NAVBAR */
         .navbar-dark-custom { background-color: #1e293b; padding: 0.75rem 1.5rem; }
         .navbar-brand { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; }
+        .user-badge { font-size: 0.85rem; color: #cbd5e1; }
         .status-badge { background-color: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
 
-        /* BUTTONS & HEADER */
-        .btn-teal { background-color: #0f766e; color: white; font-weight: 600; border: none; padding: 8px 24px; }
+        /* BUTTONS */
+        .btn-teal { background-color: #0f766e; color: white; font-weight: 600; border: none; padding: 8px 20px; }
         .btn-teal:hover { background-color: #0d6efd; color: white; }
 
-        /* STATS CARDS */
+        /* CARDS & STATS */
         .stat-card { border: none; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; padding: 1.25rem; height: 100%; transition: transform 0.2s; }
         .stat-card:hover { transform: translateY(-2px); }
         .stat-value { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; }
         .stat-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
         
-        /* Stats Colors */
-        .text-stat-total { color: #334155; }
-        .text-stat-today { color: #10b981; }
-        .text-stat-waiting { color: #3b82f6; }
-        .text-stat-late { color: #ef4444; }
-
         /* TABLE STYLES */
         .table-custom-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
         .table-custom thead { background-color: #f1f5f9; }
         .table-custom th { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; border: none; padding: 1rem; }
         .table-custom td { padding: 1rem; font-size: 0.9rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         
+        /* FORM STYLES */
+        .form-card { border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; border-radius: 8px; }
+        .table-input { border: 1px solid #ced4da; border-radius: 4px; width: 100%; padding: 6px; }
+        .bg-readonly { background-color: #e9ecef; cursor: not-allowed; }
+        
         /* STATUS PILLS */
         .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
         .status-pill.waiting { background-color: #e0f2fe; color: #0284c7; }
         .status-pill.done { background-color: #dcfce7; color: #166534; }
         
+        /* UTILS */
+        .d-none { display: none !important; }
         .loading-row { text-align: center; padding: 3rem; color: #64748b; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-dark-custom d-flex justify-content-between align-items-center fixed-top">
+    <nav class="navbar navbar-dark-custom d-flex justify-content-between align-items-center fixed-top shadow-sm">
         <div class="d-flex align-items-center gap-3">
             <i class="bi bi-grid-3x3-gap-fill text-white fs-5"></i>
-            <span class="navbar-brand mb-0 text-white">AUXILIUM PO</span>
+            <span class="navbar-brand mb-0">AUXILIUM PO</span>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <span class="text-white small opacity-75">user@email.com</span>
-            <span class="status-badge"><i class="bi bi-wifi"></i> Online</span>
+            <span class="user-badge">user@email.com</span>
+            <span class="status-badge" id="connectionStatus"><i class="bi bi-wifi"></i> Online</span>
         </div>
     </nav>
 
-    <div class="container-fluid px-4" style="margin-top: 80px;">
-        
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4 class="fw-bold mb-1">Purchase Orders</h4>
-                <div class="text-muted small">Dashboard / List</div>
+    <div class="container-fluid px-4 py-4" style="margin-top: 70px;">
+
+        <div id="view-list">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1">Purchase Orders</h4>
+                    <div class="text-muted small">Dashboard / List</div>
+                </div>
+                <button class="btn btn-teal rounded-pill" onclick="switchView('form')">
+                    <i class="bi bi-plus-lg me-1"></i> NEW PO
+                </button>
             </div>
-            
-            <a href="MakePO.html" class="btn btn-teal rounded-pill shadow-sm">
-                <i class="bi bi-plus-lg me-1"></i> NEW PO
-            </a>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-dark" id="statTotal">0</div><div class="stat-label">Total Orders</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-success" id="statToday">0</div><div class="stat-label">Created Today</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-primary" id="statWaiting">0</div><div class="stat-label">Waiting Approval</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-danger" id="statItems">0</div><div class="stat-label">Total Items Qty</div></div></div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="input-group" style="width: 350px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search Reference, Vendor..." onkeyup="filterTable()">
+                </div>
+                <button class="btn btn-white border bg-white text-secondary fw-bold" onclick="fetchListPO()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                </button>
+            </div>
+
+            <div class="table-custom-container">
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Vendor</th>
+                                <th>Order Date</th>
+                                <th>Created At</th>
+                                <th class="text-center">Items Count</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="emptyMessage" class="text-center py-4 text-muted small" style="display: none;">No orders found.</div>
+            </div>
         </div>
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-value text-stat-total" id="statTotal">0</div>
-                    <div class="stat-label">Total Orders</div>
+        <div id="view-form" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1">Create New PO</h4>
+                    <div class="text-muted small">Dashboard / New Entry</div>
+                </div>
+                <button class="btn btn-secondary rounded-pill" onclick="switchView('list')">
+                    <i class="bi bi-arrow-left me-1"></i> Back to List
+                </button>
+            </div>
+
+            <div class="form-card p-4 mb-3">
+                <div class="row align-items-end g-3">
+                    <div class="col-md-5">
+                        <label class="fw-bold mb-1">Pilih Vendor</label>
+                        <select class="form-select" id="vendorSelect" onchange="onVendorChange()">
+                            <option value="" disabled selected>-- Memuat Vendor... --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="fw-bold mb-1">Tanggal PO</label>
+                        <input type="date" class="form-control" id="poDate">
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-success fw-bold px-4 w-100" id="btnSimpan" onclick="submitPO()">
+                            <i class="bi bi-save2 me-2"></i> SIMPAN PO
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-value text-stat-today" id="statToday">0</div>
-                    <div class="stat-label">Created Today</div>
+
+            <div class="form-card p-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:50px;">#</th>
+                                <th>Nama Item</th>
+                                <th style="width:120px;">Qty</th>
+                                <th style="width:120px;">Satuan</th>
+                                <th>Catatan</th>
+                                <th style="width:50px;"><i class="bi bi-trash"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="entryTableBody">
+                            </tbody>
+                    </table>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-value text-stat-waiting" id="statWaiting">0</div>
-                    <div class="stat-label">Waiting Approval</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-value text-stat-late" id="statItems">0</div>
-                    <div class="stat-label">Total Items Qty</div>
+                <div class="p-3 bg-light border-top text-center">
+                    <button class="btn btn-outline-primary fw-bold w-100 dashed-border" onclick="addNewRow()">
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Baris Item
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="input-group" style="width: 350px;">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search Reference, Vendor..." onkeyup="filterTable()">
-            </div>
-            <button class="btn btn-white border bg-white text-secondary fw-bold" onclick="fetchData()">
-                <i class="bi bi-arrow-clockwise me-1"></i> Refresh
-            </button>
-        </div>
-
-        <div class="table-custom-container">
-            <div class="table-responsive">
-                <table class="table table-custom mb-0">
-                    <thead>
-                        <tr>
-                            <th>Reference</th>
-                            <th>Vendor</th>
-                            <th>Order Date</th>
-                            <th>Created At</th>
-                            <th class="text-center">Items</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr>
-                            <td colspan="6" class="loading-row">
-                                <div class="spinner-border text-primary spinner-border-sm me-2"></div>
-                                Updating list...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="emptyMessage" class="text-center py-4 text-muted small" style="display: none;">
-                No orders found.
-            </div>
-        </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwS-8BhHKpme6oKV7W42bfQQ4oz32YWoWOoNTsKA41lebU8JYRbrjx2Wo-sXa-yEU1dBA/exec";
-        let allOrders = [];
+        // ==========================================
+        // PENTING: PASTIKAN URL INI ADALAH URL DEPLOYMENT TERBARU ANDA
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbzkmpSWFcdOtGydQcyLFZSmDZmIj4dl9wGPXV5pqixYhBVWKzzjDGlwdNs4Q_eMZFclzw/exec"; 
+        
+        // State Variables
+        let vendorData = {};
+        let savedOrders = [];
+        let isVendorLoaded = false;
 
-        window.onload = fetchData;
+        // --- INIT ---
+        window.onload = function() {
+            // Default load list
+            fetchListPO();
+            setDefaultDate();
+        };
 
-        function fetchData() {
-            const tbody = document.getElementById("tableBody");
-            // Set Loading
-            tbody.innerHTML = `<tr><td colspan="6" class="loading-row"><div class="spinner-border text-primary spinner-border-sm me-2"></div> Updating list...</td></tr>`;
+        // --- NAVIGATION LOGIC ---
+        function switchView(viewName) {
+            const listDiv = document.getElementById("view-list");
+            const formDiv = document.getElementById("view-form");
+
+            if (viewName === 'form') {
+                listDiv.classList.add("d-none");
+                formDiv.classList.remove("d-none");
+                // Load vendor data jika belum pernah diload
+                if (!isVendorLoaded) fetchVendorData();
+            } else {
+                formDiv.classList.add("d-none");
+                listDiv.classList.remove("d-none");
+            }
+        }
+
+        // --- MODULE: FETCH LIST PO ---
+        function fetchListPO() {
+            const tbody = document.getElementById("listTableBody");
+            tbody.innerHTML = `<tr><td colspan="6" class="loading-row"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Updating list...</td></tr>`;
 
             fetch(API_URL + "?action=getSavedOrders")
             .then(res => res.json())
             .then(res => {
                 if(res.status === 'success') {
-                    allOrders = res.data;
-                    renderTable(allOrders);
-                    calculateStats(allOrders);
+                    savedOrders = res.data;
+                    renderListTable(savedOrders);
+                    calculateStats(savedOrders);
                 } else {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${res.message}</td></tr>`;
                 }
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal terhubung ke server.</td></tr>`;
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal koneksi server</td></tr>`;
             });
         }
 
-        function renderTable(data) {
-            const tbody = document.getElementById("tableBody");
+        function renderListTable(data) {
+            const tbody = document.getElementById("listTableBody");
             const emptyMsg = document.getElementById("emptyMessage");
             tbody.innerHTML = "";
 
             if (data.length === 0) {
                 emptyMsg.style.display = "block";
                 return;
+            } else {
+                emptyMsg.style.display = "none";
             }
-            emptyMsg.style.display = "none";
 
             data.forEach(po => {
-                // 1. FORMAT TANGGAL ORDER (Indonesia)
+                // Format Tanggal
                 let orderDateRaw = new Date(po.date);
-                let formattedOrderDate = orderDateRaw.toLocaleDateString('id-ID', { 
-                    day: 'numeric', month: 'short', year: 'numeric' 
-                });
-
-                // 2. FORMAT JAM INPUT
+                let formattedDate = orderDateRaw.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                
+                // Format Jam
                 let createdObj = new Date(po.createdAt);
                 let timeString = createdObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-                // 3. STATUS LOGIC
-                let statusClass = "status-pill waiting"; 
-                if(po.status === "Approved") statusClass = "status-pill done";
+                
+                // Status
+                let statusClass = po.status.includes("Waiting") || po.status.includes("Menunggu") ? "status-pill waiting" : "status-pill done";
 
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td class="fw-bold text-primary">${po.id}</td>
                     <td class="fw-semibold text-dark">${po.vendor}</td>
-                    <td>${formattedOrderDate}</td>
+                    <td>${formattedDate}</td> 
                     <td class="text-muted small"><i class="bi bi-clock me-1"></i> ${timeString}</td>
-                    <td class="text-center"><span class="badge bg-secondary rounded-pill">${po.itemsCount}</span></td>
+                    <td class="text-center"><span class="badge bg-light text-dark border">${po.itemsCount}</span></td>
                     <td><span class="${statusClass}">${po.status}</span></td>
                 `;
                 tbody.appendChild(tr);
@@ -211,26 +267,176 @@
 
         function calculateStats(data) {
             document.getElementById("statTotal").innerText = data.length;
-            
             const today = new Date().toDateString();
-            const todayCount = data.filter(po => new Date(po.createdAt).toDateString() === today).length;
-            document.getElementById("statToday").innerText = todayCount;
-
-            const waitingCount = data.filter(po => po.status.includes("Menunggu") || po.status.includes("Waiting")).length;
-            document.getElementById("statWaiting").innerText = waitingCount;
-
-            const totalItems = data.reduce((sum, po) => sum + po.itemsCount, 0);
-            document.getElementById("statItems").innerText = totalItems;
+            document.getElementById("statToday").innerText = data.filter(po => new Date(po.createdAt).toDateString() === today).length;
+            document.getElementById("statWaiting").innerText = data.filter(po => po.status.includes("Menunggu") || po.status.includes("Waiting")).length;
+            document.getElementById("statItems").innerText = data.reduce((sum, po) => sum + po.itemsCount, 0);
         }
 
         function filterTable() {
-            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-            const filteredData = allOrders.filter(po => 
-                po.id.toLowerCase().includes(searchTerm) || 
-                po.vendor.toLowerCase().includes(searchTerm) ||
-                po.status.toLowerCase().includes(searchTerm)
+            const term = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = savedOrders.filter(po => 
+                po.id.toLowerCase().includes(term) || 
+                po.vendor.toLowerCase().includes(term) || 
+                po.status.toLowerCase().includes(term)
             );
-            renderTable(filteredData);
+            renderListTable(filtered);
+        }
+
+        // --- MODULE: MAKE PO (FORM) ---
+        function fetchVendorData() {
+            const select = document.getElementById("vendorSelect");
+            
+            fetch(API_URL + "?action=getData")
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success'){
+                    vendorData = res.data;
+                    isVendorLoaded = true;
+                    
+                    select.innerHTML = '<option value="" disabled selected>-- Pilih Vendor --</option>';
+                    Object.keys(vendorData).sort().forEach(v => {
+                        let opt = document.createElement("option");
+                        opt.value = v; opt.text = v;
+                        select.add(opt);
+                    });
+                }
+            })
+            .catch(e => {
+                Swal.fire("Error", "Gagal memuat data vendor", "error");
+            });
+        }
+
+        function setDefaultDate() {
+            const date = new Date();
+            const local = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+            document.getElementById("poDate").value = local;
+        }
+
+        function onVendorChange() {
+            document.getElementById("entryTableBody").innerHTML = ""; 
+            addNewRow(); 
+        }
+
+        function addNewRow() {
+            var vendor = document.getElementById("vendorSelect").value;
+            if(!vendor) {
+                if(Object.keys(vendorData).length > 0) Swal.fire("Pilih Vendor", "Silakan pilih vendor dulu.", "warning");
+                return;
+            }
+
+            var tbody = document.getElementById("entryTableBody");
+            var rowIdx = tbody.children.length; 
+
+            var itemOptions = '<option value="" disabled selected>-- Cari Item --</option>';
+            vendorData[vendor].forEach((obj, index) => {
+                itemOptions += `<option value="${index}">${obj.item}</option>`;
+            });
+
+            var tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center bg-light row-number">${rowIdx + 1}</td>
+                <td>
+                    <select class="form-select item-select" onchange="updateUnit(this)">${itemOptions}</select>
+                </td>
+                <td>
+                    <input type="number" class="form-control qty-input" placeholder="0" min="0">
+                </td>
+                <td><input type="text" class="form-control bg-readonly unit-input" readonly tabindex="-1"></td>
+                <td><input type="text" class="form-control note-input" placeholder="..."></td>
+                <td class="text-center"><button class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-x-lg"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function updateUnit(selectElement) {
+            // Cek Duplikat
+            var selectedValue = selectElement.value;
+            var allSelects = document.querySelectorAll(".item-select");
+            var duplicateCount = 0;
+            allSelects.forEach(el => { if(el.value === selectedValue && selectedValue !== "") duplicateCount++; });
+
+            if(duplicateCount > 1) {
+                Swal.fire("Duplikat", "Item sudah dipilih di baris lain.", "warning");
+                selectElement.value = ""; 
+                selectElement.closest("tr").querySelector(".unit-input").value = "";
+                return;
+            }
+
+            var vendor = document.getElementById("vendorSelect").value;
+            var idx = selectElement.value; 
+            var unitInput = selectElement.closest("tr").querySelector(".unit-input");
+            if(vendorData[vendor] && vendorData[vendor][idx]){
+                unitInput.value = vendorData[vendor][idx].unit;
+            }
+        }
+
+        function removeRow(btn) {
+            btn.closest("tr").remove();
+            document.querySelectorAll("#entryTableBody tr .row-number").forEach((td, index) => td.innerText = index + 1);
+        }
+
+        function submitPO() {
+            var vendor = document.getElementById("vendorSelect").value;
+            var poDate = document.getElementById("poDate").value;
+
+            if(!vendor) return Swal.fire("Error", "Pilih Vendor!", "error");
+            if(!poDate) return Swal.fire("Error", "Tanggal PO harus diisi!", "error");
+
+            var rows = document.querySelectorAll("#entryTableBody tr");
+            if(rows.length === 0) return Swal.fire("Kosong", "Minimal satu item.", "warning");
+
+            var itemsToSave = [];
+            var isValid = true;
+
+            rows.forEach((row) => {
+                var itemIdx = row.querySelector(".item-select").value;
+                var qty = row.querySelector(".qty-input").value;
+                var unit = row.querySelector(".unit-input").value;
+                var note = row.querySelector(".note-input").value;
+
+                if(!itemIdx || !qty || qty <= 0) {
+                    isValid = false;
+                    row.classList.add("table-danger"); 
+                } else {
+                    row.classList.remove("table-danger");
+                    var realItemName = vendorData[vendor][itemIdx].item;
+                    itemsToSave.push({ itemName: realItemName, qty: qty, unit: unit, note: note });
+                }
+            });
+
+            if(!isValid) return Swal.fire("Lengkapi Data", "Cek baris merah.", "error");
+
+            var btn = document.getElementById("btnSimpan");
+            var originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
+
+            fetch(API_URL + "?action=saveOrder", {
+                method: "POST",
+                body: JSON.stringify({ vendor: vendor, poDate: poDate, items: itemsToSave })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    Swal.fire('Berhasil!', 'PO ID: ' + res.id, 'success').then(() => {
+                        // Reset Form
+                        document.getElementById("vendorSelect").value = "";
+                        document.getElementById("entryTableBody").innerHTML = "";
+                        setDefaultDate();
+                        // Kembali ke List dan Refresh
+                        switchView('list');
+                        fetchListPO();
+                    });
+                } else {
+                    throw new Error(res.message);
+                }
+            })
+            .catch(err => Swal.fire('Gagal', err.message, 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
         }
     </script>
 </body>
