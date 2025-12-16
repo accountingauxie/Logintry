@@ -46,12 +46,6 @@
              </div>
         </div>
         <div class="flex items-center gap-6">
-            <div class="hidden md:flex flex-col items-end leading-tight">
-                <span class="text-xs text-slate-400">Status</span>
-                <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 mt-0.5">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Online
-                </span>
-            </div>
             <button onclick="location.reload()" class="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-primary transition">
                 <i class="fas fa-sync-alt"></i>
             </button>
@@ -72,6 +66,7 @@
                 <select id="filterStatus" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none bg-white shadow-sm cursor-pointer">
                     <option value="All">All Status</option>
                     <option value="Pending" selected>Pending</option>
+                    <option value="Partial">Partial</option>
                     <option value="Billed">Billed</option>
                     <option value="Process to Import">Process Import</option>
                     <option value="Success Imported">Success</option>
@@ -160,6 +155,11 @@
                             </thead>
                         <tbody id="bill-items-body" class="divide-y divide-slate-100"></tbody>
                     </table>
+                    <div class="p-4 bg-slate-50 border-t border-slate-200">
+                        <button id="btn-add-item" onclick="addCustomItem()" class="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden">
+                            <i class="fas fa-plus-circle"></i> Tambah Item Manual (Ad-hoc)
+                        </button>
+                    </div>
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-8 items-start">
@@ -183,11 +183,19 @@
                 </div>
             </div>
 
-            <div class="p-5 bg-white border-t border-slate-200 flex justify-end gap-3 z-10">
-                <button onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition">Cancel</button>
-                <button onclick="requestXeroImport()" id="btn-xero" class="hidden px-6 py-2.5 bg-sky-600 text-white rounded-lg font-bold hover:bg-sky-700 shadow-md flex items-center gap-2 transition"><i class="fas fa-file-export"></i> Import to Xero</button>
-                <button onclick="enableEditMode()" id="btn-edit" class="hidden px-6 py-2.5 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shadow-md flex items-center gap-2 transition"><i class="fas fa-edit"></i> Edit Bill</button>
-                <button onclick="submitBill()" id="btn-save" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition"><i class="fas fa-check"></i> Approve & Save</button>
+            <div class="p-5 bg-white border-t border-slate-200 flex justify-between items-center z-10">
+                <div class="flex items-center gap-2">
+                    <label id="force-close-container" class="hidden flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
+                        <input type="checkbox" id="check-force-close" class="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500">
+                        <span class="font-medium text-slate-700">Tandai PO Selesai (Abaikan Sisa)</span>
+                    </label>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition">Cancel</button>
+                    <button onclick="requestXeroImport()" id="btn-xero" class="hidden px-6 py-2.5 bg-sky-600 text-white rounded-lg font-bold hover:bg-sky-700 shadow-md flex items-center gap-2 transition"><i class="fas fa-file-export"></i> Import to Xero</button>
+                    <button onclick="enableEditMode()" id="btn-edit" class="hidden px-6 py-2.5 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shadow-md flex items-center gap-2 transition"><i class="fas fa-edit"></i> Edit Bill</button>
+                    <button onclick="submitBill()" id="btn-save" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition"><i class="fas fa-check"></i> Approve & Save</button>
+                </div>
             </div>
             
             <div id="modalLoading" class="hidden absolute inset-0 bg-white/90 backdrop-blur-[1px] flex flex-col items-center justify-center z-50 rounded-2xl">
@@ -207,8 +215,7 @@
     </div>
 
     <script>
-        // CONFIG
-        const API_URL = "https://script.google.com/macros/s/AKfycbycqCCj8TuKwm0x3OqZWWaNZnV2l8hcrKHyKTPHeDn9Bft-U8bU_uvpMU2I-aiXOwM/exec"; // PASTE URL ANDA DISINI
+        const API_URL = "https://script.google.com/macros/s/AKfycbx1to6n0Rn6-MKuK4WBSQ-M79znCkTYoM4rpsOLT8nW1nRGc6bofG0yh_gQnrWhBT2S/exec"; // PASTE URL
         const TAX_RATE = 0.11;
 
         let allData = [];
@@ -249,6 +256,10 @@
                     statusClass = 'bg-amber-50 text-amber-600 border-amber-100';
                     btnText = 'Create Bill';
                     btnClass = 'text-white bg-primary hover:bg-primary-hover shadow-md border-transparent';
+                } else if (po.status === 'Partial') {
+                    statusClass = 'bg-indigo-50 text-indigo-600 border-indigo-100';
+                    btnText = 'Add Bill (Partial)';
+                    btnClass = 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
                 } else if (po.status === 'Billed') {
                     statusClass = 'bg-sky-50 text-sky-600 border-sky-100';
                 } else if (po.status === 'Process to Import') {
@@ -271,7 +282,7 @@
                         <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2"><i class="far fa-calendar-alt mr-2"></i> ${formatDate(po.tanggalInput)}</div>
                     </div>
                     <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
-                        ${po.status === 'Pending' ? '<i class="fas fa-plus"></i>' : '<i class="fas fa-eye"></i>'} ${btnText}
+                        ${po.status === 'Pending' || po.status === 'Partial' ? '<i class="fas fa-plus"></i>' : '<i class="fas fa-eye"></i>'} ${btnText}
                     </button>
                 </div>`;
                 container.innerHTML += html;
@@ -295,62 +306,46 @@
             document.getElementById('bill-file').value = '';
             document.getElementById('existing-file-container').classList.add('hidden');
             document.getElementById('banner-container').innerHTML = '';
+            document.getElementById('check-force-close').checked = false;
 
             const btnEdit = document.getElementById('btn-edit');
             const btnXero = document.getElementById('btn-xero');
             const btnSave = document.getElementById('btn-save');
+            const btnAdd = document.getElementById('btn-add-item');
+            const forceCloseContainer = document.getElementById('force-close-container');
+
             btnEdit.classList.add('hidden');
             btnXero.classList.add('hidden');
             btnSave.classList.add('hidden');
+            btnAdd.classList.add('hidden');
+            forceCloseContainer.classList.add('hidden');
 
-            // --- LOGIKA UTAMA: PARTIAL vs VIEW ---
-            
-            // Jika Status Billed -> Berarti user mau "View Detail" atau "Create Next Bill"
-            // Untuk saat ini, kita asumsikan klik Card = Create Bill (Partial) 
-            // KECUALI jika user ingin View Spesifik Invoice (fitur lanjutan).
-            // Simplifikasi: Jika status "Pending" atau "Billed" (masih bisa nambah), kita buka mode Partial.
-            
-            // Tapi user minta "View Bill informasinya tidak ada".
-            // Solusi: Jika status Pending -> Mode Create Bill Baru.
-            // Jika status Billed -> Tampilkan Mode View (Read Only) dari Data Terakhir yang disave.
-            
-            // TAPI, user juga minta Partial Billing. 
-            // Maka Logicnya: 
-            // Defaultnya buka mode Create Bill (Cek Sisa Stok). 
-            // Jika sisa stok 0, maka tampilkan mode View Only (History).
-            
-            // Agar aman sesuai request: "View Bill harus muncul data".
-            // Jika status != Pending, kita coba fetch Existing Bill Detail dulu.
-            // Jika user mau buat bill BARU (parsial ke-2), nanti kita sediakan tombol "New Invoice" (opsional),
-            // atau kita ubah logic: "Selalu cek sisa stok".
-            
-            // KEPUTUSAN FINAL: Gunakan Logic Partial Billing (Cek Sisa) untuk Card.
-            
-            document.getElementById('modal-title').innerText = "Bill Entry / details";
+            document.getElementById('modal-title').innerText = "Bill Entry / Partial";
             document.getElementById('modalLoading').classList.remove('hidden');
             document.getElementById('loadingText').innerText = "Checking PO Data...";
             document.getElementById('billModal').classList.remove('hidden');
 
             try {
-                // 1. Cek Sisa Barang (History)
+                // 1. Ambil History & Remaining
                 const resRem = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getPoRemaining', idPO: idPO }) });
                 const jsonRem = await resRem.json();
                 const history = jsonRem.history || {};
 
-                // 2. Jika Status SUDAH Billed/Imported -> Coba ambil detail Bill TERAKHIR untuk ditampilkan (Mode View)
+                // 2. Logic Mode: Partial Create vs View
+                // Kalau status Pending atau Partial -> Default buka CREATE mode (Partial)
+                // Kalau status Billed/Closed -> Default buka VIEW mode
+                let isCreateMode = (poFromList.status === 'Pending' || poFromList.status === 'Partial');
                 let existingBillData = null;
-                if(poFromList.status !== 'Pending') {
+
+                if (!isCreateMode) {
+                    // Coba fetch last invoice detail
                     const resDetail = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBillDetail', idPO: idPO }) });
                     const jsonDetail = await resDetail.json();
                     if(jsonDetail.status === 'success') existingBillData = jsonDetail.data;
                 }
 
-                // LOGIC RENDER:
-                // Jika ada existingBillData, isi form dengan data itu (Mode View).
-                // Tapi item listnya kita update dengan logika sisa stok agar user tau.
-                
-                if (existingBillData) {
-                    // MODE VIEW / EDIT
+                if (existingBillData && !isCreateMode) {
+                    // MODE VIEW / READ ONLY
                     const bill = existingBillData;
                     document.getElementById('bill-inv-number').value = bill.invNumber || '';
                     if(bill.invDate) document.getElementById('bill-date').value = new Date(bill.invDate).toISOString().split('T')[0];
@@ -365,32 +360,31 @@
                         document.getElementById('btn-view-file').href = currentFileUrl;
                     }
 
-                    // Mapping item dari data yang tersimpan
                     currentItems = bill.items.map(item => ({
                         ...item,
-                        poQty: item.qty, // Di history, qty adalah qty yang ditagih
+                        poQty: item.qty, // visual purpose
                         qty: Number(item.qty),
-                        maxQty: Number(item.qty), // Di mode view, max qty ya qty itu sendiri
+                        maxQty: Number(item.qty),
                         price: Number(item.price),
                         disc: Number(item.disc),
-                        checked: true, // Auto check
+                        checked: true,
                         alreadyBilled: history[item.namaItem] || 0
                     }));
                     
-                    setFormState(false); // Read Only
-                    
-                    // Banner Status
+                    setFormState(false);
                     if (bill.status === 'Billed') {
                         document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200"><i class="fas fa-check-circle"></i> Ready to Import.</div>`;
                         btnEdit.classList.remove('hidden');
                         btnXero.classList.remove('hidden');
-                    } else if (bill.status.includes('Import')) {
-                        document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-emerald-200"><i class="fas fa-lock"></i> Processed to Xero.</div>`;
+                    } else {
+                        document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-blue-200"><i class="fas fa-info-circle"></i> Status: ${bill.status}</div>`;
                     }
 
                 } else {
-                    // MODE CREATE NEW (Pending / Partial Baru)
+                    // MODE CREATE NEW PARTIAL
                     btnSave.classList.remove('hidden');
+                    btnAdd.classList.remove('hidden');
+                    forceCloseContainer.classList.remove('hidden');
                     btnSave.innerHTML = '<i class="fas fa-check"></i> Approve & Save';
                     
                     currentItems = poFromList.items.map(item => {
@@ -403,7 +397,8 @@
                             qty: remaining > 0 ? remaining : 0,
                             maxQty: remaining > 0 ? remaining : 0,
                             price: 0, disc: 0, optionalSpec: '',
-                            checked: remaining > 0
+                            checked: remaining > 0,
+                            isCustom: false
                         };
                     });
                     setFormState(true);
@@ -420,11 +415,27 @@
             }
         }
 
+        function addCustomItem() {
+            currentItems.push({
+                namaItem: "Tambahan/Custom Item",
+                satuan: "Unit",
+                optionalSpec: "",
+                qty: 1,
+                maxQty: 999999, // Unlimited for custom
+                price: 0,
+                disc: 0,
+                poQty: 0,
+                alreadyBilled: 0,
+                checked: true,
+                isCustom: true
+            });
+            renderBillItems();
+        }
+
         function renderBillItems() {
             const tbody = document.getElementById('bill-items-body');
             tbody.innerHTML = '';
             
-            // Header Table
             const thead = document.querySelector('thead');
             thead.innerHTML = `<tr>
                 <th class="p-4 w-10 text-center"><i class="fas fa-check-square"></i></th>
@@ -439,33 +450,36 @@
             const disabledAttr = isEditMode ? '' : 'disabled';
 
             currentItems.forEach((item, index) => {
-                const isZero = item.maxQty <= 0 && isEditMode; 
-                // Jika edit mode tapi stok habis, disable
-                
                 const checkedAttr = item.checked ? 'checked' : '';
-                const rowClass = (item.maxQty <= 0 && !item.checked) ? 'bg-gray-50 opacity-50' : 'hover:bg-slate-50';
+                // Kalau item PO stok habis, bikin abu-abu
+                const isPoEmpty = !item.isCustom && item.maxQty <= 0 && isEditMode;
+                const rowClass = isPoEmpty ? 'bg-gray-100 opacity-60' : 'hover:bg-slate-50';
                 
-                // Checkbox disabled if read only OR if stok 0 (create mode)
-                const checkDisabled = (!isEditMode || (item.maxQty <= 0 && isEditMode)) ? 'disabled' : '';
+                // Allow edit name ONLY if custom item
+                const nameHtml = item.isCustom && isEditMode 
+                    ? `<input type="text" value="${item.namaItem}" class="input-bare font-bold text-slate-700 text-sm" oninput="updateItem(${index}, 'namaItem', this.value)">`
+                    : `<div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>`;
+                
+                // Info Badge
+                const infoHtml = item.isCustom 
+                    ? `<span class="bg-purple-50 text-purple-600 px-1.5 rounded text-[10px] mt-1 inline-block">Ad-hoc Item</span>`
+                    : `<div class="text-[10px] text-slate-400 mt-1 flex gap-2"><span class="bg-slate-100 px-1.5 rounded">PO: ${item.poQty}</span><span class="bg-blue-50 text-blue-600 px-1.5 rounded">Done: ${item.alreadyBilled}</span></div>`;
 
                 const row = `
                 <tr class="${rowClass} border-b border-slate-50 last:border-0 transition">
                     <td class="p-4 align-top text-center">
-                        <input type="checkbox" ${checkDisabled} ${checkedAttr} onchange="toggleItem(${index}, this.checked)" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer">
+                        <input type="checkbox" ${isPoEmpty ? 'disabled' : disabledAttr} ${checkedAttr} onchange="toggleItem(${index}, this.checked)" class="w-4 h-4 text-primary rounded cursor-pointer">
                     </td>
                     <td class="p-4 align-top">
-                        <div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>
-                        <div class="text-[10px] text-slate-400 mt-1 flex gap-2">
-                            <span class="bg-slate-100 px-1.5 rounded">PO: ${item.poQty} ${item.satuan}</span>
-                            <span class="bg-blue-50 text-blue-600 px-1.5 rounded">Done: ${item.alreadyBilled}</span>
-                        </div>
+                        ${nameHtml}
+                        ${infoHtml}
                     </td>
                     <td class="p-4 align-top bg-yellow-50/30">
-                        <input type="text" placeholder="-" value="${item.optionalSpec || ''}" ${disabledAttr} oninput="updateItem(${index}, 'optionalSpec', this.value)" class="input-bare text-xs text-slate-600 font-medium h-full">
+                        <input type="text" value="${item.optionalSpec || ''}" ${disabledAttr} oninput="updateItem(${index}, 'optionalSpec', this.value)" class="input-bare text-xs text-slate-600 font-medium h-full">
                     </td>
                     <td class="p-4 align-top">
-                         <input type="number" value="${item.qty}" max="${item.maxQty}" min="0" ${disabledAttr} oninput="updateItem(${index}, 'qty', this.value)" class="input-bare text-center text-sm font-bold text-slate-700">
-                         ${isEditMode ? `<div class="text-[10px] text-center text-slate-400 mt-1">Sisa: ${item.maxQty}</div>` : ''}
+                         <input type="number" value="${item.qty}" min="0" ${disabledAttr} oninput="updateItem(${index}, 'qty', this.value)" class="input-bare text-center text-sm font-bold text-slate-700">
+                         ${isEditMode && !item.isCustom ? `<div class="text-[10px] text-center text-slate-400 mt-1">Sisa: ${item.maxQty}</div>` : ''}
                     </td>
                     <td class="p-4 align-top">
                         <input type="number" placeholder="0" value="${item.price}" ${disabledAttr} oninput="updateItem(${index}, 'price', this.value)" class="input-bare text-right text-sm font-mono text-slate-600">
@@ -522,6 +536,8 @@
                 document.getElementById('btn-edit').classList.add('hidden');
                 document.getElementById('btn-xero').classList.add('hidden');
                 document.getElementById('btn-save').classList.remove('hidden');
+                document.getElementById('btn-add-item').classList.remove('hidden');
+                document.getElementById('force-close-container').classList.remove('hidden');
                 document.getElementById('btn-save').innerHTML = '<i class="fas fa-save"></i> Update Changes';
             }
         }
@@ -536,21 +552,18 @@
             const checked = currentItems.filter(i => i.checked && i.qty > 0);
             if (checked.length === 0) { showNotification("Pilih minimal 1 item (Qty > 0)."); return; }
             
-            // Validasi Max Qty
+            // Validasi Max Qty (Only for PO items)
             for(let item of checked) {
-                // Hanya validasi Max jika ini New Bill (bukan edit existing bill yg sudah tersimpan)
-                // Tapi simplenya, maxQty sudah diset saat load.
-                if(item.qty > item.maxQty && item.maxQty > 0) { 
-                    // Note: Logic ini bisa diperhalus. Kalau edit bill lama, maxQty = currentQty.
-                    // Jadi validasi ini aman.
-                    // showNotification(`Qty ${item.namaItem} melebihi sisa.`); return; 
+                if(!item.isCustom && item.qty > item.maxQty && item.maxQty > 0) { 
+                    // Optional warning, bisa di-comment kalau mau strict
                 }
             }
 
             const invNum = document.getElementById('bill-inv-number').value;
             if(!invNum) { showNotification("Nomor Invoice Wajib."); return; }
+            
+            const isForceClose = document.getElementById('check-force-close').checked;
 
-            // File Handling
             const fileInput = document.getElementById('bill-file');
             let fileData = null, fileName = null, mimeType = null;
             if (fileInput.files.length > 0) {
@@ -583,6 +596,7 @@
                     ppn: document.getElementById('display-ppn').dataset.value,
                     adjustment: document.getElementById('bill-adjustment').value,
                     grandTotal: document.getElementById('display-grand-total').dataset.value,
+                    forceClose: isForceClose, // Flag force close
                     items: checked.map(i => ({
                         namaItem: i.namaItem, satuan: i.satuan, optionalSpec: i.optionalSpec,
                         qty: i.qty, price: i.price, disc: i.disc
@@ -597,7 +611,10 @@
             try {
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const json = await res.json();
-                if(json.status === 'success') { closeModal(); fetchData(); }
+                if(json.status === 'success') { 
+                    closeModal(); 
+                    fetchData(); 
+                }
                 else showNotification("Error: " + json.message);
             } catch(e) { showNotification("Koneksi Error."); }
             finally { document.getElementById('modalLoading').classList.add('hidden'); }
