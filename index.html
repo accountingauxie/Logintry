@@ -8,11 +8,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
-            --primary-teal: #008080; /* Warna Teal mirip screenshot */
+            --primary-teal: #008080;
             --primary-teal-hover: #006666;
             --bg-light: #f4f6f8;
             --text-dark: #333;
@@ -29,7 +33,7 @@
         .navbar-brand { font-weight: 700; letter-spacing: 0.5px; margin: 0; }
         .status-badge { background-color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 10px; }
 
-        /* --- DASHBOARD / LIST VIEW STYLE --- */
+        /* DASHBOARD STYLE */
         .stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .stat-value { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
         .stat-label { font-size: 12px; text-transform: uppercase; color: #888; font-weight: 600; }
@@ -37,49 +41,49 @@
         .table-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e0e0e0; }
         .table-header-custom { background-color: #f9fafb; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
         .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; }
-        .status-pill.waiting { background-color: #eff6ff; color: #3b82f6; } /* Biru Muda */
-        .status-pill.done { background-color: #ecfdf5; color: #10b981; } /* Hijau Muda */
+        .status-pill.waiting { background-color: #eff6ff; color: #3b82f6; } 
+        .status-pill.done { background-color: #ecfdf5; color: #10b981; }
 
-        /* --- NEW FORM STYLE (SESUAI SCREENSHOT) --- */
+        /* FORM STYLE */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .page-title { font-size: 24px; font-weight: 700; margin: 0; color: #111; }
         .breadcrumb-text { font-size: 13px; color: #666; margin-top: 2px; }
 
-        /* Tombol Back to List */
         .btn-back {
             background: white; border: 1px solid #d1d5db; color: #374151; font-weight: 500; padding: 8px 16px; border-radius: 6px; font-size: 14px;
         }
         .btn-back:hover { background: #f3f4f6; color: #111; }
 
-        /* Main Form Container */
         .form-container { background: white; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 20px 25px; }
-        
         .form-label-custom { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
-        .form-control-custom {
-            border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; font-size: 14px; width: 100%;
+        .form-control-custom { border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; font-size: 14px; width: 100%; }
+        
+        /* Select2 Customization to match theme */
+        .select2-container--bootstrap-5 .select2-selection {
+            border-color: #d1d5db !important;
+            padding: 10px 12px !important;
+            min-height: 42px; /* Match standard input height */
+            font-size: 14px;
         }
-        .form-control-custom:focus { border-color: var(--primary-teal); outline: none; box-shadow: 0 0 0 2px rgba(0,128,128,0.1); }
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            color: #333;
+        }
 
-        /* Tombol Confirm PO (Teal) */
         .btn-confirm {
-            background-color: var(--primary-teal); color: white; font-weight: 600; border: none; padding: 10px 24px; border-radius: 6px; font-size: 14px; height: 100%; display: flex; align-items: center; gap: 8px;
+            background-color: var(--primary-teal); color: white; font-weight: 600; border: none; padding: 10px 24px; border-radius: 6px; font-size: 14px; height: 100%; display: flex; align-items: center; gap: 8px; justify-content: center;
         }
         .btn-confirm:hover { background-color: var(--primary-teal-hover); color: white; }
 
-        /* Section Title "PRODUCTS" */
         .section-title {
             font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;
         }
 
-        /* Tabel Produk Form */
         .table-form th { font-size: 13px; color: #111; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding: 10px; background-color: #f9fafb; }
         .table-form td { padding: 10px; vertical-align: top; border-bottom: 1px solid #f3f4f6; }
         
-        /* Input dalam tabel */
         .input-table { border: 1px solid #d1d5db; border-radius: 4px; padding: 8px; font-size: 14px; width: 100%; }
         .input-table:focus { border-color: var(--primary-teal); outline: none; }
         
-        /* Link Add Product */
         .btn-add-product {
             color: #2563eb; font-weight: 600; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; cursor: pointer;
         }
@@ -109,7 +113,7 @@
                     <h3 class="page-title">Purchase Orders</h3>
                     <div class="breadcrumb-text">Dashboard / List</div>
                 </div>
-                <button class="btn btn-confirm" onclick="switchView('form')">
+                <button class="btn btn-confirm" style="width: auto;" onclick="switchView('form')">
                     <i class="bi bi-plus-lg"></i> NEW PO
                 </button>
             </div>
@@ -162,7 +166,7 @@
                 <div class="row g-3 align-items-end mb-4">
                     <div class="col-md-6">
                         <label class="form-label-custom">Vendor</label>
-                        <select id="vendorSelect" class="form-select form-control-custom" onchange="onVendorChange()">
+                        <select id="vendorSelect" class="form-select" style="width:100%;">
                             <option value="" disabled selected>-- Select Vendor --</option>
                         </select>
                     </div>
@@ -171,7 +175,7 @@
                         <input type="date" id="poDate" class="form-control-custom">
                     </div>
                     <div class="col-md-3">
-                        <button class="btn btn-confirm w-100 justify-content-center" onclick="submitPO()">
+                        <button class="btn btn-confirm w-100" onclick="submitPO()">
                             <i class="bi bi-cloud-upload"></i> CONFIRM PO
                         </button>
                     </div>
@@ -210,25 +214,23 @@
         <div class="fw-bold text-dark">Processing...</div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
-        // ====================================================
-        // GANTI URL INI DENGAN DEPLOYMENT SCRIPT ANDA TERBARU
-        // ====================================================
+        // URL SCRIPT TERBARU YANG ANDA BERIKAN
         const API_URL = "https://script.google.com/macros/s/AKfycbwS-8BhHKpme6oKV7W42bfQQ4oz32YWoWOoNTsKA41lebU8JYRbrjx2Wo-sXa-yEU1dBA/exec"; 
         
-        // Data Store
         let vendorData = {};
         let savedOrders = [];
         let isVendorLoaded = false;
 
-        // Init
         window.onload = function() {
             fetchListPO();
             setDefaultDate();
         };
 
-        // --- NAVIGATION ---
         function switchView(viewName) {
             const listDiv = document.getElementById("view-list");
             const formDiv = document.getElementById("view-form");
@@ -247,7 +249,7 @@
             document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
         }
 
-        // --- LIST LOGIC ---
+        // --- LIST FUNCTIONS ---
         function fetchListPO() {
             const tbody = document.getElementById("listTableBody");
             tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-secondary spinner-border-sm me-2"></div>Updating...</td></tr>`;
@@ -311,7 +313,8 @@
             renderListTable(filtered);
         }
 
-        // --- FORM LOGIC (MAKE PO) ---
+        // --- FORM & SELECT2 LOGIC ---
+
         function fetchVendorData() {
             showLoading(true);
             fetch(API_URL + "?action=getData")
@@ -331,12 +334,25 @@
         }
 
         function populateVendorSelect() {
-            const select = document.getElementById("vendorSelect");
-            select.innerHTML = '<option value="" disabled selected>-- Select Vendor --</option>';
+            const select = $('#vendorSelect'); // Gunakan jQuery selector
+            select.empty();
+            select.append('<option value="" disabled selected>-- Select Vendor --</option>');
+            
             Object.keys(vendorData).sort().forEach(v => {
-                let opt = document.createElement("option");
-                opt.value = v; opt.text = v;
-                select.add(opt);
+                select.append(new Option(v, v));
+            });
+
+            // INISIALISASI SELECT2 PADA VENDOR
+            select.select2({
+                theme: 'bootstrap-5',
+                placeholder: "-- Select Vendor --",
+                width: '100%'
+            });
+
+            // Event Listener khusus Select2 saat vendor berubah
+            select.on('select2:select', function (e) {
+                document.getElementById("entryTableBody").innerHTML = ""; 
+                addNewRow(); 
             });
         }
 
@@ -346,13 +362,10 @@
             document.getElementById("poDate").value = local;
         }
 
-        function onVendorChange() {
-            document.getElementById("entryTableBody").innerHTML = ""; 
-            addNewRow(); 
-        }
-
         function addNewRow() {
-            var vendor = document.getElementById("vendorSelect").value;
+            // Ambil value vendor menggunakan jQuery Select2 agar aman
+            var vendor = $('#vendorSelect').val(); 
+
             if(!vendor) {
                 if(Object.keys(vendorData).length > 0) Swal.fire("Vendor Required", "Please select a vendor first.", "warning");
                 return;
@@ -367,11 +380,14 @@
                 itemOptions += `<option value="${index}">${obj.item}</option>`;
             });
 
+            // Buat ID unik untuk select baru agar bisa di-init Select2
+            var newSelectId = "product-select-" + rowIdx + "-" + Date.now();
+
             var tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="text-center text-muted align-middle row-number">${rowIdx + 1}</td>
                 <td>
-                    <select class="form-select input-table item-select" onchange="updateUnit(this)">${itemOptions}</select>
+                    <select id="${newSelectId}" class="form-select input-table item-select" style="width:100%">${itemOptions}</select>
                 </td>
                 <td>
                     <input type="number" class="input-table qty-input text-center" placeholder="0.00" min="0">
@@ -387,37 +403,55 @@
                 </td>
             `;
             tbody.appendChild(tr);
+
+            // --- INISIALISASI SELECT2 PADA PRODUK BARU INI ---
+            $(`#${newSelectId}`).select2({
+                theme: 'bootstrap-5',
+                placeholder: "Search Product...",
+                width: '100%',
+                dropdownAutoWidth: true
+            });
+
+            // Event listener saat produk dipilih
+            $(`#${newSelectId}`).on('select2:select', function (e) {
+                // Panggil fungsi update logic kita, 'this' di sini adalah elemen select HTML asli
+                updateUnit(this);
+            });
         }
 
         function updateUnit(selectElement) {
             // Check Duplicate
             var selectedValue = selectElement.value;
+            // Kita perlu loop semua select item untuk cek duplikat
+            // Karena kita pakai select2, value di HTML select asli tetap terupdate
             var allSelects = document.querySelectorAll(".item-select");
             var duplicateCount = 0;
             allSelects.forEach(el => { if(el.value === selectedValue && selectedValue !== "") duplicateCount++; });
 
             if(duplicateCount > 1) {
                 Swal.fire("Duplicate Item", "This product is already in the list.", "warning");
-                selectElement.value = ""; 
+                // Reset Select2 value
+                $(selectElement).val(null).trigger('change');
                 selectElement.closest("tr").querySelector(".unit-input").value = "";
                 return;
             }
 
-            var vendor = document.getElementById("vendorSelect").value;
-            var idx = selectElement.value; 
+            var vendor = $('#vendorSelect').val();
+            var idx = selectedValue; 
             if(vendorData[vendor] && vendorData[vendor][idx]){
                 selectElement.closest("tr").querySelector(".unit-input").value = vendorData[vendor][idx].unit;
             }
         }
 
         function removeRow(icon) {
+            // Hapus row
             icon.closest("tr").remove();
             // Re-numbering
             document.querySelectorAll("#entryTableBody tr .row-number").forEach((td, index) => td.innerText = index + 1);
         }
 
         function submitPO() {
-            var vendor = document.getElementById("vendorSelect").value;
+            var vendor = $('#vendorSelect').val();
             var poDate = document.getElementById("poDate").value;
 
             if(!vendor) return Swal.fire("Missing Data", "Please select a vendor.", "error");
@@ -463,7 +497,7 @@
                         confirmButtonColor: '#008080'
                     }).then(() => {
                         // Reset & Return to List
-                        document.getElementById("vendorSelect").value = "";
+                        $('#vendorSelect').val(null).trigger('change'); // Reset Select2 Vendor
                         document.getElementById("entryTableBody").innerHTML = "";
                         setDefaultDate();
                         switchView('list');
