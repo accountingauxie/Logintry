@@ -190,8 +190,8 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-        // GANTI URL INI DENGAN URL APPS SCRIPT ANDA
-        const API_URL = "https://script.google.com/macros/s/AKfycbzVBqxHQX24XzX15IdSydw8HqDIGRI25fRAUKURpxGsGiUXhCta7bTLAhwDhA_BJfD_IQ/exec"; 
+        // --- URL BARU ANDA ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbzDCmlyRvHX1JQvwGeL9BBUGswNTVAd-SGmX7oeMiKjO5tJ8_q9CiSzd-R160mzTxGPcg/exec"; 
         
         let vendorData = {};
         let savedOrders = [];
@@ -275,15 +275,28 @@
                 let created = new Date(po.createdAt).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
                 let statusClass = po.status.includes("Waiting") || po.status.includes("Menunggu") ? "waiting" : "done";
                 
-                // LOGIC EDIT: Tombol edit hanya muncul jika status BUKAN Billed
-                let editBtn = "";
+                // --- UPDATE BAGIAN BUTTON ACTION ---
+                let actionBtns = `<div class="d-flex justify-content-center gap-2">`;
+
+                // 1. Tombol Print (Selalu muncul)
+                actionBtns += `
+                    <button class="btn btn-sm btn-outline-secondary border-0" onclick="printPO('${po.id}')" title="Print / PDF">
+                        <i class="bi bi-printer-fill fs-6"></i>
+                    </button>`;
+
+                // 2. Tombol Edit (Hanya jika belum Billed)
                 if(po.status !== "Billed") {
-                    editBtn = `<button class="btn btn-sm btn-outline-primary border-0" onclick="editPO('${po.id}')" title="Edit PO">
-                                <i class="bi bi-pencil-square fs-6"></i>
-                               </button>`;
+                    actionBtns += `
+                        <button class="btn btn-sm btn-outline-primary border-0" onclick="editPO('${po.id}')" title="Edit PO">
+                            <i class="bi bi-pencil-square fs-6"></i>
+                        </button>`;
                 } else {
-                    editBtn = `<span class="text-muted small"><i class="bi bi-lock-fill"></i> Locked</span>`;
+                    // Icon Lock jika billed
+                    actionBtns += `<span class="text-muted small align-self-center ms-1"><i class="bi bi-lock-fill"></i></span>`;
                 }
+
+                actionBtns += `</div>`;
+                // -----------------------------------
 
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
@@ -293,10 +306,16 @@
                     <td class="text-muted small">${created}</td>
                     <td class="text-center"><span class="badge bg-light text-dark border">${po.itemsCount}</span></td>
                     <td><span class="status-pill ${statusClass}">${po.status}</span></td>
-                    <td class="text-center">${editBtn}</td>
+                    <td class="text-center">${actionBtns}</td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // --- FUNGSI BARU UNTUK PRINT ---
+        function printPO(poId) {
+            const printUrl = API_URL + "?action=printPO&id=" + poId;
+            window.open(printUrl, '_blank');
         }
 
         // --- LOGIC UTAMA EDIT ---
