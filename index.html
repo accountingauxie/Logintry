@@ -11,12 +11,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        primary: '#008080',
-                        'primary-hover': '#006666',
-                        bglight: '#eef2f6',
-                        darktext: '#1e293b'
-                    },
+                    colors: { primary: '#008080', 'primary-hover': '#006666', bglight: '#eef2f6', darktext: '#1e293b' },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
@@ -30,9 +25,6 @@
         .input-bare:hover { border-color: #E2E8F0; background: white; }
         .input-bare:focus { border-color: #008080; background: white; outline: none; box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.1); }
         input:disabled, select:disabled, textarea:disabled { background-color: #F8FAFC; color: #64748B; cursor: not-allowed; border-color: transparent; }
-        .dropdown-menu { transform-origin: top right; transition: all 0.2s ease-out; }
-        .dropdown-menu.hidden { transform: scale(0.95); opacity: 0; pointer-events: none; display: none; }
-        .dropdown-menu.show { transform: scale(1); opacity: 1; pointer-events: auto; display: block; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -155,9 +147,13 @@
                             </thead>
                         <tbody id="bill-items-body" class="divide-y divide-slate-100"></tbody>
                     </table>
-                    <div class="p-4 bg-slate-50 border-t border-slate-200">
-                        <button id="btn-add-item" onclick="addCustomItem()" class="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden">
-                            <i class="fas fa-plus-circle"></i> Tambah Item Manual (Ad-hoc)
+                    
+                    <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
+                        <button id="btn-add-item-db" onclick="openProductModal()" class="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden">
+                            <i class="fas fa-database"></i> Tambah Item Database
+                        </button>
+                        <button id="btn-add-item-manual" onclick="addCustomItem()" class="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden">
+                            <i class="fas fa-plus-circle"></i> Tambah Item Manual
                         </button>
                     </div>
                 </div>
@@ -205,7 +201,22 @@
         </div>
     </div>
 
-    <div id="notificationModal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="productModal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col h-[80vh]">
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800">Pilih Produk Database</h3>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-3 bg-slate-50 border-b border-slate-200">
+                <input type="text" id="searchProduct" onkeyup="filterProducts()" placeholder="Cari nama produk..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary outline-none">
+                <p class="text-[10px] text-slate-400 mt-1">Menampilkan produk dari vendor: <span id="product-vendor-filter" class="font-bold"></span></p>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2" id="productListContainer">
+                </div>
+        </div>
+    </div>
+
+    <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-fade-in-up border border-slate-100">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div>
             <h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3>
@@ -215,11 +226,12 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx1to6n0Rn6-MKuK4WBSQ-M79znCkTYoM4rpsOLT8nW1nRGc6bofG0yh_gQnrWhBT2S/exec"; // PASTE URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbybsnIL9_5zrddMJ0iDB2b2ldG_MHUnC5UaXInEudxN6I6Pju6_4024aeFX6Q3qu3b6/exec"; // PASTE URL
         const TAX_RATE = 0.11;
 
         let allData = [];
         let currentItems = [];
+        let dbProducts = []; // Store fetched products
         let currentPOId = "";
         let currentFileUrl = "";
         let isEditMode = false;
@@ -311,13 +323,15 @@
             const btnEdit = document.getElementById('btn-edit');
             const btnXero = document.getElementById('btn-xero');
             const btnSave = document.getElementById('btn-save');
-            const btnAdd = document.getElementById('btn-add-item');
+            const btnAddDb = document.getElementById('btn-add-item-db');
+            const btnAddManual = document.getElementById('btn-add-item-manual');
             const forceCloseContainer = document.getElementById('force-close-container');
 
             btnEdit.classList.add('hidden');
             btnXero.classList.add('hidden');
             btnSave.classList.add('hidden');
-            btnAdd.classList.add('hidden');
+            btnAddDb.classList.add('hidden');
+            btnAddManual.classList.add('hidden');
             forceCloseContainer.classList.add('hidden');
 
             document.getElementById('modal-title').innerText = "Bill Entry / Partial";
@@ -331,14 +345,10 @@
                 const jsonRem = await resRem.json();
                 const history = jsonRem.history || {};
 
-                // 2. Logic Mode: Partial Create vs View
-                // Kalau status Pending atau Partial -> Default buka CREATE mode (Partial)
-                // Kalau status Billed/Closed -> Default buka VIEW mode
                 let isCreateMode = (poFromList.status === 'Pending' || poFromList.status === 'Partial');
                 let existingBillData = null;
 
                 if (!isCreateMode) {
-                    // Coba fetch last invoice detail
                     const resDetail = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBillDetail', idPO: idPO }) });
                     const jsonDetail = await resDetail.json();
                     if(jsonDetail.status === 'success') existingBillData = jsonDetail.data;
@@ -362,13 +372,14 @@
 
                     currentItems = bill.items.map(item => ({
                         ...item,
-                        poQty: item.qty, // visual purpose
+                        poQty: item.qty, // visual
                         qty: Number(item.qty),
                         maxQty: Number(item.qty),
                         price: Number(item.price),
                         disc: Number(item.disc),
                         checked: true,
-                        alreadyBilled: history[item.namaItem] || 0
+                        alreadyBilled: history[item.namaItem] || 0,
+                        isCustom: (item.spec || "").includes("Ad-hoc") // Detect if custom
                     }));
                     
                     setFormState(false);
@@ -383,7 +394,8 @@
                 } else {
                     // MODE CREATE NEW PARTIAL
                     btnSave.classList.remove('hidden');
-                    btnAdd.classList.remove('hidden');
+                    btnAddDb.classList.remove('hidden');
+                    btnAddManual.classList.remove('hidden');
                     forceCloseContainer.classList.remove('hidden');
                     btnSave.innerHTML = '<i class="fas fa-check"></i> Approve & Save';
                     
@@ -415,6 +427,82 @@
             }
         }
 
+        // --- DATABASE PRODUCT FEATURE ---
+        async function openProductModal() {
+            document.getElementById('productModal').classList.remove('hidden');
+            document.getElementById('productListContainer').innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-primary"></i> Memuat database...</div>';
+            
+            const vendorName = document.getElementById('bill-vendor').value;
+            document.getElementById('product-vendor-filter').innerText = vendorName;
+            document.getElementById('searchProduct').value = '';
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProducts', vendor: vendorName }) });
+                const json = await res.json();
+                
+                if (json.status === 'success') {
+                    dbProducts = json.products;
+                    filterProducts();
+                } else {
+                    document.getElementById('productListContainer').innerHTML = '<div class="text-center text-red-500 p-4">Gagal memuat database.</div>';
+                }
+            } catch(e) {
+                console.error(e);
+                document.getElementById('productListContainer').innerHTML = '<div class="text-center text-red-500 p-4">Error koneksi.</div>';
+            }
+        }
+
+        function filterProducts() {
+            const search = document.getElementById('searchProduct').value.toLowerCase();
+            const container = document.getElementById('productListContainer');
+            container.innerHTML = '';
+            
+            const filtered = dbProducts.filter(p => p.namaItem.toLowerCase().includes(search));
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-400 p-4">Produk tidak ditemukan.</div>';
+                return;
+            }
+
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center p-3 border-b border-slate-100 hover:bg-slate-50 cursor-pointer group transition";
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold text-slate-700 text-sm group-hover:text-primary">${p.namaItem}</div>
+                        <div class="text-[10px] text-slate-400">${p.satuan} • Ref Harga: ${formatRupiah(p.price)}</div>
+                    </div>
+                    <button class="text-xs bg-white border border-slate-200 text-primary px-3 py-1.5 rounded-lg font-bold hover:bg-primary hover:text-white transition">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                `;
+                div.onclick = () => {
+                    addDbItemToBill(p);
+                    closeProductModal();
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+
+        function addDbItemToBill(product) {
+            currentItems.push({
+                namaItem: product.namaItem,
+                satuan: product.satuan,
+                optionalSpec: "",
+                qty: 1,
+                maxQty: 999999,
+                price: parseFloat(product.price) || 0,
+                disc: 0,
+                poQty: 0,
+                alreadyBilled: 0,
+                checked: true,
+                isCustom: true
+            });
+            renderBillItems();
+        }
+
         function addCustomItem() {
             currentItems.push({
                 namaItem: "Tambahan/Custom Item",
@@ -431,6 +519,14 @@
             });
             renderBillItems();
         }
+        
+        // FUNGSI BARU: REMOVE ITEM
+        function removeCustomItem(index) {
+            if(confirm("Hapus baris ini?")) {
+                currentItems.splice(index, 1);
+                renderBillItems();
+            }
+        }
 
         function renderBillItems() {
             const tbody = document.getElementById('bill-items-body');
@@ -445,25 +541,28 @@
                 <th class="p-4 w-32 text-right">Price</th>
                 <th class="p-4 w-32 text-right">Disc</th>
                 <th class="p-4 w-40 text-right">Amount</th>
+                <th class="p-4 w-10"></th>
             </tr>`;
 
             const disabledAttr = isEditMode ? '' : 'disabled';
 
             currentItems.forEach((item, index) => {
                 const checkedAttr = item.checked ? 'checked' : '';
-                // Kalau item PO stok habis, bikin abu-abu
                 const isPoEmpty = !item.isCustom && item.maxQty <= 0 && isEditMode;
                 const rowClass = isPoEmpty ? 'bg-gray-100 opacity-60' : 'hover:bg-slate-50';
                 
-                // Allow edit name ONLY if custom item
                 const nameHtml = item.isCustom && isEditMode 
                     ? `<input type="text" value="${item.namaItem}" class="input-bare font-bold text-slate-700 text-sm" oninput="updateItem(${index}, 'namaItem', this.value)">`
                     : `<div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>`;
                 
-                // Info Badge
                 const infoHtml = item.isCustom 
                     ? `<span class="bg-purple-50 text-purple-600 px-1.5 rounded text-[10px] mt-1 inline-block">Ad-hoc Item</span>`
                     : `<div class="text-[10px] text-slate-400 mt-1 flex gap-2"><span class="bg-slate-100 px-1.5 rounded">PO: ${item.poQty}</span><span class="bg-blue-50 text-blue-600 px-1.5 rounded">Done: ${item.alreadyBilled}</span></div>`;
+
+                // TOMBOL DELETE: Hanya muncul jika Custom Item dan dalam Mode Edit
+                const deleteBtn = (item.isCustom && isEditMode) 
+                    ? `<button onclick="removeCustomItem(${index})" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-trash"></i></button>` 
+                    : ``;
 
                 const row = `
                 <tr class="${rowClass} border-b border-slate-50 last:border-0 transition">
@@ -488,6 +587,9 @@
                         <input type="number" placeholder="0" value="${item.disc}" ${disabledAttr} oninput="updateItem(${index}, 'disc', this.value)" class="input-bare text-right text-sm font-mono text-red-500">
                     </td>
                     <td class="p-4 align-top text-right font-bold text-slate-800 font-mono text-sm" id="row-total-${index}">0</td>
+                    <td class="p-4 align-top text-center">
+                        ${deleteBtn}
+                    </td>
                 </tr>`;
                 tbody.innerHTML += row;
             });
@@ -536,7 +638,8 @@
                 document.getElementById('btn-edit').classList.add('hidden');
                 document.getElementById('btn-xero').classList.add('hidden');
                 document.getElementById('btn-save').classList.remove('hidden');
-                document.getElementById('btn-add-item').classList.remove('hidden');
+                document.getElementById('btn-add-item-db').classList.remove('hidden');
+                document.getElementById('btn-add-item-manual').classList.remove('hidden');
                 document.getElementById('force-close-container').classList.remove('hidden');
                 document.getElementById('btn-save').innerHTML = '<i class="fas fa-save"></i> Update Changes';
             }
@@ -555,7 +658,7 @@
             // Validasi Max Qty (Only for PO items)
             for(let item of checked) {
                 if(!item.isCustom && item.qty > item.maxQty && item.maxQty > 0) { 
-                    // Optional warning, bisa di-comment kalau mau strict
+                    // Optional warning
                 }
             }
 
