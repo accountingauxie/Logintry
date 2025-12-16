@@ -226,12 +226,12 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbybsnIL9_5zrddMJ0iDB2b2ldG_MHUnC5UaXInEudxN6I6Pju6_4024aeFX6Q3qu3b6/exec"; // PASTE URL
+        const API_URL = "https://script.google.com/macros/s/AKfycby8fdzo5xSziVAMwZxKUFuIvhbYcIbeIgrVcreLQ5zkhO9k2iopYfHHsUxU3YQ_HD1Y/exec"; // PASTE URL
         const TAX_RATE = 0.11;
 
         let allData = [];
         let currentItems = [];
-        let dbProducts = []; // Store fetched products
+        let dbProducts = []; 
         let currentPOId = "";
         let currentFileUrl = "";
         let isEditMode = false;
@@ -340,7 +340,6 @@
             document.getElementById('billModal').classList.remove('hidden');
 
             try {
-                // 1. Ambil History & Remaining
                 const resRem = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getPoRemaining', idPO: idPO }) });
                 const jsonRem = await resRem.json();
                 const history = jsonRem.history || {};
@@ -379,7 +378,7 @@
                         disc: Number(item.disc),
                         checked: true,
                         alreadyBilled: history[item.namaItem] || 0,
-                        isCustom: (item.spec || "").includes("Ad-hoc") // Detect if custom
+                        isCustom: (item.spec || "").includes("Ad-hoc") 
                     }));
                     
                     setFormState(false);
@@ -427,7 +426,6 @@
             }
         }
 
-        // --- DATABASE PRODUCT FEATURE ---
         async function openProductModal() {
             document.getElementById('productModal').classList.remove('hidden');
             document.getElementById('productListContainer').innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-primary"></i> Memuat database...</div>';
@@ -509,7 +507,7 @@
                 satuan: "Unit",
                 optionalSpec: "",
                 qty: 1,
-                maxQty: 999999, // Unlimited for custom
+                maxQty: 999999, 
                 price: 0,
                 disc: 0,
                 poQty: 0,
@@ -520,7 +518,6 @@
             renderBillItems();
         }
         
-        // FUNGSI BARU: REMOVE ITEM
         function removeCustomItem(index) {
             if(confirm("Hapus baris ini?")) {
                 currentItems.splice(index, 1);
@@ -559,7 +556,6 @@
                     ? `<span class="bg-purple-50 text-purple-600 px-1.5 rounded text-[10px] mt-1 inline-block">Ad-hoc Item</span>`
                     : `<div class="text-[10px] text-slate-400 mt-1 flex gap-2"><span class="bg-slate-100 px-1.5 rounded">PO: ${item.poQty}</span><span class="bg-blue-50 text-blue-600 px-1.5 rounded">Done: ${item.alreadyBilled}</span></div>`;
 
-                // TOMBOL DELETE: Hanya muncul jika Custom Item dan dalam Mode Edit
                 const deleteBtn = (item.isCustom && isEditMode) 
                     ? `<button onclick="removeCustomItem(${index})" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-trash"></i></button>` 
                     : ``;
@@ -655,10 +651,9 @@
             const checked = currentItems.filter(i => i.checked && i.qty > 0);
             if (checked.length === 0) { showNotification("Pilih minimal 1 item (Qty > 0)."); return; }
             
-            // Validasi Max Qty (Only for PO items)
             for(let item of checked) {
                 if(!item.isCustom && item.qty > item.maxQty && item.maxQty > 0) { 
-                    // Optional warning
+                    // Warning Logic
                 }
             }
 
@@ -699,7 +694,7 @@
                     ppn: document.getElementById('display-ppn').dataset.value,
                     adjustment: document.getElementById('bill-adjustment').value,
                     grandTotal: document.getElementById('display-grand-total').dataset.value,
-                    forceClose: isForceClose, // Flag force close
+                    forceClose: isForceClose, 
                     items: checked.map(i => ({
                         namaItem: i.namaItem, satuan: i.satuan, optionalSpec: i.optionalSpec,
                         qty: i.qty, price: i.price, disc: i.disc
@@ -724,10 +719,24 @@
         }
 
         async function requestXeroImport() {
-            if(!confirm("Import to Xero?")) return;
+            // Updated: Mengirim Invoice Number
+            const invNum = document.getElementById('bill-inv-number').value;
+            if(!invNum) {
+                showNotification("Nomor Invoice tidak ditemukan. Harap Save Bill terlebih dahulu.");
+                return;
+            }
+
+            if(!confirm("Import Invoice " + invNum + " to Xero?")) return;
             document.getElementById('modalLoading').classList.remove('hidden');
             try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'import_xero', idPO: currentPOId }) });
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'import_xero', 
+                        idPO: currentPOId,
+                        invNumber: invNum // Send invNumber
+                    }) 
+                });
                 const json = await res.json();
                 if(json.status === 'success') { closeModal(); fetchData(); }
                 else alert(json.message);
