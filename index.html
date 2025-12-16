@@ -226,7 +226,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby8fdzo5xSziVAMwZxKUFuIvhbYcIbeIgrVcreLQ5zkhO9k2iopYfHHsUxU3YQ_HD1Y/exec"; // PASTE URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbwDFsXwYy94QilMNzOECNnm2a5h0s_WCl3wzCOzXS9eGtBERub4nWGDDmSqkaSnWAUB/exec"; // PASTE URL
         const TAX_RATE = 0.11;
 
         let allData = [];
@@ -378,7 +378,8 @@
                         disc: Number(item.disc),
                         checked: true,
                         alreadyBilled: history[item.namaItem] || 0,
-                        isCustom: (item.spec || "").includes("Ad-hoc") 
+                        isCustom: (item.spec || "").includes("Ad-hoc"),
+                        typeProduk: item.typeProduk || ""
                     }));
                     
                     setFormState(false);
@@ -409,7 +410,8 @@
                             maxQty: remaining > 0 ? remaining : 0,
                             price: 0, disc: 0, optionalSpec: '',
                             checked: remaining > 0,
-                            isCustom: false
+                            isCustom: false,
+                            typeProduk: item.typeProduk || ""
                         };
                     });
                     setFormState(true);
@@ -496,7 +498,8 @@
                 poQty: 0,
                 alreadyBilled: 0,
                 checked: true,
-                isCustom: true
+                isCustom: true,
+                typeProduk: product.typeProduk || ""
             });
             renderBillItems();
         }
@@ -513,7 +516,8 @@
                 poQty: 0,
                 alreadyBilled: 0,
                 checked: true,
-                isCustom: true
+                isCustom: true,
+                typeProduk: ""
             });
             renderBillItems();
         }
@@ -653,7 +657,7 @@
             
             for(let item of checked) {
                 if(!item.isCustom && item.qty > item.maxQty && item.maxQty > 0) { 
-                    // Warning Logic
+                    // Optional warning
                 }
             }
 
@@ -697,7 +701,8 @@
                     forceClose: isForceClose, 
                     items: checked.map(i => ({
                         namaItem: i.namaItem, satuan: i.satuan, optionalSpec: i.optionalSpec,
-                        qty: i.qty, price: i.price, disc: i.disc
+                        qty: i.qty, price: i.price, disc: i.disc,
+                        typeProduk: i.typeProduk || ""
                     })),
                     fileData, fileName, mimeType, existingFileUrl: currentFileUrl
                 }
