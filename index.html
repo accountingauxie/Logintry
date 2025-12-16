@@ -269,7 +269,7 @@
             });
         }
 
-        function renderTable(data) {
+  function renderTable(data) {
             const tbody = document.getElementById("tableBody");
             const emptyMsg = document.getElementById("emptyMessage");
             tbody.innerHTML = "";
@@ -282,19 +282,30 @@
             }
 
             data.forEach(po => {
-                // Formatting Date
-                let dateObj = new Date(po.createdAt);
-                let timeString = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                // --- 1. FORMAT TANGGAL ORDER (Perbaikan Disini) ---
+                let orderDateRaw = new Date(po.date);
+                // Ubah ke format Indonesia: 15 Des 2025
+                let formattedOrderDate = orderDateRaw.toLocaleDateString('id-ID', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+
+                // --- 2. FORMAT JAM INPUT ---
+                let createdObj = new Date(po.createdAt);
+                let timeString = createdObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                 
-                // Status Color Logic
-                let statusClass = "status-pill waiting"; // Default
+                // --- 3. STATUS WARNA ---
+                let statusClass = "status-pill waiting"; 
                 if(po.status === "Approved") statusClass = "status-pill done";
 
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td class="fw-bold text-primary">${po.id}</td>
                     <td class="fw-semibold text-dark">${po.vendor}</td>
-                    <td>${po.date}</td>
+                    
+                    <td>${formattedOrderDate}</td> 
+                    
                     <td class="text-muted small"><i class="bi bi-clock me-1"></i> ${timeString}</td>
                     <td class="text-center"><span class="badge bg-light text-dark border">${po.itemsCount}</span></td>
                     <td><span class="${statusClass}">${po.status}</span></td>
@@ -302,7 +313,6 @@
                 tbody.appendChild(tr);
             });
         }
-
         // --- MENGHITUNG STATISTIK DI FRONTEND ---
         function calculateStats(data) {
             // 1. Total Orders
