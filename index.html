@@ -4,193 +4,231 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auxilium PO System</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; color: #343a40; }
+        :root {
+            --primary-teal: #008080; /* Warna Teal mirip screenshot */
+            --primary-teal-hover: #006666;
+            --bg-light: #f4f6f8;
+            --text-dark: #333;
+        }
+
+        body { 
+            background-color: var(--bg-light); 
+            font-family: 'Inter', sans-serif; 
+            color: var(--text-dark); 
+        }
         
         /* NAVBAR */
-        .navbar-dark-custom { background-color: #1e293b; padding: 0.75rem 1.5rem; }
-        .navbar-brand { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; }
-        .user-badge { font-size: 0.85rem; color: #cbd5e1; }
-        .status-badge { background-color: #10b981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .navbar-custom { background-color: #1e293b; padding: 10px 20px; color: white; }
+        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; margin: 0; }
+        .status-badge { background-color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 10px; }
 
-        /* BUTTONS */
-        .btn-teal { background-color: #0f766e; color: white; font-weight: 600; border: none; padding: 8px 20px; }
-        .btn-teal:hover { background-color: #0d6efd; color: white; }
+        /* --- DASHBOARD / LIST VIEW STYLE --- */
+        .stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .stat-value { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
+        .stat-label { font-size: 12px; text-transform: uppercase; color: #888; font-weight: 600; }
+        
+        .table-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e0e0e0; }
+        .table-header-custom { background-color: #f9fafb; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; }
+        .status-pill.waiting { background-color: #eff6ff; color: #3b82f6; } /* Biru Muda */
+        .status-pill.done { background-color: #ecfdf5; color: #10b981; } /* Hijau Muda */
 
-        /* CARDS & STATS */
-        .stat-card { border: none; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); background: white; padding: 1.25rem; height: 100%; transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-2px); }
-        .stat-value { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; }
-        .stat-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        /* --- NEW FORM STYLE (SESUAI SCREENSHOT) --- */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-title { font-size: 24px; font-weight: 700; margin: 0; color: #111; }
+        .breadcrumb-text { font-size: 13px; color: #666; margin-top: 2px; }
+
+        /* Tombol Back to List */
+        .btn-back {
+            background: white; border: 1px solid #d1d5db; color: #374151; font-weight: 500; padding: 8px 16px; border-radius: 6px; font-size: 14px;
+        }
+        .btn-back:hover { background: #f3f4f6; color: #111; }
+
+        /* Main Form Container */
+        .form-container { background: white; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 20px 25px; }
         
-        /* TABLE STYLES */
-        .table-custom-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
-        .table-custom thead { background-color: #f1f5f9; }
-        .table-custom th { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; border: none; padding: 1rem; }
-        .table-custom td { padding: 1rem; font-size: 0.9rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .form-label-custom { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+        .form-control-custom {
+            border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; font-size: 14px; width: 100%;
+        }
+        .form-control-custom:focus { border-color: var(--primary-teal); outline: none; box-shadow: 0 0 0 2px rgba(0,128,128,0.1); }
+
+        /* Tombol Confirm PO (Teal) */
+        .btn-confirm {
+            background-color: var(--primary-teal); color: white; font-weight: 600; border: none; padding: 10px 24px; border-radius: 6px; font-size: 14px; height: 100%; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-confirm:hover { background-color: var(--primary-teal-hover); color: white; }
+
+        /* Section Title "PRODUCTS" */
+        .section-title {
+            font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;
+        }
+
+        /* Tabel Produk Form */
+        .table-form th { font-size: 13px; color: #111; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding: 10px; background-color: #f9fafb; }
+        .table-form td { padding: 10px; vertical-align: top; border-bottom: 1px solid #f3f4f6; }
         
-        /* FORM STYLES */
-        .form-card { border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; border-radius: 8px; }
-        .table-input { border: 1px solid #ced4da; border-radius: 4px; width: 100%; padding: 6px; }
-        .bg-readonly { background-color: #e9ecef; cursor: not-allowed; }
+        /* Input dalam tabel */
+        .input-table { border: 1px solid #d1d5db; border-radius: 4px; padding: 8px; font-size: 14px; width: 100%; }
+        .input-table:focus { border-color: var(--primary-teal); outline: none; }
         
-        /* STATUS PILLS */
-        .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
-        .status-pill.waiting { background-color: #e0f2fe; color: #0284c7; }
-        .status-pill.done { background-color: #dcfce7; color: #166534; }
-        
-        /* UTILS */
-        .d-none { display: none !important; }
-        .loading-row { text-align: center; padding: 3rem; color: #64748b; }
+        /* Link Add Product */
+        .btn-add-product {
+            color: #2563eb; font-weight: 600; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; cursor: pointer;
+        }
+        .btn-add-product:hover { text-decoration: underline; color: #1d4ed8; }
+
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-dark-custom d-flex justify-content-between align-items-center fixed-top shadow-sm">
-        <div class="d-flex align-items-center gap-3">
-            <i class="bi bi-grid-3x3-gap-fill text-white fs-5"></i>
-            <span class="navbar-brand mb-0">AUXILIUM PO</span>
+    <nav class="navbar-custom fixed-top d-flex justify-content-between align-items-center shadow-sm">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-grid-3x3-gap-fill fs-5"></i>
+            <span class="navbar-brand">AUXILIUM PO</span>
         </div>
-        <div class="d-flex align-items-center gap-3">
-            <span class="user-badge">user@email.com</span>
-            <span class="status-badge" id="connectionStatus"><i class="bi bi-wifi"></i> Online</span>
+        <div class="d-flex align-items-center">
+            <span style="font-size: 13px; opacity: 0.8;">user@email.com</span>
+            <span class="status-badge" id="connStatus"><i class="bi bi-wifi"></i> Online</span>
         </div>
     </nav>
 
-    <div class="container-fluid px-4 py-4" style="margin-top: 70px;">
+    <div class="container-fluid" style="margin-top: 80px; max-width: 1400px;">
 
         <div id="view-list">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h4 class="fw-bold mb-1">Purchase Orders</h4>
-                    <div class="text-muted small">Dashboard / List</div>
+                    <h3 class="page-title">Purchase Orders</h3>
+                    <div class="breadcrumb-text">Dashboard / List</div>
                 </div>
-                <button class="btn btn-teal rounded-pill" onclick="switchView('form')">
-                    <i class="bi bi-plus-lg me-1"></i> NEW PO
+                <button class="btn btn-confirm" onclick="switchView('form')">
+                    <i class="bi bi-plus-lg"></i> NEW PO
                 </button>
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-dark" id="statTotal">0</div><div class="stat-label">Total Orders</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Orders</div></div></div>
                 <div class="col-md-3"><div class="stat-card"><div class="stat-value text-success" id="statToday">0</div><div class="stat-label">Created Today</div></div></div>
                 <div class="col-md-3"><div class="stat-card"><div class="stat-value text-primary" id="statWaiting">0</div><div class="stat-label">Waiting Approval</div></div></div>
                 <div class="col-md-3"><div class="stat-card"><div class="stat-value text-danger" id="statItems">0</div><div class="stat-label">Total Items Qty</div></div></div>
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="input-group" style="width: 350px;">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search Reference, Vendor..." onkeyup="filterTable()">
-                </div>
-                <button class="btn btn-white border bg-white text-secondary fw-bold" onclick="fetchListPO()">
-                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
-                </button>
+                <input type="text" id="searchInput" class="form-control" style="width: 300px; border-radius: 6px;" placeholder="Search Reference, Vendor..." onkeyup="filterTable()">
+                <button class="btn btn-light border fw-bold" onclick="fetchListPO()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
             </div>
 
-            <div class="table-custom-container">
-                <div class="table-responsive">
-                    <table class="table table-custom mb-0">
-                        <thead>
-                            <tr>
-                                <th>Reference</th>
-                                <th>Vendor</th>
-                                <th>Order Date</th>
-                                <th>Created At</th>
-                                <th class="text-center">Items Count</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listTableBody">
-                            </tbody>
-                    </table>
-                </div>
-                <div id="emptyMessage" class="text-center py-4 text-muted small" style="display: none;">No orders found.</div>
+            <div class="table-card">
+                <table class="table table-hover mb-0">
+                    <thead class="table-header-custom">
+                        <tr>
+                            <th class="py-3 ps-4">Reference</th>
+                            <th class="py-3">Vendor</th>
+                            <th class="py-3">Order Date</th>
+                            <th class="py-3">Created At</th>
+                            <th class="py-3 text-center">Items</th>
+                            <th class="py-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listTableBody">
+                        <tr><td colspan="6" class="text-center py-5 text-muted">Loading data...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
         <div id="view-form" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            
+            <div class="page-header">
                 <div>
-                    <h4 class="fw-bold mb-1">Create New PO</h4>
-                    <div class="text-muted small">Dashboard / New Entry</div>
+                    <h3 class="page-title">New Quote</h3>
+                    <div class="breadcrumb-text">Dashboard / New</div>
                 </div>
-                <button class="btn btn-secondary rounded-pill" onclick="switchView('list')">
+                <button class="btn btn-back" onclick="switchView('list')">
                     <i class="bi bi-arrow-left me-1"></i> Back to List
                 </button>
             </div>
 
-            <div class="form-card p-4 mb-3">
-                <div class="row align-items-end g-3">
-                    <div class="col-md-5">
-                        <label class="fw-bold mb-1">Pilih Vendor</label>
-                        <select class="form-select" id="vendorSelect" onchange="onVendorChange()">
-                            <option value="" disabled selected>-- Memuat Vendor... --</option>
+            <div class="form-container">
+                
+                <div class="row g-3 align-items-end mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Vendor</label>
+                        <select id="vendorSelect" class="form-select form-control-custom" onchange="onVendorChange()">
+                            <option value="" disabled selected>-- Select Vendor --</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="fw-bold mb-1">Tanggal PO</label>
-                        <input type="date" class="form-control" id="poDate">
+                        <label class="form-label-custom">Order Date</label>
+                        <input type="date" id="poDate" class="form-control-custom">
                     </div>
-                    <div class="col-md-4 text-end">
-                        <button class="btn btn-success fw-bold px-4 w-100" id="btnSimpan" onclick="submitPO()">
-                            <i class="bi bi-save2 me-2"></i> SIMPAN PO
+                    <div class="col-md-3">
+                        <button class="btn btn-confirm w-100 justify-content-center" onclick="submitPO()">
+                            <i class="bi bi-cloud-upload"></i> CONFIRM PO
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-card p-0 overflow-hidden">
+                <div class="section-title">PRODUCTS</div>
+
                 <div class="table-responsive">
-                    <table class="table table-bordered mb-0">
-                        <thead class="table-light">
+                    <table class="table table-form w-100">
+                        <thead>
                             <tr>
-                                <th style="width:50px;">#</th>
-                                <th>Nama Item</th>
-                                <th style="width:120px;">Qty</th>
-                                <th style="width:120px;">Satuan</th>
-                                <th>Catatan</th>
-                                <th style="width:50px;"><i class="bi bi-trash"></i></th>
+                                <th style="width: 50px;">#</th>
+                                <th style="width: 40%;">Product</th>
+                                <th style="width: 15%;">Qty</th>
+                                <th style="width: 15%;">Unit</th>
+                                <th>Note</th>
+                                <th style="width: 50px;"></th>
                             </tr>
                         </thead>
                         <tbody id="entryTableBody">
                             </tbody>
                     </table>
                 </div>
-                <div class="p-3 bg-light border-top text-center">
-                    <button class="btn btn-outline-primary fw-bold w-100 dashed-border" onclick="addNewRow()">
-                        <i class="bi bi-plus-circle me-1"></i> Tambah Baris Item
-                    </button>
+
+                <div onclick="addNewRow()" class="btn-add-product">
+                    <i class="bi bi-plus-circle-fill"></i> Add a product
                 </div>
+
             </div>
         </div>
 
     </div>
 
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner-border text-primary mb-2" role="status"></div>
+        <div class="fw-bold text-dark">Processing...</div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ==========================================
-        // PENTING: PASTIKAN URL INI ADALAH URL DEPLOYMENT TERBARU ANDA
-        // ==========================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbwS-8BhHKpme6oKV7W42bfQQ4oz32YWoWOoNTsKA41lebU8JYRbrjx2Wo-sXa-yEU1dBA/exec"; 
+        // ====================================================
+        // GANTI URL INI DENGAN DEPLOYMENT SCRIPT ANDA TERBARU
+        // ====================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbzkmpSWFcdOtGydQcyLFZSmDZmIj4dl9wGPXV5pqixYhBVWKzzjDGlwdNs4Q_eMZFclzw/exec"; 
         
-        // State Variables
+        // Data Store
         let vendorData = {};
         let savedOrders = [];
         let isVendorLoaded = false;
 
-        // --- INIT ---
+        // Init
         window.onload = function() {
-            // Default load list
             fetchListPO();
             setDefaultDate();
         };
 
-        // --- NAVIGATION LOGIC ---
+        // --- NAVIGATION ---
         function switchView(viewName) {
             const listDiv = document.getElementById("view-list");
             const formDiv = document.getElementById("view-form");
@@ -198,7 +236,6 @@
             if (viewName === 'form') {
                 listDiv.classList.add("d-none");
                 formDiv.classList.remove("d-none");
-                // Load vendor data jika belum pernah diload
                 if (!isVendorLoaded) fetchVendorData();
             } else {
                 formDiv.classList.add("d-none");
@@ -206,10 +243,14 @@
             }
         }
 
-        // --- MODULE: FETCH LIST PO ---
+        function showLoading(show) {
+            document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+        }
+
+        // --- LIST LOGIC ---
         function fetchListPO() {
             const tbody = document.getElementById("listTableBody");
-            tbody.innerHTML = `<tr><td colspan="6" class="loading-row"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Updating list...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-secondary spinner-border-sm me-2"></div>Updating...</td></tr>`;
 
             fetch(API_URL + "?action=getSavedOrders")
             .then(res => res.json())
@@ -223,43 +264,31 @@
                 }
             })
             .catch(err => {
-                console.error(err);
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Gagal koneksi server</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Connection Error</td></tr>`;
             });
         }
 
         function renderListTable(data) {
             const tbody = document.getElementById("listTableBody");
-            const emptyMsg = document.getElementById("emptyMessage");
             tbody.innerHTML = "";
-
             if (data.length === 0) {
-                emptyMsg.style.display = "block";
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No orders found.</td></tr>`;
                 return;
-            } else {
-                emptyMsg.style.display = "none";
             }
 
             data.forEach(po => {
-                // Format Tanggal
-                let orderDateRaw = new Date(po.date);
-                let formattedDate = orderDateRaw.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                let date = new Date(po.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
+                let created = new Date(po.createdAt).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
+                let statusClass = po.status.includes("Waiting") || po.status.includes("Menunggu") ? "waiting" : "done";
                 
-                // Format Jam
-                let createdObj = new Date(po.createdAt);
-                let timeString = createdObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                
-                // Status
-                let statusClass = po.status.includes("Waiting") || po.status.includes("Menunggu") ? "status-pill waiting" : "status-pill done";
-
                 let tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td class="fw-bold text-primary">${po.id}</td>
-                    <td class="fw-semibold text-dark">${po.vendor}</td>
-                    <td>${formattedDate}</td> 
-                    <td class="text-muted small"><i class="bi bi-clock me-1"></i> ${timeString}</td>
+                    <td class="ps-4 fw-bold text-dark">${po.id}</td>
+                    <td>${po.vendor}</td>
+                    <td>${date}</td>
+                    <td class="text-muted small">${created}</td>
                     <td class="text-center"><span class="badge bg-light text-dark border">${po.itemsCount}</span></td>
-                    <td><span class="${statusClass}">${po.status}</span></td>
+                    <td><span class="status-pill ${statusClass}">${po.status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -277,33 +306,37 @@
             const term = document.getElementById("searchInput").value.toLowerCase();
             const filtered = savedOrders.filter(po => 
                 po.id.toLowerCase().includes(term) || 
-                po.vendor.toLowerCase().includes(term) || 
-                po.status.toLowerCase().includes(term)
+                po.vendor.toLowerCase().includes(term)
             );
             renderListTable(filtered);
         }
 
-        // --- MODULE: MAKE PO (FORM) ---
+        // --- FORM LOGIC (MAKE PO) ---
         function fetchVendorData() {
-            const select = document.getElementById("vendorSelect");
-            
+            showLoading(true);
             fetch(API_URL + "?action=getData")
             .then(res => res.json())
             .then(res => {
+                showLoading(false);
                 if(res.status === 'success'){
                     vendorData = res.data;
                     isVendorLoaded = true;
-                    
-                    select.innerHTML = '<option value="" disabled selected>-- Pilih Vendor --</option>';
-                    Object.keys(vendorData).sort().forEach(v => {
-                        let opt = document.createElement("option");
-                        opt.value = v; opt.text = v;
-                        select.add(opt);
-                    });
+                    populateVendorSelect();
                 }
             })
             .catch(e => {
-                Swal.fire("Error", "Gagal memuat data vendor", "error");
+                showLoading(false);
+                Swal.fire("Error", "Failed to load vendors", "error");
+            });
+        }
+
+        function populateVendorSelect() {
+            const select = document.getElementById("vendorSelect");
+            select.innerHTML = '<option value="" disabled selected>-- Select Vendor --</option>';
+            Object.keys(vendorData).sort().forEach(v => {
+                let opt = document.createElement("option");
+                opt.value = v; opt.text = v;
+                select.add(opt);
             });
         }
 
@@ -321,43 +354,50 @@
         function addNewRow() {
             var vendor = document.getElementById("vendorSelect").value;
             if(!vendor) {
-                if(Object.keys(vendorData).length > 0) Swal.fire("Pilih Vendor", "Silakan pilih vendor dulu.", "warning");
+                if(Object.keys(vendorData).length > 0) Swal.fire("Vendor Required", "Please select a vendor first.", "warning");
                 return;
             }
 
             var tbody = document.getElementById("entryTableBody");
             var rowIdx = tbody.children.length; 
 
-            var itemOptions = '<option value="" disabled selected>-- Cari Item --</option>';
+            // Create Product Options
+            var itemOptions = '<option value="" disabled selected>Select Product</option>';
             vendorData[vendor].forEach((obj, index) => {
                 itemOptions += `<option value="${index}">${obj.item}</option>`;
             });
 
             var tr = document.createElement("tr");
             tr.innerHTML = `
-                <td class="text-center bg-light row-number">${rowIdx + 1}</td>
+                <td class="text-center text-muted align-middle row-number">${rowIdx + 1}</td>
                 <td>
-                    <select class="form-select item-select" onchange="updateUnit(this)">${itemOptions}</select>
+                    <select class="form-select input-table item-select" onchange="updateUnit(this)">${itemOptions}</select>
                 </td>
                 <td>
-                    <input type="number" class="form-control qty-input" placeholder="0" min="0">
+                    <input type="number" class="input-table qty-input text-center" placeholder="0.00" min="0">
                 </td>
-                <td><input type="text" class="form-control bg-readonly unit-input" readonly tabindex="-1"></td>
-                <td><input type="text" class="form-control note-input" placeholder="..."></td>
-                <td class="text-center"><button class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-x-lg"></i></button></td>
+                <td>
+                    <input type="text" class="input-table unit-input bg-light text-muted" readonly tabindex="-1">
+                </td>
+                <td>
+                    <input type="text" class="input-table note-input" placeholder="Note">
+                </td>
+                <td class="text-center align-middle">
+                    <i class="bi bi-trash3-fill text-danger" style="cursor:pointer;" onclick="removeRow(this)"></i>
+                </td>
             `;
             tbody.appendChild(tr);
         }
 
         function updateUnit(selectElement) {
-            // Cek Duplikat
+            // Check Duplicate
             var selectedValue = selectElement.value;
             var allSelects = document.querySelectorAll(".item-select");
             var duplicateCount = 0;
             allSelects.forEach(el => { if(el.value === selectedValue && selectedValue !== "") duplicateCount++; });
 
             if(duplicateCount > 1) {
-                Swal.fire("Duplikat", "Item sudah dipilih di baris lain.", "warning");
+                Swal.fire("Duplicate Item", "This product is already in the list.", "warning");
                 selectElement.value = ""; 
                 selectElement.closest("tr").querySelector(".unit-input").value = "";
                 return;
@@ -365,14 +405,14 @@
 
             var vendor = document.getElementById("vendorSelect").value;
             var idx = selectElement.value; 
-            var unitInput = selectElement.closest("tr").querySelector(".unit-input");
             if(vendorData[vendor] && vendorData[vendor][idx]){
-                unitInput.value = vendorData[vendor][idx].unit;
+                selectElement.closest("tr").querySelector(".unit-input").value = vendorData[vendor][idx].unit;
             }
         }
 
-        function removeRow(btn) {
-            btn.closest("tr").remove();
+        function removeRow(icon) {
+            icon.closest("tr").remove();
+            // Re-numbering
             document.querySelectorAll("#entryTableBody tr .row-number").forEach((td, index) => td.innerText = index + 1);
         }
 
@@ -380,12 +420,10 @@
             var vendor = document.getElementById("vendorSelect").value;
             var poDate = document.getElementById("poDate").value;
 
-            if(!vendor) return Swal.fire("Error", "Pilih Vendor!", "error");
-            if(!poDate) return Swal.fire("Error", "Tanggal PO harus diisi!", "error");
+            if(!vendor) return Swal.fire("Missing Data", "Please select a vendor.", "error");
+            if(!poDate) return Swal.fire("Missing Data", "Please select order date.", "error");
 
             var rows = document.querySelectorAll("#entryTableBody tr");
-            if(rows.length === 0) return Swal.fire("Kosong", "Minimal satu item.", "warning");
-
             var itemsToSave = [];
             var isValid = true;
 
@@ -397,20 +435,18 @@
 
                 if(!itemIdx || !qty || qty <= 0) {
                     isValid = false;
-                    row.classList.add("table-danger"); 
+                    row.querySelector(".qty-input").style.borderColor = "red";
                 } else {
-                    row.classList.remove("table-danger");
+                    row.querySelector(".qty-input").style.borderColor = "#d1d5db";
                     var realItemName = vendorData[vendor][itemIdx].item;
                     itemsToSave.push({ itemName: realItemName, qty: qty, unit: unit, note: note });
                 }
             });
 
-            if(!isValid) return Swal.fire("Lengkapi Data", "Cek baris merah.", "error");
+            if(rows.length === 0) return Swal.fire("Empty List", "Please add at least one product.", "warning");
+            if(!isValid) return Swal.fire("Invalid Data", "Check products marked in red (Qty must be > 0).", "error");
 
-            var btn = document.getElementById("btnSimpan");
-            var originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menyimpan...';
+            showLoading(true);
 
             fetch(API_URL + "?action=saveOrder", {
                 method: "POST",
@@ -418,13 +454,18 @@
             })
             .then(res => res.json())
             .then(res => {
+                showLoading(false);
                 if(res.status === 'success') {
-                    Swal.fire('Berhasil!', 'PO ID: ' + res.id, 'success').then(() => {
-                        // Reset Form
+                    Swal.fire({
+                        title: 'Success!', 
+                        text: 'PO ID: ' + res.id, 
+                        icon: 'success',
+                        confirmButtonColor: '#008080'
+                    }).then(() => {
+                        // Reset & Return to List
                         document.getElementById("vendorSelect").value = "";
                         document.getElementById("entryTableBody").innerHTML = "";
                         setDefaultDate();
-                        // Kembali ke List dan Refresh
                         switchView('list');
                         fetchListPO();
                     });
@@ -432,10 +473,9 @@
                     throw new Error(res.message);
                 }
             })
-            .catch(err => Swal.fire('Gagal', err.message, 'error'))
-            .finally(() => {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
+            .catch(err => {
+                showLoading(false);
+                Swal.fire('Failed', err.message, 'error');
             });
         }
     </script>
