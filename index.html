@@ -418,59 +418,30 @@
                 container.innerHTML += html;
             });
         }
-
-        function openBillModal(idPO) {
-            const po = allData.find(d => d.id === idPO);
-            if (!po) return;
+async function openBillModal(idPO) {
+            const poFromList = allData.find(d => d.id === idPO);
+            if (!poFromList) return;
 
             currentPOId = idPO;
-            currentFileUrl = po.fileUrl || ""; 
             
-            document.getElementById('bill-po-id').innerText = po.id;
-            document.getElementById('bill-vendor').value = po.vendor;
-            document.getElementById('bill-inv-number').value = po.invNumber || ''; 
-            document.getElementById('bill-file').value = ''; 
-
-            if(currentFileUrl) {
-                document.getElementById('existing-file-container').classList.remove('hidden');
-                document.getElementById('btn-view-file').href = currentFileUrl;
-            } else {
-                document.getElementById('existing-file-container').classList.add('hidden');
-            }
-            
-            const setDateInput = (elemId, dateStr) => {
-                if (dateStr) {
-                    const d = new Date(dateStr);
-                    const yyyy = d.getFullYear();
-                    const mm = String(d.getMonth() + 1).padStart(2, '0');
-                    const dd = String(d.getDate()).padStart(2, '0');
-                    document.getElementById(elemId).value = `${yyyy}-${mm}-${dd}`;
-                } else {
-                    document.getElementById(elemId).value = '';
-                }
-            };
-            
-            if (po.invDate) setDateInput('bill-date', po.invDate);
-            else document.getElementById('bill-date').valueAsDate = new Date();
-            setDateInput('bill-due-date', po.dueDate);
-
-            document.getElementById('tax-mode').value = po.taxMode || 'exclusive'; 
-            document.getElementById('bill-note').value = po.adminNote || po.catatan || '';
+            // Reset Form UI dulu
+            document.getElementById('bill-po-id').innerText = poFromList.id;
+            document.getElementById('bill-vendor').value = poFromList.vendor;
+            document.getElementById('bill-inv-number').value = '';
+            document.getElementById('bill-date').value = ''; 
+            document.getElementById('bill-due-date').value = '';
+            document.getElementById('bill-note').value = '';
             document.getElementById('bill-adjustment').value = 0;
-
-            // MAP ITEMS dengan tracking originalQty
-            currentItems = po.items.map(item => ({
-                ...item,
-                qty: item.qty || 0,
-                originalQty: item.qty || 0, 
-                price: item.price || 0,
-                disc: item.disc || 0,
-                optionalSpec: item.optionalSpec || '' 
-            }));
+            document.getElementById('tax-mode').value = 'exclusive';
+            
+            // File Handling UI Reset
+            document.getElementById('bill-file').value = '';
+            document.getElementById('existing-file-container').classList.add('hidden');
 
             const bannerContainer = document.getElementById('banner-container');
             bannerContainer.innerHTML = ''; 
-            
+
+            // Tombol-tombol UI
             const btnEdit = document.getElementById('btn-edit');
             const btnXero = document.getElementById('btn-xero');
             const btnSave = document.getElementById('btn-save');
@@ -479,55 +450,139 @@
             btnXero.classList.add('hidden');
             btnSave.classList.add('hidden');
 
-            if (po.status === 'Pending') {
+            // === LOGIKA BARU DIMULAI DI SINI ===
+            
+            // Jika status Masih Pending (Belum pernah save bill), pakai data dari List biasa
+            if (poFromList.status === 'Pending') {
                 document.getElementById('modal-title').innerText = "New Bill Entry";
                 btnSave.classList.remove('hidden');
                 btnSave.innerHTML = '<i class="fas fa-check"></i> Approve & Save';
-                setFormState(true); 
-            } else {
-                document.getElementById('modal-title').innerText = "Bill Details";
-                setFormState(false); 
+                
+                // Set default date hari ini
+                document.getElementById('bill-date').valueAsDate = new Date();
+                
+                // Load items dari Data_PO (Basic items)
+                currentItems = poFromList.items.map(item => ({
+                    ...item,
+                    qty: item.qty || 0,
+                    originalQty: item.qty || 0,
+                    price: 0, // Default price 0 karena belum diisi
+                    disc: 0,
+                    optionalSpec: ''
+                }));
+                
+                setFormState(true);
+                renderBillItems();
+                document.getElementById('billModal').classList.remove('hidden');
 
-                if (po.status === 'Billed') {
-                    bannerContainer.innerHTML = `
-                        <div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200">
-                            <i class="fas fa-check-circle text-xl"></i> 
-                            <span>Bill has been approved. Ready to Import.</span>
-                        </div>`;
-                    btnEdit.classList.remove('hidden');
-                    btnXero.classList.remove('hidden');
-                    btnXero.innerHTML = '<i class="fas fa-file-export"></i> Import to Xero';
-                } 
-                else if (po.status === 'Process to Import') {
-                    bannerContainer.innerHTML = `
-                        <div class="mb-4 p-3 bg-orange-50 text-orange-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-orange-200 animate-pulse">
-                            <i class="fas fa-spinner fa-spin text-xl"></i> 
-                            <span>Locked: Processing to Xero... Please wait.</span>
-                        </div>`;
-                }
-                else if (po.status === 'Success Imported') {
-                    bannerContainer.innerHTML = `
-                        <div class="mb-4 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-emerald-200">
-                            <i class="fas fa-check-double text-xl"></i> 
-                            <span>Locked: Successfully Imported to Xero.</span>
-                        </div>`;
-                }
-                else if (po.status === 'Failed to Import') {
-                    bannerContainer.innerHTML = `
-                        <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-red-200">
-                            <i class="fas fa-exclamation-triangle text-xl"></i> 
-                            <span>Error: Failed to Import. Please check data and try again.</span>
-                        </div>`;
-                    btnEdit.classList.remove('hidden');
-                    btnXero.classList.remove('hidden');
-                    btnXero.innerHTML = '<i class="fas fa-sync"></i> Retry Import';
+            } else {
+                // Kalo status SUDAH Billed / Process / dll, ambil data detail dari SERVER (PO_Purchase)
+                document.getElementById('modal-title').innerText = "Bill Details";
+                document.getElementById('modalLoading').classList.remove('hidden');
+                document.getElementById('loadingText').innerText = "Fetching Bill Data...";
+                document.getElementById('billModal').classList.remove('hidden'); // Buka modal dulu biar loading kelihatan
+
+                try {
+                    // Panggil API action: getBillDetail
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'getBillDetail', idPO: idPO })
+                    });
+                    const res = await response.json();
+
+                    if (res.status === 'success' && res.data) {
+                        const bill = res.data;
+
+                        // Isi Form dengan data dari PO_Purchase
+                        document.getElementById('bill-inv-number').value = bill.invNumber || '';
+                        
+                        // Helper date set
+                        const setDateInput = (elemId, dateStr) => {
+                            if (dateStr) {
+                                const d = new Date(dateStr);
+                                const yyyy = d.getFullYear();
+                                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                const dd = String(d.getDate()).padStart(2, '0');
+                                document.getElementById(elemId).value = `${yyyy}-${mm}-${dd}`;
+                            }
+                        };
+
+                        setDateInput('bill-date', bill.invDate);
+                        setDateInput('bill-due-date', bill.dueDate);
+
+                        document.getElementById('tax-mode').value = bill.taxMode || 'exclusive';
+                        document.getElementById('bill-note').value = bill.note || '';
+                        document.getElementById('bill-adjustment').value = bill.adjustment || 0;
+
+                        // Handle File URL
+                        currentFileUrl = bill.fileUrl || "";
+                        if(currentFileUrl) {
+                            document.getElementById('existing-file-container').classList.remove('hidden');
+                            document.getElementById('btn-view-file').href = currentFileUrl;
+                        }
+
+                        // Isi Items dari PO_Purchase (yang ada harganya)
+                        currentItems = bill.items.map(item => ({
+                            ...item,
+                            // Pastikan konversi ke number agar perhitungan aman
+                            qty: Number(item.qty),
+                            price: Number(item.price),
+                            disc: Number(item.disc),
+                            originalQty: Number(item.qty), // Dianggap original saat view mode
+                            optionalSpec: item.spec || ''
+                        }));
+
+                        // Set Banner & Buttons sesuai status
+                        if (bill.status === 'Billed') {
+                             bannerContainer.innerHTML = `
+                                <div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200">
+                                    <i class="fas fa-check-circle text-xl"></i> 
+                                    <span>Bill has been approved. Ready to Import.</span>
+                                </div>`;
+                            btnEdit.classList.remove('hidden');
+                            btnXero.classList.remove('hidden');
+                            btnXero.innerHTML = '<i class="fas fa-file-export"></i> Import to Xero';
+                        } 
+                        else if (bill.status === 'Process to Import') {
+                            bannerContainer.innerHTML = `
+                                <div class="mb-4 p-3 bg-orange-50 text-orange-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-orange-200 animate-pulse">
+                                    <i class="fas fa-spinner fa-spin text-xl"></i> 
+                                    <span>Locked: Processing to Xero... Please wait.</span>
+                                </div>`;
+                        }
+                        else if (bill.status === 'Success Imported') {
+                            bannerContainer.innerHTML = `
+                                <div class="mb-4 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-emerald-200">
+                                    <i class="fas fa-check-double text-xl"></i> 
+                                    <span>Locked: Successfully Imported to Xero.</span>
+                                </div>`;
+                        }
+                        else if (bill.status.includes('Failed')) {
+                            bannerContainer.innerHTML = `
+                                <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-red-200">
+                                    <i class="fas fa-exclamation-triangle text-xl"></i> 
+                                    <span>Error: Failed to Import. Please check data.</span>
+                                </div>`;
+                             btnEdit.classList.remove('hidden');
+                             btnXero.classList.remove('hidden');
+                        }
+
+                        setFormState(false); // Default view mode = read only
+                        renderBillItems();
+                    } else {
+                        alert("Data Bill tidak ditemukan di server.");
+                        closeModal();
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Gagal mengambil detail Bill.");
+                    closeModal();
+                } finally {
+                    document.getElementById('modalLoading').classList.add('hidden');
                 }
             }
-
-            renderBillItems();
-            calculateTotal();
-            document.getElementById('billModal').classList.remove('hidden');
-        }
+}
 
         async function requestXeroImport() {
             if(!confirm("Anda yakin ingin import data ini ke Xero? Data akan dikunci setelah proses dimulai.")) return;
