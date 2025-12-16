@@ -3,560 +3,784 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auxilium PO System</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Auxilium - Bill Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#008080', // Teal Auxilium
+                        'primary-hover': '#006666',
+                        bglight: '#eef2f6',
+                        darktext: '#1e293b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        :root {
-            --primary-teal: #008080;
-            --primary-teal-hover: #006666;
-            --bg-light: #f4f6f8;
-            --text-dark: #333;
-        }
-        body { background-color: var(--bg-light); font-family: 'Inter', sans-serif; color: var(--text-dark); }
-        .navbar-custom { background-color: #1e293b; padding: 10px 20px; color: white; }
-        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; margin: 0; }
-        .status-badge { background-color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-left: 10px; }
+        body { background-color: #eef2f6; } /* Background seragam */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
         
-        /* List Style */
-        .stat-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .stat-value { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
-        .stat-label { font-size: 12px; text-transform: uppercase; color: #888; font-weight: 600; }
-        .table-card { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e0e0e0; }
-        .table-header-custom { background-color: #f9fafb; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
-        .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; }
-        .status-pill.waiting { background-color: #eff6ff; color: #3b82f6; } 
-        .status-pill.done { background-color: #ecfdf5; color: #10b981; }
+        /* Input Styling agar mirip dengan page sebelumnya */
+        .input-bare { background: transparent; border: 1px solid transparent; width: 100%; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
+        .input-bare:hover { border-color: #E2E8F0; background: white; }
+        .input-bare:focus { border-color: #008080; background: white; outline: none; box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.1); }
+        input:disabled, select:disabled, textarea:disabled { background-color: #F8FAFC; color: #64748B; cursor: not-allowed; border-color: transparent; }
+        .summary-box { border-top: 4px solid #FCD34D; background: white; }
 
-        /* Form Style */
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .page-title { font-size: 24px; font-weight: 700; margin: 0; color: #111; }
-        .btn-back { background: white; border: 1px solid #d1d5db; color: #374151; font-weight: 500; padding: 8px 16px; border-radius: 6px; font-size: 14px; }
-        .btn-back:hover { background: #f3f4f6; color: #111; }
-        .form-container { background: white; border-radius: 8px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 20px 25px; }
-        .form-label-custom { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
-        .form-control-custom { border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px; font-size: 14px; width: 100%; }
-        
-        /* Select2 Tweak */
-        .select2-container--bootstrap-5 .select2-selection { border-color: #d1d5db !important; padding: 10px 12px !important; min-height: 42px; font-size: 14px; }
-        .btn-confirm { background-color: var(--primary-teal); color: white; font-weight: 600; border: none; padding: 10px 24px; border-radius: 6px; font-size: 14px; height: 100%; display: flex; align-items: center; gap: 8px; justify-content: center; }
-        .btn-confirm:hover { background-color: var(--primary-teal-hover); color: white; }
-        .section-title { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; }
-        .table-form th { font-size: 13px; color: #111; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding: 10px; background-color: #f9fafb; }
-        .table-form td { padding: 10px; vertical-align: top; border-bottom: 1px solid #f3f4f6; }
-        .input-table { border: 1px solid #d1d5db; border-radius: 4px; padding: 8px; font-size: 14px; width: 100%; }
-        .input-table:focus { border-color: var(--primary-teal); outline: none; }
-        .btn-add-product { color: #2563eb; font-weight: 600; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; cursor: pointer; }
-        .btn-add-product:hover { text-decoration: underline; color: #1d4ed8; }
-        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-        
-        .edit-badge { background-color: #fff3cd; color: #856404; font-size: 0.8rem; padding: 5px 10px; border-radius: 4px; border: 1px solid #ffeeba; margin-left: 10px; }
+        /* Navbar Dropdown Animation */
+        .dropdown-menu { transform-origin: top right; transition: all 0.2s ease-out; }
+        .dropdown-menu.hidden { transform: scale(0.95); opacity: 0; pointer-events: none; display: none; }
+        .dropdown-menu.show { transform: scale(1); opacity: 1; pointer-events: auto; display: block; }
     </style>
 </head>
-<body>
+<body class="text-slate-800">
 
-    <nav class="navbar-custom fixed-top d-flex justify-content-between align-items-center shadow-sm">
-        <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-grid-3x3-gap-fill fs-5"></i>
-            <span class="navbar-brand">AUXILIUM PO</span>
+    <nav class="fixed top-0 w-full bg-white border-b border-slate-200 z-40 px-6 py-3 flex justify-between items-center shadow-sm h-[70px]">
+        <div class="flex items-center gap-3">
+             <div class="font-black text-xl text-slate-800 flex items-center gap-2">
+                 <i class="fa-solid fa-table-cells text-slate-300 text-lg mr-1"></i>
+                 <span class="border-r-2 border-slate-200 pr-4">AUXILIUM</span>
+                 <span class="font-normal text-sm text-slate-500 tracking-tight">Bill Entry System</span>
+             </div>
         </div>
-        <div class="d-flex align-items-center">
-            <span style="font-size: 13px; opacity: 0.8;">user@email.com</span>
-            <span class="status-badge" id="connStatus"><i class="bi bi-wifi"></i> Online</span>
+        
+        <div class="flex items-center gap-6">
+            <div class="hidden md:flex flex-col items-end leading-tight">
+                <span class="text-xs text-slate-400">Status</span>
+                <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 mt-0.5">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Online
+                </span>
+            </div>
+
+            <div class="relative">
+                <button onclick="toggleDropdown()" class="flex items-center gap-3 focus:outline-none group">
+                    <div class="hidden md:flex flex-col text-right">
+                        <span class="text-[13px] font-semibold text-slate-700 group-hover:text-primary transition">Menu Akses</span>
+                        <span class="text-[11px] text-slate-400">Pilih Modul</span>
+                    </div>
+                    <div class="w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 shadow-sm group-hover:border-primary group-hover:text-primary transition">
+                        <i class="fa-solid fa-bars"></i>
+                    </div>
+                </button>
+
+                <div id="mainDropdown" class="dropdown-menu hidden absolute right-0 mt-3 w-72 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
+                    
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/index.html" class="block px-5 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary font-medium flex items-center gap-3">
+                        <i class="fa-solid fa-house-chimney text-slate-400 w-5"></i> Home Pemesanan Pembelian
+                    </a>
+                    
+                    <div class="h-px bg-slate-100 my-1"></div>
+
+                    <div class="px-5 py-2 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                        Menu Pembeliaan
+                    </div>
+
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="block px-5 py-2.5 text-sm text-primary bg-slate-50 font-bold border-l-4 border-primary flex items-center gap-3">
+                        <i class="fa-solid fa-receipt w-5"></i> Buat Bil
+                    </a>
+
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="block px-5 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary font-medium flex items-center gap-3 transition">
+                        <i class="fa-solid fa-box-open text-slate-400 w-5"></i> Penerimaan PO
+                    </a>
+
+                    <div class="h-px bg-slate-100 my-1"></div>
+
+                    <div class="px-5 py-2 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                        Accounting
+                    </div>
+
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="block px-5 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary font-medium flex items-center gap-3 transition">
+                        <i class="fa-solid fa-cloud-arrow-up text-slate-400 w-5"></i> Import Xero PO
+                    </a>
+
+                    <div class="h-px bg-slate-100 my-1"></div>
+
+                    <a href="#" class="block px-5 py-3 text-sm text-red-500 hover:bg-red-50 font-medium flex items-center gap-3 transition">
+                        <i class="fa-solid fa-right-from-bracket w-5"></i> Logout
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
 
-    <div class="container-fluid" style="margin-top: 80px; max-width: 1400px;">
-
-        <div id="view-list">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h3 class="page-title">Purchase Orders</h3>
-                    <div class="breadcrumb-text">Dashboard / List</div>
+    <div class="max-w-7xl mx-auto p-4 md:p-6 mt-20"> <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">List Overview</h1>
+                <p class="text-sm text-slate-500 mt-1">Dashboard • Bill Entry</p>
+            </div>
+            
+            <div class="flex gap-3 w-full md:w-auto">
+                <div class="relative w-full md:w-64">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search PO or Vendor..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none shadow-sm transition">
                 </div>
-                <button class="btn btn-confirm" style="width: auto;" onclick="createNewPO()">
-                    <i class="bi bi-plus-lg"></i> NEW PO
+                
+                <select id="filterStatus" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none bg-white shadow-sm focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer">
+                    <option value="All">All Status</option>
+                    <option value="Pending" selected>Pending</option>
+                    <option value="Billed">Billed</option>
+                    <option value="Process to Import">Process Import</option>
+                    <option value="Success Imported">Success</option>
+                    <option value="Failed to Import">Failed</option>
+                </select>
+                
+                <button onclick="fetchData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-slate-800 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition">
+                    <i class="fa-solid fa-rotate-right mr-1"></i>
                 </button>
-            </div>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Orders</div></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-success" id="statToday">0</div><div class="stat-label">Created Today</div></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-primary" id="statWaiting">0</div><div class="stat-label">Waiting Approval</div></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-danger" id="statItems">0</div><div class="stat-label">Total Items Qty</div></div></div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <input type="text" id="searchInput" class="form-control" style="width: 300px; border-radius: 6px;" placeholder="Search Reference, Vendor..." onkeyup="filterTable()">
-                <button class="btn btn-light border fw-bold" onclick="fetchListPO()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
-            </div>
-
-            <div class="table-card">
-                <table class="table table-hover mb-0">
-                    <thead class="table-header-custom">
-                        <tr>
-                            <th class="py-3 ps-4">Reference</th>
-                            <th class="py-3">Vendor</th>
-                            <th class="py-3">Order Date</th>
-                            <th class="py-3">Created At</th>
-                            <th class="py-3 text-center">Items</th>
-                            <th class="py-3">Status</th>
-                            <th class="py-3 text-center">Action</th> </tr>
-                    </thead>
-                    <tbody id="listTableBody">
-                        <tr><td colspan="7" class="text-center py-5 text-muted">Loading data...</td></tr>
-                    </tbody>
-                </table>
             </div>
         </div>
 
-        <div id="view-form" class="d-none">
+        <div id="loading" class="flex flex-col items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-primary mb-3"></div>
+            <p class="text-slate-500 text-sm font-medium">Memuat Data...</p>
+        </div>
+
+        <div id="cardContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </div>
+
+    <div id="billModal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative animate-fade-in-up border border-slate-200">
             
-            <div class="page-header">
-                <div class="d-flex align-items-center">
-                    <div>
-                        <h3 class="page-title" id="formTitle">New Quote</h3>
-                        <div class="breadcrumb-text">Dashboard / Entry</div>
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+                <div class="flex items-center gap-4">
+                    <div class="bg-teal-50 p-2.5 rounded-lg text-primary border border-teal-100 shadow-sm">
+                        <i class="fas fa-file-invoice-dollar text-xl"></i>
                     </div>
-                    <div id="editBadge" class="d-none edit-badge">
-                        <i class="bi bi-pencil-square"></i> Editing Mode
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800" id="modal-title">New Bill</h2>
+                        <p class="text-xs text-slate-500">PO Ref: <span id="bill-po-id" class="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded"></span></p>
                     </div>
                 </div>
-                <button class="btn btn-back" onclick="switchView('list')">
-                    <i class="bi bi-arrow-left me-1"></i> Back to List
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-500 transition duration-200">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
 
-            <div class="form-container">
-                <div class="row g-3 align-items-end mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label-custom">Vendor</label>
-                        <select id="vendorSelect" class="form-select" style="width:100%;">
-                            <option value="" disabled selected>-- Select Vendor --</option>
-                        </select>
+            <div class="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
+                
+                <div id="banner-container"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="md:col-span-1">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Vendor Name</label>
+                        <input type="text" id="bill-vendor" readonly class="w-full font-bold text-slate-800 bg-transparent border-b border-transparent focus:border-primary outline-none py-1 text-base truncate" title="Vendor Name">
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label-custom">Order Date</label>
-                        <input type="date" id="poDate" class="form-control-custom">
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Number <span class="text-red-500">*</span></label>
+                        <input type="text" id="bill-inv-number" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition">
                     </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-confirm w-100" onclick="submitPO()">
-                            <i class="bi bi-cloud-upload"></i> <span id="btnSubmitText">CONFIRM PO</span>
-                        </button>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Date</label>
+                        <input type="date" id="bill-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Due Date</label>
+                        <input type="date" id="bill-due-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Tax Mode</label>
+                        <div class="relative">
+                            <select id="tax-mode" onchange="calculateTotal()" class="bill-input w-full appearance-none border border-slate-300 rounded-md px-3 py-2 text-sm bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition cursor-pointer">
+                                <option value="exclusive">Tax Exclusive</option>
+                                <option value="inclusive">Tax Inclusive</option>
+                                <option value="no_tax">No Tax</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="section-title">PRODUCTS</div>
+                <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-primary shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex-1 w-full">
+                        <label class="text-xs font-bold text-primary uppercase mb-2 block flex items-center gap-2">
+                            <i class="fas fa-paperclip"></i> Upload Invoice (PDF/Image)
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="bill-file" class="bill-input text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-primary hover:file:bg-teal-100 transition cursor-pointer w-full">
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1 ml-1">Max size 5MB. File akan disimpan di Google Drive.</p>
+                    </div>
+                    <div id="existing-file-container" class="hidden w-full md:w-auto text-right bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p class="text-[10px] text-slate-400 mb-1 uppercase font-bold">Current File</p>
+                        <a id="btn-view-file" href="#" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-white text-primary rounded-lg border border-slate-200 text-sm font-bold hover:bg-teal-50 hover:border-primary transition shadow-sm gap-2">
+                            <i class="fas fa-file-pdf text-red-500"></i> View Document
+                        </a>
+                    </div>
+                </div>
 
-                <div class="table-responsive">
-                    <table class="table table-form w-100">
-                        <thead>
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase text-[11px] tracking-wider">
                             <tr>
-                                <th style="width: 50px;">#</th>
-                                <th style="width: 40%;">Product</th>
-                                <th style="width: 15%;">Qty</th>
-                                <th style="width: 15%;">Unit</th>
-                                <th>Note</th>
-                                <th style="width: 50px;"></th>
+                                <th class="p-4 w-1/4">Item / Description</th>
+                                <th class="p-4 w-20 text-center">Satuan</th>
+                                <th class="p-4 w-32 bg-yellow-50/50 text-slate-700 border-l border-r border-slate-100">Spec / Rev Note</th>
+                                <th class="p-4 w-24 text-center">Qty</th>
+                                <th class="p-4 w-32 text-right">Unit Price</th>
+                                <th class="p-4 w-32 text-right">Disc</th>
+                                <th class="p-4 w-40 text-right">Amount</th>
                             </tr>
                         </thead>
-                        <tbody id="entryTableBody"></tbody>
+                        <tbody id="bill-items-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
 
-                <div onclick="addNewRow()" class="btn-add-product">
-                    <i class="bi bi-plus-circle-fill"></i> Add a product
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <div class="w-full md:w-1/2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase mb-2 block tracking-wide">Internal Notes / Memo</label>
+                        <textarea id="bill-note" rows="4" class="bill-input w-full border border-slate-300 rounded-xl p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition resize-none shadow-sm"></textarea>
+                    </div>
+                    <div class="w-full md:w-1/2 bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex justify-between mb-3 text-slate-500 text-sm">
+                            <span>Subtotal (DPP)</span> <span id="display-subtotal" class="font-semibold text-slate-700">0</span>
+                        </div>
+                        <div class="flex justify-between mb-3 text-slate-500 text-sm items-center">
+                            <span>PPN (11%)</span> <span id="display-ppn" class="font-semibold text-slate-700">0</span>
+                        </div>
+                        <div class="flex justify-between mb-4 items-center">
+                            <span class="text-slate-500 text-sm">Adjustment</span>
+                            <input type="number" id="bill-adjustment" value="0" oninput="calculateTotal()" class="bill-input text-right w-32 border border-slate-300 rounded-md px-2 py-1 text-sm focus:border-primary outline-none transition">
+                        </div>
+                        <div class="border-t border-dashed border-slate-300 my-4"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-bold text-slate-800">GRAND TOTAL</span>
+                            <span id="display-grand-total" class="text-2xl font-bold text-primary">0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <div class="p-5 bg-white border-t border-slate-200 flex justify-end gap-3 z-10">
+                <button onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition">Cancel</button>
+                
+                <button onclick="requestXeroImport()" id="btn-xero" class="hidden px-6 py-2.5 bg-sky-600 text-white rounded-lg font-bold hover:bg-sky-700 shadow-md flex items-center gap-2 transition transform hover:-translate-y-0.5">
+                    <i class="fas fa-file-export"></i> Import to Xero
+                </button>
+
+                <button onclick="enableEditMode()" id="btn-edit" class="hidden px-6 py-2.5 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shadow-md flex items-center gap-2 transition transform hover:-translate-y-0.5">
+                    <i class="fas fa-edit"></i> Edit Bill
+                </button>
+
+                <button onclick="submitBill()" id="btn-save" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition transform hover:-translate-y-0.5">
+                    <i class="fas fa-check"></i> Approve & Save
+                </button>
+            </div>
+            
+            <div id="modalLoading" class="hidden absolute inset-0 bg-white/90 backdrop-blur-[1px] flex flex-col items-center justify-center z-50 rounded-2xl">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-primary mb-4"></div>
+                <p class="font-bold text-slate-700 animate-pulse" id="loadingText">Processing...</p>
+            </div>
         </div>
-
     </div>
 
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner-border text-primary mb-2" role="status"></div>
-        <div class="fw-bold text-dark" id="loadingText">Processing...</div>
+    <div id="notificationModal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100 animate-fade-in-up border border-slate-100">
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100">
+                    <i class="fas fa-shield-halved text-3xl text-red-500"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Internal Control Alert</h3>
+                <p id="notif-message" class="text-slate-500 mb-6 leading-relaxed text-sm">Error Message</p>
+                <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition duration-200 shadow-lg shadow-red-200">
+                    OK, Saya Mengerti
+                </button>
+            </div>
+        </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-        // --- URL BARU ANDA ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbztj8FKA46y0nFOTUXu6VjYZCK5qSFr08-ab2n_y7vOwzwXgYGZmi5Q_V-raRRO_J5gsQ/exec"; 
-        
-        let vendorData = {};
-        let savedOrders = [];
-        let isVendorLoaded = false;
-        
-        // --- LOGIKA EDIT ---
-        let currentEditId = null; // Jika null = New, jika berisi String = Edit Mode
-
-        window.onload = function() {
-            fetchListPO();
-            setDefaultDate();
-        };
-
-        function switchView(viewName) {
-            const listDiv = document.getElementById("view-list");
-            const formDiv = document.getElementById("view-form");
-
-            if (viewName === 'form') {
-                listDiv.classList.add("d-none");
-                formDiv.classList.remove("d-none");
-                if (!isVendorLoaded) fetchVendorData();
+        // --- Toggle Dropdown Script ---
+        function toggleDropdown() {
+            const dropdown = document.getElementById('mainDropdown');
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                setTimeout(() => dropdown.classList.add('show'), 10);
             } else {
-                formDiv.classList.add("d-none");
-                listDiv.classList.remove("d-none");
-                // Reset mode edit saat kembali ke list
-                resetFormState();
+                dropdown.classList.remove('show');
+                setTimeout(() => dropdown.classList.add('hidden'), 200);
+            }
+        }
+        // Close dropdown when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.closest('.relative')) {
+                const dropdown = document.getElementById('mainDropdown');
+                if (!dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('show');
+                    setTimeout(() => dropdown.classList.add('hidden'), 200);
+                }
             }
         }
 
-        function createNewPO() {
-            resetFormState();
-            switchView('form');
-        }
+        // --- KONFIGURASI API ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbzhb-0ORjetneYRMLv2IOvf7M_GRLYFaLUu2d5nPn5Xe8DmjukKEwa0JQZrBD4_hWhm/exec"; 
+        const TAX_RATE = 0.11; 
 
-        function resetFormState() {
-            currentEditId = null;
-            document.getElementById("formTitle").innerText = "New Quote";
-            document.getElementById("btnSubmitText").innerText = "CONFIRM PO";
-            document.getElementById("editBadge").classList.add("d-none");
+        let allData = [];
+        let currentItems = [];
+        let currentPOId = "";
+        let currentFileUrl = "";
+        let isEditMode = false;
+
+        async function fetchData() {
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('cardContainer').innerHTML = '';
+            try {
+                const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
+                const data = await response.json();
+                allData = data;
+                document.getElementById('loading').style.display = 'none';
+                applyFilters();
+            } catch (error) {
+                console.error(error);
+                alert("Gagal memuat data. Periksa koneksi.");
+            }
+        }
+        window.onload = fetchData;
+
+        function renderCards(data) {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = '';
             
-            // Reset Inputs
-            $('#vendorSelect').val(null).trigger('change');
-            document.getElementById("entryTableBody").innerHTML = "";
-            setDefaultDate();
-        }
-
-        function showLoading(show, text = "Processing...") {
-            document.getElementById("loadingText").innerText = text;
-            document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
-        }
-
-        // --- LIST & FETCHING ---
-        function fetchListPO() {
-            const tbody = document.getElementById("listTableBody");
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-secondary spinner-border-sm me-2"></div>Updating...</td></tr>`;
-
-            fetch(API_URL + "?action=getSavedOrders")
-            .then(res => res.json())
-            .then(res => {
-                if(res.status === 'success') {
-                    savedOrders = res.data;
-                    renderListTable(savedOrders);
-                    calculateStats(savedOrders);
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${res.message}</td></tr>`;
-                }
-            })
-            .catch(err => tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Error Connection</td></tr>`);
-        }
-
-        function renderListTable(data) {
-            const tbody = document.getElementById("listTableBody");
-            tbody.innerHTML = "";
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No orders found.</td></tr>`;
+                container.innerHTML = '<div class="col-span-3 text-center text-slate-400 py-10 bg-white rounded-xl border border-dashed border-slate-300">No data found matching criteria.</div>';
                 return;
             }
 
             data.forEach(po => {
-                let date = new Date(po.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
-                let created = new Date(po.createdAt).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
-                let statusClass = po.status.includes("Waiting") || po.status.includes("Menunggu") ? "waiting" : "done";
-                
-                // --- UPDATE BAGIAN BUTTON ACTION ---
-                let actionBtns = `<div class="d-flex justify-content-center gap-2">`;
+                let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
+                let btnText = 'View Bill';
+                // Button default style
+                let btnClass = 'text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200';
 
-                // 1. Tombol Print (Selalu muncul)
-                actionBtns += `
-                    <button class="btn btn-sm btn-outline-secondary border-0" onclick="printPO('${po.id}')" title="Print / PDF">
-                        <i class="bi bi-printer-fill fs-6"></i>
-                    </button>`;
+                // Logika Warna Status & Button
+                if (po.status === 'Pending') {
+                    statusClass = 'bg-amber-50 text-amber-600 border-amber-100';
+                    btnText = 'Create Bill';
+                    // Tombol Create Bill menggunakan Primary Teal
+                    btnClass = 'text-white bg-primary hover:bg-primary-hover shadow-md border-transparent';
+                } 
+                else if (po.status === 'Billed') {
+                    statusClass = 'bg-sky-50 text-sky-600 border-sky-100';
+                } 
+                else if (po.status === 'Process to Import') {
+                    statusClass = 'bg-orange-50 text-orange-600 animate-pulse border-orange-100';
+                } 
+                else if (po.status === 'Success Imported') {
+                    statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                } 
+                else if (po.status === 'Failed to Import') {
+                    statusClass = 'bg-red-50 text-red-600 border-red-100';
+                }
 
-                // 2. Tombol Edit (Hanya jika belum Billed)
-                if(po.status !== "Billed") {
-                    actionBtns += `
-                        <button class="btn btn-sm btn-outline-primary border-0" onclick="editPO('${po.id}')" title="Edit PO">
-                            <i class="bi bi-pencil-square fs-6"></i>
-                        </button>`;
+                // Info Inv Number
+                let invInfo = '';
+                if (po.invNumber) {
+                    invInfo = `
+                    <div class="mt-3 text-[11px] font-mono bg-slate-50 border border-slate-200 rounded px-2 py-1 inline-flex items-center text-slate-500 w-full">
+                        <i class="fas fa-hashtag text-slate-300 mr-2 text-xs"></i>${po.invNumber}
+                    </div>`;
+                }
+
+                const html = `
+                <div class="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg transition-all duration-300 flex flex-col justify-between h-full group relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover:bg-primary transition-colors"></div>
+                    <div>
+                        <div class="flex justify-between items-start mb-3 pl-2">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg tracking-tight">${po.id}</h3>
+                                <p class="text-xs text-slate-500 font-medium truncate w-40" title="${po.vendor}">${po.vendor}</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${po.status}</span>
+                        </div>
+                        ${invInfo}
+                        <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2">
+                            <i class="far fa-calendar-alt mr-2"></i> Created: ${formatDate(po.tanggalInput)}
+                        </div>
+                    </div>
+                    <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
+                        ${po.status === 'Pending' ? '<i class="fas fa-plus"></i>' : '<i class="fas fa-eye"></i>'} ${btnText}
+                    </button>
+                </div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function openBillModal(idPO) {
+            const po = allData.find(d => d.id === idPO);
+            if (!po) return;
+
+            currentPOId = idPO;
+            currentFileUrl = po.fileUrl || ""; 
+            
+            document.getElementById('bill-po-id').innerText = po.id;
+            document.getElementById('bill-vendor').value = po.vendor;
+            document.getElementById('bill-inv-number').value = po.invNumber || ''; 
+            document.getElementById('bill-file').value = ''; 
+
+            if(currentFileUrl) {
+                document.getElementById('existing-file-container').classList.remove('hidden');
+                document.getElementById('btn-view-file').href = currentFileUrl;
+            } else {
+                document.getElementById('existing-file-container').classList.add('hidden');
+            }
+            
+            const setDateInput = (elemId, dateStr) => {
+                if (dateStr) {
+                    const d = new Date(dateStr);
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    document.getElementById(elemId).value = `${yyyy}-${mm}-${dd}`;
                 } else {
-                    // Icon Lock jika billed
-                    actionBtns += `<span class="text-muted small align-self-center ms-1"><i class="bi bi-lock-fill"></i></span>`;
+                    document.getElementById(elemId).value = '';
                 }
-
-                actionBtns += `</div>`;
-                // -----------------------------------
-
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="ps-4 fw-bold text-dark">${po.id}</td>
-                    <td>${po.vendor}</td>
-                    <td>${date}</td>
-                    <td class="text-muted small">${created}</td>
-                    <td class="text-center"><span class="badge bg-light text-dark border">${po.itemsCount}</span></td>
-                    <td><span class="status-pill ${statusClass}">${po.status}</span></td>
-                    <td class="text-center">${actionBtns}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // --- FUNGSI BARU UNTUK PRINT ---
-        function printPO(poId) {
-            const printUrl = API_URL + "?action=printPO&id=" + poId;
-            window.open(printUrl, '_blank');
-        }
-
-        // --- LOGIC UTAMA EDIT ---
-        function editPO(poId) {
-            showLoading(true, "Fetching PO Details...");
+            };
             
-            // 1. Set ID
-            currentEditId = poId;
+            if (po.invDate) setDateInput('bill-date', po.invDate);
+            else document.getElementById('bill-date').valueAsDate = new Date();
+            setDateInput('bill-due-date', po.dueDate);
 
-            // 2. Fetch Data dari Server
-            fetch(API_URL + "?action=getPoDetails&id=" + poId)
-            .then(res => res.json())
-            .then(res => {
-                showLoading(false);
-                if(res.status === 'success') {
-                    const data = res.data;
-                    
-                    // 3. Pastikan Vendor Data sudah ada dulu
-                    if(!isVendorLoaded) {
-                        fetchVendorData().then(() => populateEditForm(data, poId));
-                    } else {
-                        populateEditForm(data, poId);
-                    }
-                } else {
-                    Swal.fire("Error", "Gagal mengambil detail PO", "error");
+            document.getElementById('tax-mode').value = po.taxMode || 'exclusive'; 
+            document.getElementById('bill-note').value = po.adminNote || po.catatan || '';
+            document.getElementById('bill-adjustment').value = 0;
+
+            // MAP ITEMS dengan tracking originalQty
+            currentItems = po.items.map(item => ({
+                ...item,
+                qty: item.qty || 0,
+                originalQty: item.qty || 0, 
+                price: item.price || 0,
+                disc: item.disc || 0,
+                optionalSpec: item.optionalSpec || '' 
+            }));
+
+            const bannerContainer = document.getElementById('banner-container');
+            bannerContainer.innerHTML = ''; 
+            
+            const btnEdit = document.getElementById('btn-edit');
+            const btnXero = document.getElementById('btn-xero');
+            const btnSave = document.getElementById('btn-save');
+
+            btnEdit.classList.add('hidden');
+            btnXero.classList.add('hidden');
+            btnSave.classList.add('hidden');
+
+            if (po.status === 'Pending') {
+                document.getElementById('modal-title').innerText = "New Bill Entry";
+                btnSave.classList.remove('hidden');
+                btnSave.innerHTML = '<i class="fas fa-check"></i> Approve & Save';
+                setFormState(true); 
+            } else {
+                document.getElementById('modal-title').innerText = "Bill Details";
+                setFormState(false); 
+
+                if (po.status === 'Billed') {
+                    bannerContainer.innerHTML = `
+                        <div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200">
+                            <i class="fas fa-check-circle text-xl"></i> 
+                            <span>Bill has been approved. Ready to Import.</span>
+                        </div>`;
+                    btnEdit.classList.remove('hidden');
+                    btnXero.classList.remove('hidden');
+                    btnXero.innerHTML = '<i class="fas fa-file-export"></i> Import to Xero';
+                } 
+                else if (po.status === 'Process to Import') {
+                    bannerContainer.innerHTML = `
+                        <div class="mb-4 p-3 bg-orange-50 text-orange-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-orange-200 animate-pulse">
+                            <i class="fas fa-spinner fa-spin text-xl"></i> 
+                            <span>Locked: Processing to Xero... Please wait.</span>
+                        </div>`;
                 }
-            })
-            .catch(err => {
-                showLoading(false);
-                Swal.fire("Error", "Koneksi Error", "error");
-            });
-        }
-
-        function populateEditForm(data, poId) {
-            // UI Adjustment
-            switchView('form');
-            document.getElementById("formTitle").innerText = "Edit Quote: " + poId;
-            document.getElementById("btnSubmitText").innerText = "UPDATE PO";
-            document.getElementById("editBadge").classList.remove("d-none");
-
-            // Fill Header
-            $('#vendorSelect').val(data.info.vendor).trigger('change');
-            document.getElementById("poDate").value = data.info.date;
-
-            // Clear & Fill Items
-            document.getElementById("entryTableBody").innerHTML = "";
-            
-            // Loop Items
-            data.items.forEach(item => {
-                // Cari index item dari nama item
-                let vendorName = data.info.vendor;
-                let itemIndex = -1;
-                
-                // Cari index di vendorData (agak tricky karena kita simpan nama, bukan index di DB)
-                if(vendorData[vendorName]) {
-                    itemIndex = vendorData[vendorName].findIndex(x => x.item === item.itemName);
+                else if (po.status === 'Success Imported') {
+                    bannerContainer.innerHTML = `
+                        <div class="mb-4 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-emerald-200">
+                            <i class="fas fa-check-double text-xl"></i> 
+                            <span>Locked: Successfully Imported to Xero.</span>
+                        </div>`;
                 }
-
-                if(itemIndex !== -1) {
-                    addNewRow(itemIndex, item.qty, item.note);
-                } else {
-                    console.warn("Item tidak ditemukan di master data: " + item.itemName);
+                else if (po.status === 'Failed to Import') {
+                    bannerContainer.innerHTML = `
+                        <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-red-200">
+                            <i class="fas fa-exclamation-triangle text-xl"></i> 
+                            <span>Error: Failed to Import. Please check data and try again.</span>
+                        </div>`;
+                    btnEdit.classList.remove('hidden');
+                    btnXero.classList.remove('hidden');
+                    btnXero.innerHTML = '<i class="fas fa-sync"></i> Retry Import';
                 }
-            });
-        }
-
-        // --- FORM & SELECT2 LOGIC ---
-        function fetchVendorData() {
-            return new Promise((resolve, reject) => {
-                fetch(API_URL + "?action=getData")
-                .then(res => res.json())
-                .then(res => {
-                    if(res.status === 'success'){
-                        vendorData = res.data;
-                        isVendorLoaded = true;
-                        populateVendorSelect();
-                        resolve();
-                    } else reject();
-                });
-            });
-        }
-
-        function populateVendorSelect() {
-            const select = $('#vendorSelect');
-            select.empty();
-            select.append('<option value="" disabled selected>-- Select Vendor --</option>');
-            Object.keys(vendorData).sort().forEach(v => { select.append(new Option(v, v)); });
-            
-            select.select2({ theme: 'bootstrap-5', placeholder: "-- Select Vendor --", width: '100%' });
-            select.on('select2:select', function (e) {
-                document.getElementById("entryTableBody").innerHTML = ""; 
-                addNewRow(); 
-            });
-        }
-
-        function addNewRow(preselectIndex = null, preQty = null, preNote = null) {
-            var vendor = $('#vendorSelect').val(); 
-            if(!vendor && !preselectIndex) return Swal.fire("Vendor Required", "Select vendor first.", "warning");
-
-            var tbody = document.getElementById("entryTableBody");
-            var rowIdx = tbody.children.length; 
-            var newSelectId = "product-select-" + rowIdx + "-" + Date.now();
-
-            var itemOptions = '<option value="" disabled selected>Select Product</option>';
-            vendorData[vendor].forEach((obj, index) => {
-                let selected = (preselectIndex !== null && preselectIndex == index) ? "selected" : "";
-                itemOptions += `<option value="${index}" ${selected}>${obj.item}</option>`;
-            });
-
-            var tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="text-center text-muted align-middle row-number">${rowIdx + 1}</td>
-                <td><select id="${newSelectId}" class="form-select input-table item-select" style="width:100%">${itemOptions}</select></td>
-                <td><input type="number" class="input-table qty-input text-center" value="${preQty || ''}" placeholder="0.00" min="0"></td>
-                <td><input type="text" class="input-table unit-input bg-light text-muted" readonly tabindex="-1"></td>
-                <td><input type="text" class="input-table note-input" value="${preNote || ''}" placeholder="Note"></td>
-                <td class="text-center align-middle"><i class="bi bi-trash3-fill text-danger" style="cursor:pointer;" onclick="removeRow(this)"></i></td>
-            `;
-            tbody.appendChild(tr);
-
-            $(`#${newSelectId}`).select2({ theme: 'bootstrap-5', placeholder: "Search Product...", width: '100%', dropdownAutoWidth: true });
-            
-            // Trigger update unit jika preselected (saat edit)
-            if(preselectIndex !== null) {
-                // Manual call update logic
-                let mockEl = document.getElementById(newSelectId);
-                let unitInput = tr.querySelector(".unit-input");
-                if(vendorData[vendor][preselectIndex]) unitInput.value = vendorData[vendor][preselectIndex].unit;
             }
 
-            $(`#${newSelectId}`).on('select2:select', function (e) { updateUnit(this); });
+            renderBillItems();
+            calculateTotal();
+            document.getElementById('billModal').classList.remove('hidden');
         }
 
-        function updateUnit(selectElement) {
-            var selectedValue = selectElement.value;
-            // Check Duplicates
-            var allSelects = document.querySelectorAll(".item-select");
-            var duplicateCount = 0;
-            allSelects.forEach(el => { if(el.value === selectedValue && selectedValue !== "") duplicateCount++; });
+        async function requestXeroImport() {
+            if(!confirm("Anda yakin ingin import data ini ke Xero? Data akan dikunci setelah proses dimulai.")) return;
+            
+            document.getElementById('loadingText').innerText = "Marking for Import...";
+            document.getElementById('modalLoading').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'import_xero', idPO: currentPOId })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert("Berhasil! Status berubah menjadi 'Process to Import'.");
+                    closeModal();
+                    fetchData(); 
+                } else {
+                    alert("Gagal: " + result.message);
+                }
+            } catch (err) { 
+                alert("Koneksi Error"); 
+            } finally { 
+                document.getElementById('modalLoading').classList.add('hidden');
+                document.getElementById('loadingText').innerText = "Saving Bill Data...";
+            }
+        }
 
-            if(duplicateCount > 1) {
-                Swal.fire("Duplicate Item", "Item already in list.", "warning");
-                $(selectElement).val(null).trigger('change');
-                selectElement.closest("tr").querySelector(".unit-input").value = "";
+        function enableEditMode() {
+            if(confirm("Edit data Bill ini?")) {
+                setFormState(true); 
+                document.getElementById('btn-edit').classList.add('hidden');
+                document.getElementById('btn-xero').classList.add('hidden'); 
+                document.getElementById('btn-save').classList.remove('hidden');
+                document.getElementById('btn-save').innerHTML = '<i class="fas fa-save"></i> Update Changes';
+                document.getElementById('banner-container').innerHTML = '';
+            }
+        }
+
+        function setFormState(isEditable) {
+            isEditMode = isEditable;
+            const inputs = document.querySelectorAll('.bill-input');
+            inputs.forEach(input => input.disabled = !isEditable);
+            renderBillItems();
+        }
+
+        function renderBillItems() {
+            const tbody = document.getElementById('bill-items-body');
+            tbody.innerHTML = '';
+            const disabledAttr = isEditMode ? '' : 'disabled';
+            currentItems.forEach((item, index) => {
+                const row = `
+                <tr class="hover:bg-slate-50 group border-b border-slate-50 last:border-0 transition">
+                    <td class="p-4 align-top">
+                        <div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>
+                    </td>
+                    <td class="p-4 align-top text-center text-xs font-bold text-slate-400 pt-5">${item.satuan}</td>
+                    <td class="p-4 align-top bg-yellow-50/30 border-l border-r border-slate-100">
+                        <input type="text" placeholder="-" value="${item.optionalSpec || ''}" ${disabledAttr} oninput="updateItem(${index}, 'optionalSpec', this.value)" class="input-bare text-xs text-slate-600 font-medium h-full">
+                    </td>
+                    
+                    <td class="p-4 align-top">
+                         <input type="number" value="${item.qty}" ${disabledAttr} oninput="updateItem(${index}, 'qty', this.value)" class="input-bare text-center text-sm font-bold text-slate-700">
+                    </td>
+                    
+                    <td class="p-4 align-top">
+                        <input type="number" placeholder="0" value="${item.price}" ${disabledAttr} oninput="updateItem(${index}, 'price', this.value)" class="input-bare text-right text-sm font-mono text-slate-600">
+                    </td>
+                    <td class="p-4 align-top">
+                        <input type="number" placeholder="0" value="${item.disc}" ${disabledAttr} oninput="updateItem(${index}, 'disc', this.value)" class="input-bare text-right text-sm font-mono text-red-500">
+                    </td>
+                    <td class="p-4 align-top text-right font-bold text-slate-800 font-mono text-sm" id="row-total-${index}">0</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+            calculateTotal(); 
+        }
+
+        function updateItem(index, field, value) {
+            if (field === 'price' || field === 'disc' || field === 'qty') {
+                currentItems[index][field] = parseFloat(value) || 0;
+            } else {
+                currentItems[index][field] = value; 
+            }
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            let totalLineAmount = 0;
+            const taxMode = document.getElementById('tax-mode').value;
+            currentItems.forEach((item, index) => {
+                const lineTotal = (item.price - item.disc) * item.qty;
+                totalLineAmount += lineTotal;
+                const el = document.getElementById(`row-total-${index}`);
+                if(el) el.innerText = formatRupiah(lineTotal);
+            });
+            let dpp = 0, ppn = 0;
+            const adj = parseFloat(document.getElementById('bill-adjustment').value) || 0;
+            if (taxMode === 'exclusive') {
+                dpp = totalLineAmount;
+                ppn = dpp * TAX_RATE;
+            } else if (taxMode === 'inclusive') {
+                dpp = totalLineAmount / (1 + TAX_RATE);
+                ppn = totalLineAmount - dpp;
+            } else {
+                dpp = totalLineAmount;
+            }
+            const grandTotal = dpp + ppn + adj;
+            document.getElementById('display-subtotal').innerText = formatRupiah(dpp);
+            document.getElementById('display-subtotal').dataset.value = dpp;
+            
+            document.getElementById('display-ppn').innerText = formatRupiah(ppn);
+            document.getElementById('display-ppn').dataset.value = ppn;
+            
+            document.getElementById('display-grand-total').innerText = formatRupiah(grandTotal);
+            document.getElementById('display-grand-total').dataset.value = grandTotal;
+        }
+
+        async function submitBill() {
+            // --- INTERNAL CONTROL ---
+            const invNumber = document.getElementById('bill-inv-number').value;
+            if (!invNumber) { 
+                showNotification("Nomor Invoice wajib diisi untuk keperluan Internal Control."); 
+                return; 
+            }
+
+            const invDate = document.getElementById('bill-date').value;
+            const dueDate = document.getElementById('bill-due-date').value;
+            
+            if (!invDate) { showNotification("Tanggal Invoice wajib diisi."); return; }
+            if (!dueDate) { showNotification("Due Date wajib diisi."); return; }
+
+            const grandTotal = parseFloat(document.getElementById('display-grand-total').dataset.value) || 0;
+            if (grandTotal <= 0) {
+                showNotification("Total Bill tidak boleh 0 atau negatif.");
                 return;
             }
 
-            var vendor = $('#vendorSelect').val();
-            if(vendorData[vendor] && vendorData[vendor][selectedValue]){
-                selectElement.closest("tr").querySelector(".unit-input").value = vendorData[vendor][selectedValue].unit;
-            }
-        }
-
-        function removeRow(icon) {
-            icon.closest("tr").remove();
-            document.querySelectorAll("#entryTableBody tr .row-number").forEach((td, index) => td.innerText = index + 1);
-        }
-
-        function submitPO() {
-            var vendor = $('#vendorSelect').val();
-            var poDate = document.getElementById("poDate").value;
-
-            if(!vendor) return Swal.fire("Missing Data", "Select vendor.", "error");
-            if(!poDate) return Swal.fire("Missing Data", "Select date.", "error");
-
-            var rows = document.querySelectorAll("#entryTableBody tr");
-            var itemsToSave = [];
-            var isValid = true;
-
-            rows.forEach((row) => {
-                var itemIdx = row.querySelector(".item-select").value;
-                var qty = row.querySelector(".qty-input").value;
-                var unit = row.querySelector(".unit-input").value;
-                var note = row.querySelector(".note-input").value;
-
-                if(!itemIdx || !qty || qty <= 0) {
-                    isValid = false;
-                    row.querySelector(".qty-input").style.borderColor = "red";
-                } else {
-                    row.querySelector(".qty-input").style.borderColor = "#d1d5db";
-                    var realItemName = vendorData[vendor][itemIdx].item;
-                    itemsToSave.push({ itemName: realItemName, qty: qty, unit: unit, note: note });
+            for (let i = 0; i < currentItems.length; i++) {
+                const item = currentItems[i];
+                if (item.disc > item.price) {
+                    showNotification(`Internal Control Error:\nItem "${item.namaItem}" Diskon melebihi Harga.`);
+                    return; 
                 }
+            }
+            
+            // --- FILE UPLOAD ---
+            const fileInput = document.getElementById('bill-file');
+            let fileData = null;
+            let fileName = null;
+            let mimeType = null;
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 5 * 1024 * 1024) { 
+                    showNotification("Ukuran file terlalu besar! Maksimal 5MB.");
+                    return;
+                }
+                document.getElementById('loadingText').innerText = "Uploading File & Saving...";
+                try {
+                    const base64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = error => reject(error);
+                    });
+                    fileData = base64;
+                    fileName = file.name;
+                    mimeType = file.type;
+                } catch (e) {
+                    showNotification("Gagal memproses file attachment.");
+                    return;
+                }
+            } else {
+                document.getElementById('loadingText').innerText = "Saving Bill Data...";
+            }
+
+            // --- PREPARE ITEMS (REV QTY LOG) ---
+            const itemsToSend = currentItems.map(item => {
+                let specToSend = item.optionalSpec;
+                if (item.qty !== item.originalQty) {
+                    const changeLog = `(Rev Qty: ${item.originalQty} -> ${item.qty})`;
+                    if (!specToSend.includes(changeLog)) {
+                         specToSend = specToSend ? `${specToSend} ${changeLog}` : changeLog;
+                    }
+                }
+                return { ...item, optionalSpec: specToSend };
             });
 
-            if(rows.length === 0) return Swal.fire("Empty", "Add at least one product.", "warning");
-            if(!isValid) return Swal.fire("Invalid", "Check Qty fields.", "error");
-
-            showLoading(true, "Saving PO...");
-
-            // PAYLOAD: Kirim poId jika sedang edit
-            let payload = { 
-                vendor: vendor, 
-                poDate: poDate, 
-                items: itemsToSave,
-                poId: currentEditId // Kirim ID lama (jika ada)
+            const payload = {
+                action: 'save_bill',
+                data: {
+                    idPO: currentPOId,
+                    vendor: document.getElementById('bill-vendor').value,
+                    invNumber: invNumber,
+                    invDate: invDate,
+                    dueDate: dueDate,
+                    taxMode: document.getElementById('tax-mode').value,
+                    note: document.getElementById('bill-note').value,
+                    subtotal: parseFloat(document.getElementById('display-subtotal').dataset.value),
+                    ppn: parseFloat(document.getElementById('display-ppn').dataset.value),
+                    adjustment: parseFloat(document.getElementById('bill-adjustment').value) || 0,
+                    grandTotal: grandTotal,
+                    items: itemsToSend, 
+                    fileData: fileData,
+                    fileName: fileName,
+                    mimeType: mimeType,
+                    existingFileUrl: currentFileUrl 
+                }
             };
 
-            fetch(API_URL + "?action=saveOrder", {
-                method: "POST",
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(res => {
-                showLoading(false);
-                if(res.status === 'success') {
-                    let msg = currentEditId ? "PO Updated Successfully!" : "PO Created Successfully!";
-                    Swal.fire({ title: 'Success!', text: msg, icon: 'success', confirmButtonColor: '#008080' })
-                    .then(() => {
-                        resetFormState();
-                        switchView('list');
-                        fetchListPO();
-                    });
-                } else {
-                    throw new Error(res.message);
-                }
-            })
-            .catch(err => {
-                showLoading(false);
-                Swal.fire('Failed', err.message, 'error');
-            });
+            document.getElementById('modalLoading').classList.remove('hidden');
+            try {
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (result.status === 'success') { closeModal(); fetchData(); } 
+                else { showNotification("Error Server: " + result.message); }
+            } catch (err) { showNotification("Koneksi Error. Cek internet Anda."); } 
+            finally { document.getElementById('modalLoading').classList.add('hidden'); }
         }
 
-        function calculateStats(data) {
-            document.getElementById("statTotal").innerText = data.length;
-            const today = new Date().toDateString();
-            document.getElementById("statToday").innerText = data.filter(po => new Date(po.createdAt).toDateString() === today).length;
-            document.getElementById("statWaiting").innerText = data.filter(po => po.status.includes("Menunggu") || po.status.includes("Waiting")).length;
-            document.getElementById("statItems").innerText = data.reduce((sum, po) => sum + po.itemsCount, 0);
+        function closeModal() { document.getElementById('billModal').classList.add('hidden'); }
+        function formatRupiah(amount) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount); }
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+        function applyFilters() {
+            const status = document.getElementById('filterStatus').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = allData;
+            
+            if (status !== 'All') {
+                filtered = filtered.filter(p => p.status === status);
+            }
+            if (search) {
+                filtered = filtered.filter(p => 
+                    p.id.toLowerCase().includes(search) || 
+                    p.vendor.toLowerCase().includes(search)
+                );
+            }
+            renderCards(filtered);
         }
 
-        function filterTable() {
-            const term = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = savedOrders.filter(po => po.id.toLowerCase().includes(term) || po.vendor.toLowerCase().includes(term));
-            renderListTable(filtered);
+        // --- FUNGSI NOTIFIKASI ---
+        function showNotification(message) {
+            document.getElementById('notif-message').innerText = message;
+            document.getElementById('notificationModal').classList.remove('hidden');
         }
 
-        function setDefaultDate() {
-            const date = new Date();
-            const local = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
-            document.getElementById("poDate").value = local;
+        function closeNotification() {
+            document.getElementById('notificationModal').classList.add('hidden');
         }
     </script>
 </body>
