@@ -1,919 +1,527 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auxilium - Bill Entry System</title>
+    <title>AUXILIUM | Bill Entry System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#008080',
-                        'primary-hover': '#006666',
-                        bglight: '#eef2f6',
-                        darktext: '#1e293b'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif']
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.3s ease-out'
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(5px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        body { background-color: #f8fafc; }
-        
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      :root {
+        --primary-teal: #008080;
+        --secondary-purple: #6f42c1;
+        --bg-color: #f5f7fb;
+        --text-dark: #343a40;
+        --text-muted: #6c757d;
+      }
+      body { background-color: var(--bg-color); font-family: 'Inter', sans-serif; color: var(--text-dark); }
+      
+      /* --- Header & Nav --- */
+      .navbar-brand { font-weight: 800; letter-spacing: 0.5px; }
+      .main-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 5px; }
+      .breadcrumb { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
 
-        /* Input Styling */
-        .input-bare {
-            background: transparent;
-            border: 1px solid transparent;
-            width: 100%;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .input-bare:hover { border-color: #e2e8f0; background: white; }
-        .input-bare:focus { 
-            border-color: #008080; 
-            background: white; 
-            outline: none; 
-            box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.1); 
-        }
+      /* --- Custom Tabs (The Toggle) --- */
+      .view-switcher { display: flex; gap: 10px; margin-bottom: 20px; }
+      .view-btn {
+        border: 1px solid #e0e0e0; background: #fff; padding: 10px 20px;
+        border-radius: 6px; font-weight: 600; color: var(--text-muted);
+        cursor: pointer; display: flex; align-items: center; gap: 8px;
+        transition: all 0.2s; font-size: 0.9rem;
+      }
+      .view-btn:hover { background: #f8f9fa; }
+      .view-btn.active {
+        color: var(--primary-teal); border-color: var(--primary-teal); background-color: #e6fffa;
+      }
+      .view-btn .badge { background-color: var(--primary-teal); margin-left: 5px; }
+      
+      /* --- Filter Pills --- */
+      .filter-pills { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+      .filter-pill {
+        padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;
+        border: 1px solid transparent; cursor: pointer; background: #fff; color: var(--text-muted);
+      }
+      .filter-pill.active { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; }
+      .filter-pill.active.partial { background-color: #e2d9f3; color: #59359a; }
+      .filter-pill.active.pending { background-color: #fff3cd; color: #856404; }
 
-        .bill-input:disabled { background-color: #f8fafc; color: #64748b; cursor: not-allowed; }
-        input:disabled, select:disabled, textarea:disabled { background-color: #f8fafc; cursor: not-allowed; }
+      /* --- Card Styles (Grid View) --- */
+      .po-card {
+        background: #fff; border: 1px solid #eef0f3; border-radius: 8px;
+        padding: 20px; height: 100%; transition: transform 0.2s, box-shadow 0.2s;
+        display: flex; flex-direction: column; justify-content: space-between;
+      }
+      .po-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+      .po-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+      .po-number { font-weight: 700; font-size: 1rem; color: #212529; }
+      .po-vendor { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; display: block; }
+      .po-date { font-size: 0.8rem; color: #adb5bd; margin-bottom: 15px; }
+      
+      .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
+      .bg-pending { background-color: #fff3cd; color: #856404; }
+      .bg-partial { background-color: #e2d9f3; color: #59359a; }
+      .bg-billed { background-color: #d1e7dd; color: #0f5132; }
+      
+      .invoice-box {
+        background-color: #f0fff4; border: 1px solid #b7ebc7; color: #0f5132;
+        padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600;
+        margin-bottom: 15px; display: inline-block; width: 100%;
+      }
 
-        /* Tab Styles */
-        .tab-btn { position: relative; transition: all 0.3s ease; }
-        .tab-btn.active { 
-            color: #008080; 
-            background-color: white; 
-            border-color: #e2e8f0; 
-            border-bottom-color: white; 
-        }
-        .tab-btn.inactive { color: #64748b; background-color: transparent; border-color: transparent; }
-        .tab-btn.inactive:hover { background-color: #e2e8f0; color: #334155; }
+      .btn-card-action { width: 100%; font-weight: 600; font-size: 0.9rem; border-radius: 6px; padding: 8px; }
+      .btn-create { background-color: var(--primary-teal); color: white; border: none; }
+      .btn-create:hover { background-color: #006666; color: white;}
+      .btn-partial { background-color: var(--secondary-purple); color: white; border: none; }
+      .btn-partial:hover { background-color: #5a32a3; color: white;}
+      .btn-view { background-color: #fff; color: var(--text-dark); border: 1px solid #dee2e6; }
+      .btn-view:hover { background-color: #f8f9fa; }
 
-        /* Filter Pills */
-        .filter-pill { transition: all 0.2s; }
-        .filter-pill.active { background-color: #ccfbf1; color: #0f766e; border-color: #99f6e4; font-weight: 700; }
-        .filter-pill.inactive { background-color: white; color: #64748b; border-color: #e2e8f0; }
-        .filter-pill.inactive:hover { border-color: #cbd5e1; color: #334155; }
+      /* --- Table Styles (List View) --- */
+      .table-container { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+      .table thead th { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); background: #fff; border-bottom: 2px solid #f0f0f0; }
+      .table td { vertical-align: middle; font-size: 0.9rem; color: #495057; padding: 12px 10px; }
+      .action-icons i { cursor: pointer; margin: 0 5px; transition: color 0.2s; }
+      .action-icons i:hover { color: var(--primary-teal); }
+
+      /* --- Utilities --- */
+      .d-none { display: none !important; }
+      #loader { display: flex; justify-content: center; margin-top: 50px; }
     </style>
 </head>
-<body class="text-slate-800 font-sans antialiased">
+<body>
 
-    <nav class="fixed top-0 w-full bg-white border-b border-slate-200 z-40 px-6 py-3 flex justify-between items-center shadow-sm h-[70px]">
-        <div class="flex items-center gap-3">
-            <div class="font-black text-xl text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-table-cells text-slate-300 text-lg mr-1"></i>
-                <span class="border-r-2 border-slate-200 pr-4">AUXILIUM</span>
-                <span class="font-normal text-sm text-slate-500 tracking-tight">Bill Entry System</span>
-            </div>
-        </div>
-        <div class="flex items-center gap-6">
-            <button onclick="location.reload()" class="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-primary hover:bg-teal-50 transition duration-200" title="Refresh App">
-                <i class="fas fa-sync-alt"></i>
-            </button>
-        </div>
+    <nav class="navbar navbar-light bg-white sticky-top">
+      <div class="container-fluid px-4">
+        <span class="navbar-brand"><i class="fas fa-th-large me-2"></i>AUXILIUM <span class="fw-normal text-muted ms-2" style="font-size: 0.9rem;">| Bill Entry System</span></span>
+      </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-4 md:p-6 mt-20"> 
-        
-        <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+    <div class="container-fluid px-4 py-4">
+      
+      <div class="mb-4">
+        <h2 class="main-title">List Overview</h2>
+        <div class="breadcrumb">Dashboard • Bill Entry</div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4 ms-auto">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search PO, Vendor, or Invoice...">
+            <button class="btn btn-light border" onclick="fetchData()"><i class="fas fa-sync-alt"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="view-switcher">
+        <div class="view-btn active" onclick="switchView('cards')" id="btnTabCards">
+          <i class="fas fa-file-invoice-dollar"></i> Kelola Tagihan PO <span class="badge rounded-pill" id="countPending">0</span>
+        </div>
+        <div class="view-btn" onclick="switchView('table')" id="btnTabTable">
+          <i class="fas fa-list"></i> Daftar Tagihan <i class="fas fa-external-link-alt small text-muted ms-1" style="font-size: 0.7em;"></i>
+        </div>
+      </div>
+
+      <div class="filter-pills">
+        <span class="filter-pill active" onclick="applyFilter('all', this)">Semua</span>
+        <span class="filter-pill pending" onclick="applyFilter('Pending', this)">● Pending</span>
+        <span class="filter-pill partial" onclick="applyFilter('Partial', this)">● Partial</span>
+        <span class="filter-pill" onclick="applyFilter('Billed', this)">● Selesai / Billed</span>
+      </div>
+
+      <div id="loader">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+      </div>
+
+      <div id="view-cards" class="d-none">
+        <div class="row g-3" id="cardsContainer">
+          </div>
+      </div>
+
+      <div id="view-table" class="d-none">
+        <div class="table-container">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>REFERENCE</th>
+                <th>VENDOR</th>
+                <th>ORDER DATE</th>
+                <th>INVOICE #</th>
+                <th>STATUS</th>
+                <th class="text-center">ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal fade" id="billModal" tabindex="-1" data-bs-backdrop="static">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content" style="background-color: #f4f6f9;">
+          <div class="modal-header bg-white border-bottom-0">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900">List Overview</h1>
-                <p class="text-sm text-slate-500 mt-1">Dashboard • Bill Entry</p>
+              <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice text-success me-2"></i>Bill Entry / Detail</h5>
+              <p class="text-muted small mb-0">PO Ref: <span id="modalPoRef" class="fw-bold text-dark"></span></p>
             </div>
-            <div class="flex gap-3 w-full md:w-auto">
-                <div class="relative w-full md:w-80">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search PO, Vendor, or Invoice..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none shadow-sm transition">
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-success d-flex align-items-center py-2 mb-3" role="alert">
+              <i class="fas fa-check-circle me-2"></i> <div id="modalStatusText">Ready to Import.</div>
+            </div>
+
+            <form id="billForm">
+              <div class="card border-0 shadow-sm p-3 mb-3">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="small text-muted fw-bold">VENDOR NAME</label>
+                    <input type="text" class="form-control fw-bold border-0 bg-white p-0" id="modalVendor" readonly>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="small text-muted fw-bold">INV NUMBER <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="modalInvNo">
+                  </div>
+                  <div class="col-md-2">
+                    <label class="small text-muted fw-bold">INV DATE</label>
+                    <input type="date" class="form-control" id="modalInvDate">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="small text-muted fw-bold">TAX MODE</label>
+                    <select class="form-select" id="modalTaxMode">
+                      <option value="Tax Exclusive">Tax Exclusive</option>
+                      <option value="Tax Inclusive">Tax Inclusive</option>
+                    </select>
+                  </div>
                 </div>
-                <button onclick="fetchData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-primary px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition" title="Refresh Data">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
-            </div>
-        </div>
+              </div>
 
-        <div class="flex items-end gap-2 border-b border-slate-200 mb-6 pl-1 overflow-x-auto">
-            <button class="tab-btn active px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px] cursor-default">
-                <div class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-folder-open"></i></div>
-                Kelola Tagihan PO
-                <span id="count-total" class="ml-2 bg-teal-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
-            </button>
-            
-            <a href="listbill/index.html" class="tab-btn inactive px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px] group">
-                <div class="bg-slate-100 text-slate-500 group-hover:bg-slate-200 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-receipt"></i></div>
-                Daftar Tagihan
-                <i class="fas fa-arrow-up-right-from-square text-[10px] ml-1 opacity-50"></i>
-            </a>
-        </div>
+              <div class="card border-0 shadow-sm p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <label class="fw-bold text-success mb-1"><i class="fas fa-paperclip"></i> UPLOAD INVOICE</label>
+                    <div class="input-group input-group-sm">
+                      <input type="file" class="form-control" disabled>
+                    </div>
+                  </div>
+                  <div class="bg-light border rounded p-2 text-center" style="min-width: 150px;">
+                    <small class="text-muted d-block" style="font-size: 0.65rem;">CURRENT FILE</small>
+                    <div id="viewDocContainer"></div>
+                  </div>
+                </div>
+              </div>
 
-        <div class="flex flex-wrap gap-2 mb-6">
-            <button onclick="setFilterStatus('all')" id="filter-all" class="filter-pill active border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm">
-                Semua
-            </button>
-            <button onclick="setFilterStatus('pending')" id="filter-pending" class="filter-pill inactive border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-amber-400"></span> Pending
-            </button>
-            <button onclick="setFilterStatus('partial')" id="filter-partial" class="filter-pill inactive border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-indigo-400"></span> Partial
-            </button>
-            <button onclick="setFilterStatus('billed')" id="filter-billed" class="filter-pill inactive border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Selesai / Billed
-            </button>
-        </div>
+              <div class="card border-0 shadow-sm mb-3">
+                <div class="table-responsive">
+                  <table class="table table-borderless mb-0 small">
+                    <thead class="bg-light border-bottom">
+                      <tr>
+                        <th>TYPE</th>
+                        <th width="35%">ITEM DETAILS</th>
+                        <th class="text-end">QTY</th>
+                        <th class="text-end">PRICE</th>
+                        <th class="text-end">AMOUNT</th>
+                      </tr>
+                    </thead>
+                    <tbody id="modalItemsBody" class="bg-white"></tbody>
+                  </table>
+                </div>
+              </div>
 
-        <div id="loading" class="flex flex-col items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-primary mb-3"></div>
-            <p class="text-slate-500 text-sm font-medium">Memuat Data...</p>
+              <div class="row justify-content-end">
+                <div class="col-md-5">
+                  <div class="bg-white p-3 rounded shadow-sm border">
+                    <div class="d-flex justify-content-between mb-1"><span>Subtotal</span><span id="txtSubtotal" class="fw-bold">0</span></div>
+                    <div class="d-flex justify-content-between mb-1"><span>PPN (11%)</span><span id="txtPPN">0</span></div>
+                    <div class="d-flex justify-content-between pt-2 mt-2 border-top"><span class="fw-bold h5">GRAND TOTAL</span><span id="txtGrandTotal" class="fw-bold h5 text-success">0</span></div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer bg-white">
+            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-warning text-white fw-bold" onclick="submitEdit()">
+              <i class="fas fa-edit"></i> Edit Bill
+            </button>
+          </div>
         </div>
-
-        <div id="content-area" class="min-h-[300px]">
-            <div id="listContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in"></div>
-        </div>
-
+      </div>
     </div>
 
-    <div id="billModal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="bg-white w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative animate-fade-in border border-slate-200">
-            
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
-                <div class="flex items-center gap-4">
-                    <div class="bg-teal-50 p-2.5 rounded-lg text-primary border border-teal-100 shadow-sm">
-                        <i class="fas fa-file-invoice-dollar text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-800" id="modal-title">Bill Entry</h2>
-                        <p class="text-xs text-slate-500">PO Ref: <span id="bill-po-id" class="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded"></span></p>
-                    </div>
-                </div>
-                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-500 transition duration-200">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
-                <div id="banner-container"></div>
-
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div class="md:col-span-1">
-                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Vendor Name</label>
-                        <input type="text" id="bill-vendor" readonly class="w-full font-bold text-slate-800 bg-transparent border-b border-transparent focus:border-primary outline-none py-1 text-base truncate cursor-default">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Number <span class="text-red-500">*</span></label>
-                        <input type="text" id="bill-inv-number" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Date</label>
-                        <input type="date" id="bill-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Due Date</label>
-                        <input type="date" id="bill-due-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition">
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Tax Mode</label>
-                        <div class="relative">
-                            <select id="tax-mode" onchange="calculateTotal()" class="bill-input w-full appearance-none border border-slate-300 rounded-md px-3 py-2 text-sm bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer transition">
-                                <option value="exclusive">Tax Exclusive</option>
-                                <option value="inclusive">Tax Inclusive</option>
-                                <option value="no_tax">No Tax</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500"><i class="fa-solid fa-chevron-down text-xs"></i></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-primary shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="flex-1 w-full">
-                        <label class="text-xs font-bold text-primary uppercase mb-2 block flex items-center gap-2"><i class="fas fa-paperclip"></i> Upload Invoice</label>
-                        <input type="file" id="bill-file" class="bill-input text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-primary hover:file:bg-teal-100 cursor-pointer w-full">
-                    </div>
-                    <div id="existing-file-container" class="hidden w-full md:w-auto text-right bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <p class="text-[10px] text-slate-400 mb-1 uppercase font-bold">Current File</p>
-                        <a id="btn-view-file" href="#" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-white text-primary rounded-lg border border-slate-200 text-sm font-bold hover:bg-teal-50 border-primary transition shadow-sm gap-2">
-                            <i class="fas fa-file-pdf text-red-500"></i> View Document
-                        </a>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase text-[11px] tracking-wider">
-                            </thead>
-                        <tbody id="bill-items-body" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                    
-                    <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
-                        <button id="btn-add-item-db" onclick="openProductModal()" class="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden">
-                            <i class="fas fa-database"></i> Tambah Item Database
-                        </button>
-                        <button id="btn-add-item-manual" onclick="addCustomItem()" class="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden">
-                            <i class="fas fa-plus-circle"></i> Tambah Item Manual
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-8 items-start">
-                    <div class="w-full md:w-1/2">
-                        <label class="text-[11px] font-bold text-slate-500 uppercase mb-2 block tracking-wide">Internal Notes</label>
-                        <textarea id="bill-note" rows="4" class="bill-input w-full border border-slate-300 rounded-xl p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition resize-none shadow-sm placeholder:text-slate-300" placeholder="Catatan internal..."></textarea>
-                    </div>
-                    <div class="w-full md:w-1/2 bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                        <div class="flex justify-between mb-3 text-slate-500 text-sm"><span>Subtotal (DPP)</span> <span id="display-subtotal" class="font-semibold text-slate-700">0</span></div>
-                        <div class="flex justify-between mb-3 text-slate-500 text-sm items-center"><span>PPN (11%)</span> <span id="display-ppn" class="font-semibold text-slate-700">0</span></div>
-                        <div class="flex justify-between mb-4 items-center">
-                            <span class="text-slate-500 text-sm">Adjustment</span>
-                            <input type="number" id="bill-adjustment" value="0" oninput="calculateTotal()" class="bill-input text-right w-32 border border-slate-300 rounded-md px-2 py-1 text-sm focus:border-primary outline-none transition">
-                        </div>
-                        <div class="border-t border-dashed border-slate-300 my-4"></div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-lg font-bold text-slate-800">GRAND TOTAL</span>
-                            <span id="display-grand-total" class="text-2xl font-bold text-primary">0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-5 bg-white border-t border-slate-200 flex justify-between items-center z-10">
-                <div class="flex items-center gap-2">
-                    <label id="force-close-container" class="hidden flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
-                        <input type="checkbox" id="check-force-close" class="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500 accent-red-500">
-                        <span class="font-medium text-slate-700">Tandai PO Selesai (Abaikan Sisa)</span>
-                    </label>
-                </div>
-                <div class="flex gap-3">
-                    <button onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition">Cancel</button>
-                    <button onclick="requestXeroImport()" id="btn-xero" class="hidden px-6 py-2.5 bg-sky-600 text-white rounded-lg font-bold hover:bg-sky-700 shadow-md flex items-center gap-2 transition"><i class="fas fa-file-export"></i> Import to Xero</button>
-                    <button onclick="enableEditMode()" id="btn-edit" class="hidden px-6 py-2.5 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shadow-md flex items-center gap-2 transition"><i class="fas fa-edit"></i> Edit Bill</button>
-                    <button onclick="submitBill()" id="btn-save" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition"><i class="fas fa-check"></i> Approve & Save</button>
-                </div>
-            </div>
-            
-            <div id="modalLoading" class="hidden absolute inset-0 bg-white/90 backdrop-blur-[1px] flex flex-col items-center justify-center z-50 rounded-2xl">
-                <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-primary mb-4"></div>
-                <p class="font-bold text-slate-700 animate-pulse" id="loadingText">Processing...</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="productModal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col h-[80vh] animate-fade-in">
-            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800">Pilih Produk Database</h3>
-                <button onclick="closeProductModal()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-3 bg-white border-b border-slate-100">
-                <input type="text" id="searchProduct" onkeyup="filterProducts()" placeholder="Cari nama produk..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary outline-none transition">
-                <p class="text-[10px] text-slate-400 mt-2">Menampilkan produk dari vendor: <span id="product-vendor-filter" class="font-bold text-slate-600"></span></p>
-            </div>
-            <div class="flex-1 overflow-y-auto p-2" id="productListContainer">
-            </div>
-        </div>
-    </div>
-
-    <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-fade-in border border-slate-100">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3>
-            <p id="notif-message" class="text-slate-500 mb-6 text-sm leading-relaxed">Error Message</p>
-            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg transition duration-200">OK, Mengerti</button>
-        </div>
-    </div>
-
+    <script src="https://script.google.com/macros/s/AKfycbww5AlasQStBrqGgmjtVZCVWTvk-S2c7rVqm6lxdXvyc8qwoBhRBQJeGj4dXc7kpQ41Hg/exec"></script>
     <script>
-        // ================= CONFIGURATION =================
-        const API_URL = "https://script.google.com/macros/s/AKfycbz9iXeqiacLK3C4A8R6HGe0HPipTor8ZpHbxyVLB5sg6Zuv9rdoTcZbMMtvX7mYc2E/exec"; 
-        const TAX_RATE = 0.11;
+      // ==========================================
+      // PASTE URL WEB APP KAMU DISINI
+      // ==========================================
+      const APPS_SCRIPT_URL = "PASTE_URL_WEB_APP_KAMU_DISINI"; 
+      
+      let globalData = [];
+      let globalGrouped = {};
+      let currentFilter = 'all';
+      let currentEditingId = '';
+      const billModal = new bootstrap.Modal(document.getElementById('billModal'));
 
-        // ================= GLOBAL VARIABLES =================
-        let allData = [];
-        let currentItems = [];
-        let dbProducts = []; 
-        let currentPOId = "";
-        let currentFileUrl = "";
-        let isEditMode = false;
-        let currentFilterStatus = 'all'; 
+      document.addEventListener('DOMContentLoaded', () => {
+        fetchData();
+        switchView('cards'); // Default view
+      });
 
-        // ================= INITIALIZATION =================
-        window.onload = fetchData;
+      // --- 1. VIEW SWITCHING LOGIC ---
+      function switchView(viewName) {
+        // Toggle Buttons
+        document.getElementById('btnTabCards').classList.remove('active');
+        document.getElementById('btnTabTable').classList.remove('active');
+        
+        // Toggle Containers
+        const cardContainer = document.getElementById('view-cards');
+        const tableContainer = document.getElementById('view-table');
 
-        async function fetchData() {
-            toggleLoading(true);
-            document.getElementById('listContainer').innerHTML = '';
-
-            try {
-                const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
-                const data = await response.json();
-                allData = data;
-                toggleLoading(false);
-                applyFilters();
-            } catch (error) {
-                console.error(error);
-                toggleLoading(false);
-                showNotification("Gagal memuat data. Periksa koneksi internet Anda.");
-            }
+        if (viewName === 'cards') {
+          document.getElementById('btnTabCards').classList.add('active');
+          cardContainer.classList.remove('d-none');
+          tableContainer.classList.add('d-none');
+        } else {
+          document.getElementById('btnTabTable').classList.add('active');
+          cardContainer.classList.add('d-none');
+          tableContainer.classList.remove('d-none');
         }
+      }
 
-        // ================= FILTER LOGIC =================
-        function setFilterStatus(status) {
-            currentFilterStatus = status;
-            const pills = ['all', 'pending', 'partial', 'billed'];
-            pills.forEach(p => {
-                const el = document.getElementById(`filter-${p}`);
-                if (p === status) {
-                    el.classList.add('active');
-                    el.classList.remove('inactive');
-                } else {
-                    el.classList.add('inactive');
-                    el.classList.remove('active');
-                }
-            });
-            applyFilters();
-        }
-
-        function applyFilters() {
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
-            
-            const filtered = allData.filter(p => {
-                const matchSearch = p.id.toLowerCase().includes(searchVal) || 
-                                    p.vendor.toLowerCase().includes(searchVal) || 
-                                    (p.invNumber && p.invNumber.toLowerCase().includes(searchVal));
-
-                let matchStatus = true;
-                if (currentFilterStatus === 'all') {
-                    matchStatus = true;
-                } else if (currentFilterStatus === 'pending') {
-                    matchStatus = p.status === 'Pending';
-                } else if (currentFilterStatus === 'partial') {
-                    matchStatus = p.status === 'Partial';
-                } else if (currentFilterStatus === 'billed') {
-                    matchStatus = !['Pending', 'Partial'].includes(p.status);
-                }
-
-                return matchSearch && matchStatus;
-            });
-
-            renderCards(filtered);
-        }
-
-        function renderCards(data) {
-            const container = document.getElementById('listContainer');
-            container.innerHTML = '';
-            
-            document.getElementById('count-total').innerText = allData.length;
-
-            if (data.length === 0) {
-                container.innerHTML = `
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
-                    <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-search text-slate-300"></i></div>
-                    <p class="text-slate-400 text-sm">Tidak ada data yang cocok.</p>
-                </div>`;
-                return;
-            }
-
-            data.forEach(po => {
-                let statusClass, btnText, btnIcon, btnClass, statusBadge;
-
-                if (po.status === 'Pending') {
-                    statusClass = 'bg-amber-50 text-amber-600 border-amber-100';
-                    statusBadge = 'Pending';
-                    btnText = 'Create Bill';
-                    btnIcon = '<i class="fas fa-plus"></i>';
-                    btnClass = 'text-white bg-primary hover:bg-primary-hover shadow-md border-transparent';
-                } else if (po.status === 'Partial') {
-                    statusClass = 'bg-indigo-50 text-indigo-600 border-indigo-100';
-                    statusBadge = 'Partial';
-                    btnText = 'Add Bill (Partial)';
-                    btnIcon = '<i class="fas fa-plus"></i>';
-                    btnClass = 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
-                } else {
-                    // Status Billed/Selesai
-                    statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
-                    if(po.status === 'Process to Import') statusClass = 'bg-orange-50 text-orange-600 border-orange-100';
-                    else if(po.status === 'Success Imported') statusClass = 'bg-emerald-100 text-emerald-700 border-emerald-200';
-                    else if(po.status.includes('Failed')) statusClass = 'bg-red-50 text-red-600 border-red-100';
-                    
-                    statusBadge = po.status;
-                    btnText = 'Lihat Detail';
-                    btnIcon = '<i class="fas fa-eye"></i>';
-                    btnClass = 'text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-primary shadow-sm';
-                }
-
-                // --- 1. TAMPILKAN INVOICE NUMBER (Jika Status Billed/Selesai) ---
-                let invInfo = "";
-                if (po.status !== 'Pending' && po.status !== 'Partial' && po.invNumber && po.invNumber !== '-') {
-                    invInfo = `<div class="mt-2 text-[11px] font-mono bg-green-50 border border-green-200 rounded px-2 py-1 inline-flex items-center text-green-700 w-full">
-                               <i class="fas fa-file-invoice mr-2 text-xs"></i>${po.invNumber}
-                               </div>`;
-                }
-
-                // --- 2. TOMBOL REJECT DIHILANGKAN UNTUK BILLED (LOCKED) ---
-                // Tidak ada tombol reject/revisi sesuai request
-                let rejectBtn = ""; 
-
-                const html = `
-                <div class="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg hover:border-primary/30 transition-all duration-300 flex flex-col justify-between h-full group relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover:bg-primary transition-colors"></div>
-                    <div>
-                        <div class="flex justify-between items-start mb-3 pl-2">
-                            <div>
-                                <h3 class="font-bold text-slate-800 text-lg tracking-tight">${po.id}</h3>
-                                <p class="text-xs text-slate-500 font-medium truncate w-40" title="${po.vendor}">${po.vendor}</p>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${statusBadge}</span>
-                        </div>
-                        
-                        ${invInfo}
-
-                        <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2"><i class="far fa-calendar-alt mr-2"></i> ${formatDate(po.tanggalInput)}</div>
-                    </div>
-                    
-                    <div>
-                        <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
-                            ${btnIcon} ${btnText}
-                        </button>
-                        ${rejectBtn}
-                    </div>
-                </div>`;
-                
-                container.innerHTML += html;
-            });
-        }
-
-        // ================= BILL MODAL FUNCTIONS =================
-        async function openBillModal(idPO) {
-            const poFromList = allData.find(d => d.id === idPO);
-            if (!poFromList) return;
-            currentPOId = idPO;
-
-            resetModalFields(poFromList);
-            document.getElementById('modal-title').innerText = "Bill Entry / Detail";
-            document.getElementById('modalLoading').classList.remove('hidden');
-            document.getElementById('loadingText').innerText = "Checking PO Data...";
-            document.getElementById('billModal').classList.remove('hidden');
-
-            try {
-                const resRem = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getPoRemaining', idPO: idPO }) });
-                const jsonRem = await resRem.json();
-                const history = jsonRem.history || {};
-
-                let isCreateMode = (poFromList.status === 'Pending' || poFromList.status === 'Partial');
-                let existingBillData = null;
-
-                if (!isCreateMode) {
-                    const resDetail = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBillDetail', idPO: idPO, invNumber: poFromList.invNumber }) });
-                    const jsonDetail = await resDetail.json();
-                    if(jsonDetail.status === 'success') existingBillData = jsonDetail.data;
-                }
-
-                if (existingBillData && !isCreateMode) {
-                    setupViewMode(existingBillData, history);
-                } else {
-                    setupCreateMode(poFromList, history);
-                }
-                renderBillItems();
-            } catch (err) {
-                console.error(err);
-                showNotification("Error loading data.");
-                closeModal();
-            } finally {
-                document.getElementById('modalLoading').classList.add('hidden');
-            }
-        }
-
-        function resetModalFields(po) {
-            document.getElementById('bill-po-id').innerText = po.id;
-            document.getElementById('bill-vendor').value = po.vendor;
-            document.getElementById('bill-inv-number').value = '';
-            document.getElementById('bill-date').valueAsDate = new Date();
-            document.getElementById('bill-due-date').value = '';
-            document.getElementById('bill-note').value = '';
-            document.getElementById('bill-adjustment').value = 0;
-            document.getElementById('tax-mode').value = 'exclusive';
-            document.getElementById('bill-file').value = '';
-            document.getElementById('existing-file-container').classList.add('hidden');
-            document.getElementById('banner-container').innerHTML = '';
-            document.getElementById('check-force-close').checked = false;
-
-            ['btn-edit', 'btn-xero', 'btn-save', 'btn-add-item-db', 'btn-add-item-manual', 'force-close-container'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-        }
-
-        function setupViewMode(bill, history) {
-            document.getElementById('bill-inv-number').value = bill.invNumber || '';
-            if(bill.invDate) document.getElementById('bill-date').value = new Date(bill.invDate).toISOString().split('T')[0];
-            if(bill.dueDate) document.getElementById('bill-due-date').value = new Date(bill.dueDate).toISOString().split('T')[0];
-            document.getElementById('tax-mode').value = bill.taxMode || 'exclusive';
-            document.getElementById('bill-note').value = bill.note || '';
-            document.getElementById('bill-adjustment').value = bill.adjustment || 0;
-            
-            if(bill.fileUrl) {
-                currentFileUrl = bill.fileUrl;
-                document.getElementById('existing-file-container').classList.remove('hidden');
-                document.getElementById('btn-view-file').href = currentFileUrl;
-            }
-
-            currentItems = bill.items.map(item => ({
-                ...item,
-                poQty: item.qty, 
-                qty: Number(item.qty),
-                maxQty: Number(item.qty),
-                price: Number(item.price),
-                disc: Number(item.disc),
-                typeProduk: item.typeProduk || "", 
-                checked: true,
-                alreadyBilled: history[item.namaItem] || 0,
-                isCustom: (item.spec || "").includes("Ad-hoc") 
-            }));
-            
-            setFormState(false); 
-            
-            if (bill.status === 'Billed' || bill.status.includes('Import')) {
-                document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200"><i class="fas fa-lock"></i> Bill Locked. Ready to Import / Imported.</div>`;
-                document.getElementById('btn-xero').classList.remove('hidden');
-                // Removed btn-edit because it's locked
+      // --- 2. DATA FETCHING ---
+      function fetchData() {
+        document.getElementById('loader').classList.remove('d-none');
+        document.getElementById('view-cards').classList.add('d-none');
+        document.getElementById('view-table').classList.add('d-none');
+        
+        fetch(APPS_SCRIPT_URL)
+          .then(res => res.json())
+          .then(data => {
+            processData(data);
+            document.getElementById('loader').classList.add('d-none');
+            // Restore current view visibility
+            if(document.getElementById('btnTabCards').classList.contains('active')) {
+              document.getElementById('view-cards').classList.remove('d-none');
             } else {
-                document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-blue-200"><i class="fas fa-info-circle"></i> Status: ${bill.status}</div>`;
+              document.getElementById('view-table').classList.remove('d-none');
             }
-        }
+          });
+      }
 
-        function setupCreateMode(po, history) {
-            document.getElementById('btn-save').classList.remove('hidden');
-            document.getElementById('btn-add-item-db').classList.remove('hidden');
-            document.getElementById('btn-add-item-manual').classList.remove('hidden');
-            document.getElementById('force-close-container').classList.remove('hidden');
-            document.getElementById('btn-save').innerHTML = '<i class="fas fa-check"></i> Approve & Save';
-            
-            currentItems = po.items.map(item => {
-                const billed = history[item.namaItem] || 0;
-                const remaining = item.qty - billed;
-                return {
-                    ...item,
-                    poQty: item.qty,
-                    alreadyBilled: billed,
-                    qty: remaining > 0 ? remaining : 0,
-                    maxQty: remaining > 0 ? remaining : 0,
-                    price: 0, disc: 0, optionalSpec: '',
-                    typeProduk: item.typeProduk || "",
-                    checked: remaining > 0,
-                    isCustom: false
-                };
-            });
-            setFormState(true);
-        }
-
-        function enableEditMode() {
-            if(confirm("Edit data Bill ini?")) {
-                setFormState(true);
-                document.getElementById('btn-edit').classList.add('hidden');
-                document.getElementById('btn-xero').classList.add('hidden');
-                document.getElementById('btn-save').classList.remove('hidden');
-                document.getElementById('btn-add-item-db').classList.remove('hidden');
-                document.getElementById('btn-add-item-manual').classList.remove('hidden');
-                document.getElementById('force-close-container').classList.remove('hidden');
-                document.getElementById('btn-save').innerHTML = '<i class="fas fa-save"></i> Update Changes';
-            }
-        }
-
-        function setFormState(editable) {
-            isEditMode = editable;
-            document.querySelectorAll('.bill-input').forEach(el => el.disabled = !editable);
-            renderBillItems();
-        }
-
-        function renderBillItems() {
-            const tbody = document.getElementById('bill-items-body');
-            const thead = document.querySelector('#billModal thead');
-            
-            tbody.innerHTML = '';
-            thead.innerHTML = `
-            <tr>
-                <th class="p-4 w-10 text-center"><i class="fas fa-check-square"></i></th>
-                <th class="p-4 w-16 text-center">Type</th> 
-                <th class="p-4 w-1/4">Item Details</th>
-                <th class="p-4 w-32 bg-yellow-50/50">Spec Note</th>
-                <th class="p-4 w-24 text-center">Qty</th>
-                <th class="p-4 w-32 text-right">Price</th>
-                <th class="p-4 w-32 text-right">Disc</th>
-                <th class="p-4 w-40 text-right">Amount</th>
-                <th class="p-4 w-10"></th>
-            </tr>`;
-
-            const disabledAttr = isEditMode ? '' : 'disabled';
-
-            currentItems.forEach((item, index) => {
-                const checkedAttr = item.checked ? 'checked' : '';
-                const isPoEmpty = !item.isCustom && item.maxQty <= 0 && isEditMode;
-                const rowClass = isPoEmpty ? 'bg-gray-100 opacity-60' : 'hover:bg-slate-50';
-                
-                const nameHtml = item.isCustom && isEditMode 
-                    ? `<input type="text" value="${item.namaItem}" class="input-bare font-bold text-slate-700 text-sm" oninput="updateItem(${index}, 'namaItem', this.value)">`
-                    : `<div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>`;
-                
-                const infoHtml = item.isCustom 
-                    ? `<div class="mt-1"><span class="bg-purple-50 text-purple-600 px-1.5 rounded text-[10px] inline-block font-bold">Ad-hoc • ${item.satuan}</span></div>`
-                    : `<div class="text-[10px] text-slate-400 mt-1 flex gap-2 items-center">
-                        <span class="bg-slate-200 text-slate-600 px-1.5 rounded font-bold">${item.satuan}</span>
-                        <span class="bg-slate-100 px-1.5 rounded">PO: ${item.poQty}</span>
-                        <span class="bg-blue-50 text-blue-600 px-1.5 rounded">Done: ${item.alreadyBilled}</span>
-                       </div>`;
-
-                const deleteBtn = (item.isCustom && isEditMode) 
-                    ? `<button onclick="removeCustomItem(${index})" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-trash"></i></button>` 
-                    : ``;
-
-                const typeInput = (!item.isCustom)
-                    ? `<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">${item.typeProduk || "-"}</span>`
-                    : `<input type="text" value="${item.typeProduk}" ${disabledAttr} oninput="updateItem(${index}, 'typeProduk', this.value)" class="input-bare text-center text-xs font-bold bg-white">`;
-
-                const row = `
-                <tr class="${rowClass} border-b border-slate-50 last:border-0 transition">
-                    <td class="p-4 align-top text-center">
-                        <input type="checkbox" ${isPoEmpty ? 'disabled' : disabledAttr} ${checkedAttr} onchange="toggleItem(${index}, this.checked)" class="w-4 h-4 text-primary rounded cursor-pointer accent-teal-600">
-                    </td>
-                    <td class="p-4 align-top text-center">${typeInput}</td>
-                    <td class="p-4 align-top">${nameHtml}${infoHtml}</td>
-                    <td class="p-4 align-top bg-yellow-50/30">
-                        <input type="text" value="${item.optionalSpec || ''}" ${disabledAttr} oninput="updateItem(${index}, 'optionalSpec', this.value)" class="input-bare text-xs text-slate-600 font-medium h-full" placeholder="-">
-                    </td>
-                    <td class="p-4 align-top">
-                         <input type="number" value="${item.qty}" min="0" ${disabledAttr} oninput="updateItem(${index}, 'qty', this.value)" class="input-bare text-center text-sm font-bold text-slate-700">
-                         ${isEditMode && !item.isCustom ? `<div class="text-[10px] text-center text-slate-400 mt-1">Sisa: ${item.maxQty}</div>` : ''}
-                    </td>
-                    <td class="p-4 align-top">
-                        <input type="number" placeholder="0" value="${item.price}" ${disabledAttr} oninput="updateItem(${index}, 'price', this.value)" class="input-bare text-right text-sm font-mono text-slate-600">
-                    </td>
-                    <td class="p-4 align-top">
-                        <input type="number" placeholder="0" value="${item.disc}" ${disabledAttr} oninput="updateItem(${index}, 'disc', this.value)" class="input-bare text-right text-sm font-mono text-red-500">
-                    </td>
-                    <td class="p-4 align-top text-right font-bold text-slate-800 font-mono text-sm" id="row-total-${index}">0</td>
-                    <td class="p-4 align-top text-center">${deleteBtn}</td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
-            calculateTotal(); 
-        }
-
-        function toggleItem(index, isChecked) {
-            currentItems[index].checked = isChecked;
-            calculateTotal();
-        }
-
-        function updateItem(index, field, value) {
-            if (['price','disc','qty'].includes(field)) currentItems[index][field] = parseFloat(value) || 0;
-            else currentItems[index][field] = value;
-            calculateTotal();
-        }
-
-        function calculateTotal() {
-            let totalLine = 0;
-            const taxMode = document.getElementById('tax-mode').value;
-            currentItems.forEach((item, index) => {
-                const line = (item.price - item.disc) * item.qty;
-                const el = document.getElementById(`row-total-${index}`);
-                if(el) el.innerText = formatRupiah(line);
-                if(item.checked) totalLine += line;
-            });
-
-            let dpp = 0, ppn = 0;
-            const adj = parseFloat(document.getElementById('bill-adjustment').value) || 0;
-            
-            if (taxMode === 'exclusive') { dpp = totalLine; ppn = dpp * TAX_RATE; }
-            else if (taxMode === 'inclusive') { dpp = totalLine / (1 + TAX_RATE); ppn = totalLine - dpp; }
-            else { dpp = totalLine; }
-
-            const grand = dpp + ppn + adj;
-            
-            updateDisplay('display-subtotal', dpp);
-            updateDisplay('display-ppn', ppn);
-            updateDisplay('display-grand-total', grand);
-        }
-
-        function updateDisplay(id, value) {
-            const el = document.getElementById(id);
-            el.dataset.value = value;
-            el.innerText = formatRupiah(value);
-        }
-
-        async function openProductModal() {
-            document.getElementById('productModal').classList.remove('hidden');
-            document.getElementById('productListContainer').innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-primary"></i> Memuat database...</div>';
-            
-            const vendorName = document.getElementById('bill-vendor').value;
-            document.getElementById('product-vendor-filter').innerText = vendorName;
-            document.getElementById('searchProduct').value = '';
-
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProducts', vendor: vendorName }) });
-                const json = await res.json();
-                
-                if (json.status === 'success') {
-                    dbProducts = json.products;
-                    filterProducts();
-                } else {
-                    document.getElementById('productListContainer').innerHTML = '<div class="text-center text-red-500 p-4">Gagal memuat database.</div>';
-                }
-            } catch(e) {
-                console.error(e);
-                document.getElementById('productListContainer').innerHTML = '<div class="text-center text-red-500 p-4">Error koneksi.</div>';
-            }
-        }
-
-        function filterProducts() {
-            const search = document.getElementById('searchProduct').value.toLowerCase();
-            const container = document.getElementById('productListContainer');
-            container.innerHTML = '';
-            
-            const filtered = dbProducts.filter(p => p.namaItem.toLowerCase().includes(search));
-            
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="text-center text-slate-400 p-4">Produk tidak ditemukan.</div>';
-                return;
-            }
-
-            filtered.forEach(p => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center p-3 border-b border-slate-100 hover:bg-slate-50 cursor-pointer group transition";
-                div.innerHTML = `
-                    <div>
-                        <div class="font-bold text-slate-700 text-sm group-hover:text-primary transition-colors">${p.namaItem}</div>
-                        <div class="text-[10px] text-slate-400">${p.satuan} • Ref Harga: ${formatRupiah(p.price)}</div>
-                    </div>
-                    <button class="text-xs bg-white border border-slate-200 text-primary px-3 py-1.5 rounded-lg font-bold hover:bg-primary hover:text-white transition shadow-sm">
-                        <i class="fas fa-plus"></i> Add
-                    </button>
-                `;
-                div.onclick = () => {
-                    addDbItemToBill(p);
-                    closeProductModal();
-                };
-                container.appendChild(div);
-            });
-        }
-
-        function addDbItemToBill(product) {
-            currentItems.push({
-                namaItem: product.namaItem,
-                satuan: product.satuan,
-                optionalSpec: "",
-                typeProduk: "Manual",
-                qty: 1, maxQty: 999999, price: parseFloat(product.price) || 0, disc: 0,
-                poQty: 0, alreadyBilled: 0, checked: true, isCustom: true
-            });
-            renderBillItems();
-        }
-
-        function addCustomItem() {
-            currentItems.push({
-                namaItem: "Tambahan/Custom Item",
-                satuan: "Unit",
-                optionalSpec: "",
-                typeProduk: "Manual",
-                qty: 1, maxQty: 999999, price: 0, disc: 0,
-                poQty: 0, alreadyBilled: 0, checked: true, isCustom: true
-            });
-            renderBillItems();
-        }
-
-        function removeCustomItem(index) {
-            if(confirm("Hapus baris ini?")) {
-                currentItems.splice(index, 1);
-                renderBillItems();
-            }
-        }
-
-        async function submitBill() {
-            const checked = currentItems.filter(i => i.checked && i.qty > 0);
-            if (checked.length === 0) { showNotification("Pilih minimal 1 item (Qty > 0)."); return; }
-            
-            const invNum = document.getElementById('bill-inv-number').value;
-            if(!invNum) { showNotification("Nomor Invoice Wajib diisi."); return; }
-            
-            const isForceClose = document.getElementById('check-force-close').checked;
-            const fileInput = document.getElementById('bill-file');
-            
-            let fileData = null, fileName = null, mimeType = null;
-            
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                if(file.size > 5*1024*1024) { showNotification("Max file size 5MB."); return; }
-                
-                document.getElementById('loadingText').innerText = "Uploading File...";
-                document.getElementById('modalLoading').classList.remove('hidden');
-                
-                try {
-                    fileData = await new Promise((res, rej) => {
-                        const r = new FileReader();
-                        r.readAsDataURL(file);
-                        r.onload = () => res(r.result.split(',')[1]);
-                        r.onerror = e => rej(e);
-                    });
-                    fileName = file.name; mimeType = file.type;
-                } catch(e) { 
-                    showNotification("Gagal membaca file."); 
-                    document.getElementById('modalLoading').classList.add('hidden');
-                    return; 
-                }
-            }
-
-            const payload = {
-                action: 'save_bill',
-                data: {
-                    idPO: currentPOId,
-                    vendor: document.getElementById('bill-vendor').value,
-                    invNumber: invNum,
-                    invDate: document.getElementById('bill-date').value,
-                    dueDate: document.getElementById('bill-due-date').value,
-                    taxMode: document.getElementById('tax-mode').value,
-                    note: document.getElementById('bill-note').value,
-                    subtotal: document.getElementById('display-subtotal').dataset.value,
-                    ppn: document.getElementById('display-ppn').dataset.value,
-                    adjustment: document.getElementById('bill-adjustment').value,
-                    grandTotal: document.getElementById('display-grand-total').dataset.value,
-                    forceClose: isForceClose, 
-                    items: checked.map(i => ({
-                        namaItem: i.namaItem, satuan: i.satuan, optionalSpec: i.optionalSpec,
-                        qty: i.qty, price: i.price, disc: i.disc,
-                        typeProduk: i.typeProduk
-                    })),
-                    fileData, fileName, mimeType, existingFileUrl: currentFileUrl
-                }
+      function processData(rawData) {
+        globalGrouped = {};
+        
+        rawData.forEach(row => {
+          if (!globalGrouped[row.id_po]) {
+            globalGrouped[row.id_po] = {
+              ...row,
+              items: []
             };
+          }
+          globalGrouped[row.id_po].items.push(row);
+        });
 
-            document.getElementById('modalLoading').classList.remove('hidden');
-            document.getElementById('loadingText').innerText = "Saving Data...";
-            
-            try {
-                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const json = await res.json();
-                if(json.status === 'success') { 
-                    closeModal(); 
-                    fetchData(); 
-                } else {
-                    showNotification("Error: " + json.message);
-                }
-            } catch(e) { showNotification("Terjadi kesalahan koneksi."); }
-            finally { document.getElementById('modalLoading').classList.add('hidden'); }
-        }
-
-        async function requestXeroImport() {
-            const invNum = document.getElementById('bill-inv-number').value;
-            if(!invNum) { showNotification("Nomor Invoice tidak ditemukan."); return; }
-            if(!confirm(`Import Invoice ${invNum} to Xero?`)) return;
-            
-            document.getElementById('modalLoading').classList.remove('hidden');
-            try {
-                const res = await fetch(API_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: 'import_xero', idPO: currentPOId, invNumber: invNum }) 
-                });
-                const json = await res.json();
-                if(json.status === 'success') { closeModal(); fetchData(); }
-                else showNotification(json.message);
-            } catch(e) { showNotification("Error requesting import."); }
-            finally { document.getElementById('modalLoading').classList.add('hidden'); }
-        }
-
-        // ================= HELPERS & UTILS =================
-        function closeModal() { document.getElementById('billModal').classList.add('hidden'); }
-        function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
-        function showNotification(msg) { document.getElementById('notif-message').innerText = msg; document.getElementById('notificationModal').classList.remove('hidden'); }
-        function closeNotification() { document.getElementById('notificationModal').classList.add('hidden'); }
+        // Convert object back to array for filtering
+        globalData = Object.values(globalGrouped);
         
-        function formatRupiah(n) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n); }
-        function formatDate(d) { return d ? new Date(d).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'; }
-        
-        function toggleLoading(show) {
-            const el = document.getElementById('loading');
-            el.style.display = show ? 'flex' : 'none';
+        // Update badge count for Pending
+        const pendingCount = globalData.filter(d => d.status === 'Pending').length;
+        document.getElementById('countPending').innerText = pendingCount;
+
+        renderAll();
+      }
+
+      // --- 3. RENDERING ---
+      function renderAll() {
+        // Filter Data
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = globalData.filter(item => {
+          const matchesSearch = item.vendor.toLowerCase().includes(keyword) || item.id_po.toLowerCase().includes(keyword);
+          const matchesFilter = currentFilter === 'all' || 
+                                (currentFilter === 'Pending' && (item.status === 'Pending' || item.status === 'Menunggu Persetujuan')) ||
+                                item.status === currentFilter;
+          return matchesSearch && matchesFilter;
+        });
+
+        renderCards(filtered);
+        renderTable(filtered);
+      }
+
+      function renderCards(data) {
+        const container = document.getElementById('cardsContainer');
+        container.innerHTML = '';
+
+        data.forEach(po => {
+          let badgeClass = 'bg-light text-dark';
+          let btnHtml = '';
+          let invoiceHtml = '';
+
+          // Logic Tampilan per Status
+          if (po.status === 'Pending' || po.status === 'Menunggu Persetujuan') {
+            badgeClass = 'bg-pending';
+            btnHtml = `<button class="btn btn-create btn-card-action" onclick="openModal('${po.id_po}')"><i class="fas fa-plus me-1"></i> Create Bill</button>`;
+          } else if (po.status === 'Partial') {
+            badgeClass = 'bg-partial';
+            btnHtml = `<button class="btn btn-partial btn-card-action" onclick="openModal('${po.id_po}')"><i class="fas fa-plus me-1"></i> Add Bill (Partial)</button>`;
+          } else if (po.status === 'Billed') {
+            badgeClass = 'bg-billed';
+            btnHtml = `<button class="btn btn-view btn-card-action" onclick="openModal('${po.id_po}')"><i class="fas fa-eye me-1"></i> Lihat Detail</button>`;
+            if (po.invoice_no) {
+              invoiceHtml = `<div class="invoice-box"><i class="fas fa-file-invoice me-1"></i> ${po.invoice_no}</div>`;
+            }
+          }
+
+          const col = document.createElement('div');
+          col.className = 'col-md-6 col-lg-4 col-xl-3';
+          col.innerHTML = `
+            <div class="po-card">
+              <div>
+                <div class="po-header">
+                  <span class="po-number">${po.id_po}</span>
+                  <span class="badge ${badgeClass} status-badge">${po.status}</span>
+                </div>
+                <span class="po-vendor">${po.vendor}</span>
+                ${invoiceHtml}
+                <div class="po-date"><i class="far fa-calendar-alt me-1"></i> ${formatDate(po.timestamp_po)}</div>
+              </div>
+              <div class="mt-3">
+                ${btnHtml}
+              </div>
+            </div>
+          `;
+          container.appendChild(col);
+        });
+      }
+
+      function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        data.forEach(po => {
+          let statusBadge = '';
+          if(po.status === 'Billed') statusBadge = '<span class="badge bg-billed text-dark rounded-pill">Billed</span>';
+          else if(po.status === 'Pending') statusBadge = '<span class="badge bg-pending text-dark rounded-pill">Pending</span>';
+          else statusBadge = `<span class="badge bg-light text-dark border rounded-pill">${po.status}</span>`;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="fw-bold">${po.id_po}</td>
+            <td>${po.vendor}</td>
+            <td>${formatDate(po.timestamp_po)}</td>
+            <td>${po.invoice_no || '-'}</td>
+            <td>${statusBadge}</td>
+            <td class="text-center action-icons">
+               <i class="fas fa-print text-muted" title="Print"></i>
+               <i class="fas fa-eye text-primary" onclick="openModal('${po.id_po}')" title="View/Edit"></i>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // --- 4. MODAL LOGIC ---
+      function openModal(id_po) {
+        const po = globalGrouped[id_po];
+        currentEditingId = id_po;
+
+        document.getElementById('modalPoRef').innerText = po.id_po;
+        document.getElementById('modalVendor').value = po.vendor;
+        document.getElementById('modalInvNo').value = po.invoice_no;
+        document.getElementById('modalInvDate').value = parseDate(po.invoice_date);
+        document.getElementById('modalTaxMode').value = po.tax_mode || 'Tax Exclusive';
+
+        // Doc Button
+        const docDiv = document.getElementById('viewDocContainer');
+        if(po.pdf_url && po.pdf_url.length > 5) {
+          docDiv.innerHTML = `<a href="${po.pdf_url}" target="_blank" class="btn btn-sm btn-outline-danger w-100 fw-bold"><i class="fas fa-file-pdf"></i> View</a>`;
+        } else {
+          docDiv.innerHTML = `<span class="text-muted small">No File</span>`;
         }
+
+        // Items
+        const tbody = document.getElementById('modalItemsBody');
+        tbody.innerHTML = '';
+        let subTotal = 0;
+        let ppn = 0;
+
+        po.items.forEach(item => {
+           const amt = parseFloat(item.amount) || 0;
+           const tax = parseFloat(item.ppn) || 0;
+           subTotal += amt;
+           ppn += tax;
+
+           const tr = document.createElement('tr');
+           tr.innerHTML = `
+             <td><span class="badge bg-light text-dark border">${item.type_prod}</span></td>
+             <td><div class="fw-bold">${item.item_desc}</div></td>
+             <td class="text-end fw-bold">${item.qty}</td>
+             <td class="text-end">${formatMoney(item.unit_price)}</td>
+             <td class="text-end fw-bold">${formatMoney(amt)}</td>
+           `;
+           tbody.appendChild(tr);
+        });
+
+        document.getElementById('txtSubtotal').innerText = formatMoney(subTotal);
+        document.getElementById('txtPPN').innerText = formatMoney(ppn);
+        document.getElementById('txtGrandTotal').innerText = formatMoney(subTotal + ppn);
+
+        billModal.show();
+      }
+
+      function submitEdit() {
+        const btn = document.querySelector('.modal-footer .btn-warning');
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
+
+        const payload = {
+          id_po: currentEditingId,
+          invoice_no: document.getElementById('modalInvNo').value,
+          invoice_date: document.getElementById('modalInvDate').value,
+          tax_mode: document.getElementById('modalTaxMode').value
+        };
+
+        fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            billModal.hide();
+            fetchData();
+            btn.innerHTML = oldHtml;
+            btn.disabled = false;
+        });
+      }
+
+      // --- UTILITIES ---
+      function applyFilter(filter, el) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        renderAll();
+      }
+      
+      document.getElementById('searchInput').addEventListener('keyup', renderAll);
+
+      function formatDate(d) { 
+        if(!d || d.includes('Invalid')) return '-';
+        return d.split('T')[0]; // Simple format
+      }
+      function parseDate(d) {
+        if(!d) return '';
+        const dt = new Date(d);
+        return isNaN(dt) ? '' : dt.toISOString().split('T')[0];
+      }
+      function formatMoney(n) {
+        return 'Rp ' + parseFloat(n).toLocaleString('id-ID');
+      }
     </script>
 </body>
 </html>
