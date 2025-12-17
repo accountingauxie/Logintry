@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auxilium - Bill Entry</title>
+    <title>Auxilium - Daftar Tagihan</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,15 +13,8 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        primary: '#008080',
-                        'primary-hover': '#006666',
-                        bglight: '#f8fafc',
-                        darktext: '#1e293b'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif']
-                    }
+                    colors: { primary: '#008080', 'primary-hover': '#006666', bglight: '#f8fafc', darktext: '#1e293b' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
         }
@@ -31,29 +24,12 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        
-        .input-bare {
-            background: transparent; border: 1px solid transparent; width: 100%;
-            padding: 4px 8px; border-radius: 4px; transition: all 0.2s;
-        }
+        .input-bare { background: transparent; border: 1px solid transparent; width: 100%; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
         .input-bare:hover { border-color: #e2e8f0; background: white; }
         .input-bare:focus { border-color: #008080; background: white; outline: none; }
-
-        /* Custom Input Style for Header to match Screenshot */
-        .header-input {
-            width: 100%;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .header-input:focus { border-color: #008080; ring: 1px; ring-color: #008080; }
-
+        .bill-input:focus { ring: 2px; ring-color: #008080; border-color: #008080; outline: none; }
         .tab-btn.active { color: #008080; background-color: white; border-color: #e2e8f0; border-bottom-color: white; }
         .tab-btn.inactive { color: #64748b; background-color: transparent; border-color: transparent; }
-        
         .filter-pill.active { background-color: #ccfbf1; color: #0f766e; border-color: #99f6e4; font-weight: 700; }
         .filter-pill.inactive { background-color: white; color: #64748b; border-color: #e2e8f0; }
     </style>
@@ -116,6 +92,7 @@
                             <th class="px-6 py-4">Invoice No</th>
                             <th class="px-6 py-4">Invoice Date</th>
                             <th class="px-6 py-4">Due Date</th>
+                            <th class="px-6 py-4 text-right">Total Est (DPP)</th>
                             <th class="px-6 py-4 text-center">Status</th>
                             <th class="px-6 py-4 text-center">View</th>
                             <th class="px-6 py-4 text-center">Action</th>
@@ -125,6 +102,7 @@
                 </table>
             </div>
             <div id="empty-state" class="hidden p-10 text-center">
+                <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-search text-slate-300"></i></div>
                 <p class="text-slate-400 text-sm">Tidak ada data yang cocok.</p>
             </div>
         </div>
@@ -132,86 +110,78 @@
 
     <div id="billModal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative border border-slate-200">
-            
-            <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
                 <div class="flex items-center gap-4">
-                    <div class="bg-teal-50 p-2 rounded-lg text-primary border border-teal-100"><i class="fas fa-file-invoice-dollar text-xl"></i></div>
+                    <div class="bg-teal-50 p-2.5 rounded-lg text-primary border border-teal-100 shadow-sm"><i class="fas fa-file-invoice-dollar text-xl"></i></div>
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Bill Entry / Detail</h2>
+                        <h2 class="text-lg font-bold text-slate-800">Bill Entry / Detail</h2>
                         <p class="text-xs text-slate-500">PO Ref: <span id="bill-po-id" class="font-mono font-bold text-slate-700"></span></p>
                     </div>
                 </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
             </div>
             
-            <div class="flex-1 overflow-y-auto p-8 bg-[#f8fafc]">
-                
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-                        <div class="md:col-span-1">
-                            <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1.5 block">Vendor Name</label>
-                            <input type="text" id="bill-vendor" readonly class="w-full font-bold text-slate-800 bg-transparent border-none p-0 text-base truncate cursor-default focus:ring-0">
-                        </div>
-                        <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">Inv Number <span class="text-red-500">*</span></label>
-                            <input type="text" id="bill-inv-number" class="header-input">
-                        </div>
-                        <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">Inv Date</label>
-                            <input type="date" id="bill-date" class="header-input">
-                        </div>
-                        <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">Due Date</label>
-                            <input type="date" id="bill-due-date" class="header-input">
-                        </div>
-                        <div>
-                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5 block">Tax Mode</label>
-                            <select id="tax-mode" onchange="calculateTotal()" class="header-input bg-white">
-                                <option value="exclusive">Tax Exclusive</option>
-                                <option value="inclusive">Tax Inclusive</option>
-                                <option value="no_tax">No Tax</option>
-                            </select>
-                        </div>
+            <div class="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="md:col-span-1">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Vendor Name</label>
+                        <input type="text" id="bill-vendor" readonly class="w-full font-bold text-slate-800 bg-transparent border-b border-transparent outline-none py-1 text-base truncate cursor-default">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Number <span class="text-red-500">*</span></label>
+                        <input type="text" id="bill-inv-number" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Date</label>
+                        <input type="date" id="bill-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Due Date</label>
+                        <input type="date" id="bill-due-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Tax Mode</label>
+                        <select id="tax-mode" onchange="calculateTotal()" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm bg-white">
+                            <option value="exclusive">Tax Exclusive</option>
+                            <option value="inclusive">Tax Inclusive</option>
+                            <option value="no_tax">No Tax</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="mb-6 bg-white rounded-xl border border-primary/20 overflow-hidden">
-                    <div class="border-l-4 border-l-primary p-4 flex items-center gap-3">
-                        <i class="fas fa-paperclip text-primary"></i>
-                        <span class="text-xs font-bold text-primary uppercase">Upload Invoice</span>
-                    </div>
-                    <div class="px-4 pb-4 pl-10">
-                         <input type="file" id="bill-file" class="text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-primary hover:file:bg-teal-100 cursor-pointer">
-                         <div id="existing-file-link" class="hidden mt-2 inline-block">
-                            <a href="#" target="_blank" class="text-blue-600 hover:underline text-sm"><i class="fas fa-external-link-alt mr-1"></i> View Existing File</a>
+                <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-primary shadow-sm">
+                    <label class="text-xs font-bold text-primary uppercase mb-2 block flex items-center gap-2"><i class="fas fa-paperclip"></i> Upload Invoice</label>
+                    <div class="flex items-center gap-4">
+                        <input type="file" id="bill-file" class="bill-input text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-primary hover:file:bg-teal-100 cursor-pointer">
+                        <div id="existing-file-link" class="hidden text-sm">
+                            <a href="#" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i class="fas fa-external-link-alt"></i> View Existing File</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
                     <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase text-[10px] tracking-wider">
+                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase text-[11px] tracking-wider">
                             <tr>
-                                <th class="p-4 w-10 text-center"><input type="checkbox" disabled class="rounded text-primary"></th>
+                                <th class="p-4 w-10 text-center"><i class="fas fa-check-square"></i></th>
                                 <th class="p-4 w-16 text-center">Type</th>
                                 <th class="p-4 w-1/4">Item Details</th>
                                 <th class="p-4 w-32 bg-yellow-50/50">Spec Note</th>
-                                <th class="p-4 w-24">Qty</th>
-                                <th class="p-4 w-32">Price</th>
-                                <th class="p-4 w-24">Disc</th>
-                                <th class="p-4 w-32 text-right">Amount</th>
+                                <th class="p-4 w-24 text-center">Qty</th>
+                                <th class="p-4 w-32 text-right">Price</th>
+                                <th class="p-4 w-32 text-right">Disc</th>
+                                <th class="p-4 w-40 text-right">Amount</th>
                                 <th class="p-4 w-10"></th>
                             </tr>
                         </thead>
                         <tbody id="bill-items-body" class="divide-y divide-slate-100"></tbody>
                     </table>
-                    
                     <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
-                        <button onclick="openProductModal()" class="text-xs font-bold text-primary hover:text-white hover:bg-primary border border-primary px-4 py-2 rounded-lg transition shadow-sm flex items-center gap-2">
+                        <button onclick="openProductModal()" class="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-teal-50 transition">
                             <i class="fas fa-database"></i> Tambah Item Database
                         </button>
-                        <button onclick="addCustomItem()" class="text-xs font-bold text-slate-600 hover:text-slate-800 bg-white border border-slate-300 px-4 py-2 rounded-lg transition shadow-sm flex items-center gap-2">
-                            <i class="fas fa-plus"></i> Tambah Item Manual
+                        <button onclick="addCustomItem()" class="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-100 transition">
+                            <i class="fas fa-plus-circle"></i> Tambah Item Manual
                         </button>
                     </div>
                 </div>
@@ -219,14 +189,14 @@
                 <div class="flex flex-col md:flex-row gap-8 items-start">
                     <div class="w-full md:w-1/2">
                         <label class="text-[11px] font-bold text-slate-500 uppercase mb-2 block tracking-wide">Internal Notes</label>
-                        <textarea id="bill-note" rows="4" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none" placeholder="Catatan internal..."></textarea>
+                        <textarea id="bill-note" rows="4" class="bill-input w-full border border-slate-300 rounded-xl p-3 text-sm resize-none" placeholder="Catatan internal..."></textarea>
                     </div>
                     <div class="w-full md:w-1/2 bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                        <div class="flex justify-between mb-3 text-slate-500 text-sm"><span>Subtotal (DPP)</span> <span id="display-subtotal" class="font-medium text-slate-700">Rp 0</span></div>
-                        <div class="flex justify-between mb-3 text-slate-500 text-sm items-center"><span>PPN (11%)</span> <span id="display-ppn" class="font-medium text-slate-700">Rp 0</span></div>
+                        <div class="flex justify-between mb-3 text-slate-500 text-sm"><span>Subtotal (DPP)</span> <span id="display-subtotal" class="font-semibold text-slate-700">Rp 0</span></div>
+                        <div class="flex justify-between mb-3 text-slate-500 text-sm items-center"><span>PPN (11%)</span> <span id="display-ppn" class="font-semibold text-slate-700">Rp 0</span></div>
                         <div class="flex justify-between mb-4 items-center">
                             <span class="text-slate-500 text-sm">Adjustment</span> 
-                            <input type="number" id="bill-adjustment" value="0" oninput="calculateTotal()" class="text-right w-32 border border-slate-300 rounded-md px-2 py-1 text-sm focus:border-primary outline-none">
+                            <input type="number" id="bill-adjustment" value="0" oninput="calculateTotal()" class="bill-input text-right w-32 border border-slate-300 rounded-md px-2 py-1 text-sm">
                         </div>
                         <div class="border-t border-dashed border-slate-300 my-4"></div>
                         <div class="flex justify-between items-center">
@@ -264,41 +234,40 @@
             <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                 <div>
                     <h3 class="font-bold text-slate-800">Pilih Produk Database</h3>
-                    <p class="text-xs text-slate-500">Filter Vendor: <span id="product-vendor-filter" class="font-bold text-primary"></span></p>
+                    <p class="text-xs text-slate-500">Filter: <span id="product-vendor-filter" class="font-bold text-primary"></span></p>
                 </div>
                 <button onclick="closeProductModal()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-3 bg-white border-b border-slate-100">
-                <input type="text" id="searchProduct" onkeyup="filterProducts()" placeholder="Cari nama produk..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary outline-none">
+                <input type="text" id="searchProduct" onkeyup="filterProducts()" placeholder="Cari nama produk..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary outline-none shadow-sm">
             </div>
             <div class="flex-1 overflow-y-auto p-0" id="productListContainer"></div>
         </div>
     </div>
 
     <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-slate-100">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center border border-slate-100">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div>
             <h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3>
-            <p id="notif-message" class="text-slate-500 mb-6 text-sm">Message</p>
-            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg">OK, Mengerti</button>
+            <p id="notif-message" class="text-slate-500 mb-6 text-sm leading-relaxed">Error Message</p>
+            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg transition">OK, Mengerti</button>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // PASTE YOUR NEW WEB APP URL HERE
-        // ==========================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbzhcK9JLTMRVpUmMugwmorsbh1O51chaIh5aEgj2kPoJGxHEU9SNIDmONmc9xnBP0ex7w/exec";
+        // --- PASTE URL BARU DI SINI SETELAH DEPLOY ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbwvYXevkgsna_6h4lATo_6bLBI4Fi1KWNav4VIYjUx6Y_Q0QtP3D2t52Nbz0bcnilsU/exec";
         
         const TAX_RATE = 0.11;
         let allData = [];
         let currentItems = [];
         let dbProducts = [];
         let currentPOId = "";
+        let currentFileUrl = "";
         let currentFilterStatus = 'all';
 
         window.onload = fetchData;
 
-        // --- Fetch & Display List ---
         async function fetchData() {
             toggleLoading(true);
             try {
@@ -328,7 +297,9 @@
 
         function setFilterStatus(status) {
             currentFilterStatus = status;
-            document.querySelectorAll('.filter-pill').forEach(el => { el.classList.remove('active'); el.classList.add('inactive'); });
+            document.querySelectorAll('.filter-pill').forEach(el => {
+                el.classList.remove('active'); el.classList.add('inactive');
+            });
             document.getElementById(`filter-${status}`).classList.add('active');
             document.getElementById(`filter-${status}`).classList.remove('inactive');
             applyFilters();
@@ -356,6 +327,9 @@
                 let btnLabel = po.invNumber ? "Edit" : "Entry";
                 let btnIcon = po.invNumber ? "fa-edit" : "fa-plus";
 
+                // Menampilkan Total Est (DPP)
+                let displayTotal = formatRupiah(po.totalEst || 0);
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
                 tr.innerHTML = `
@@ -364,6 +338,7 @@
                     <td class="px-6 py-4">${po.invNumber || '-'}</td>
                     <td class="px-6 py-4">${formatDate(po.invDate)}</td>
                     <td class="px-6 py-4">${formatDate(po.dueDate)}</td>
+                    <td class="px-6 py-4 text-right font-mono font-bold text-slate-700">${displayTotal}</td>
                     <td class="px-6 py-4 text-center">${statusBadge}</td>
                     <td class="px-6 py-4 text-center">${viewBtn}</td>
                     <td class="px-6 py-4 text-center">
@@ -376,7 +351,6 @@
             });
         }
 
-        // --- Bill Modal Logic ---
         function openBillModal(idPO) {
             const po = allData.find(d => d.id === idPO);
             if (!po) return;
@@ -395,16 +369,15 @@
             document.getElementById('tax-mode').value = po.taxMode || 'exclusive';
             document.getElementById('check-force-close').checked = po.status === 'Billed';
             
-            // Handle File Link
             const fileLinkDiv = document.getElementById('existing-file-link');
             if(po.fileUrl) {
                 fileLinkDiv.classList.remove('hidden');
                 fileLinkDiv.querySelector('a').href = po.fileUrl;
+                currentFileUrl = po.fileUrl;
             } else {
                 fileLinkDiv.classList.add('hidden');
             }
 
-            // Init Items
             currentItems = po.items.map(i => ({...i, checked: true}));
             renderBillItems();
             document.getElementById('billModal').classList.remove('hidden');
@@ -415,9 +388,9 @@
             tbody.innerHTML = '';
             
             currentItems.forEach((item, index) => {
+                // Rumus: (Price - Disc) * Qty
                 const lineTotal = (item.price - item.disc) * item.qty;
                 const rowClass = item.checked ? "bg-white" : "bg-gray-50 opacity-60";
-                
                 const typeBadge = item.typeProduk 
                     ? `<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-[10px] font-bold border border-gray-200">${item.typeProduk}</span>`
                     : `<span class="text-gray-300 text-xs">-</span>`;
@@ -431,7 +404,7 @@
                         <td class="p-4 align-top">
                             <div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>
                             <div class="text-[10px] text-slate-400 mt-1 flex gap-2 items-center">
-                                <span class="bg-slate-100 px-1.5 rounded font-bold uppercase text-[10px]">${item.satuan}</span>
+                                <span class="bg-slate-100 px-1.5 rounded font-bold">${item.satuan}</span>
                                 ${item.maxQty ? `<span class="bg-blue-50 text-blue-600 px-1.5 rounded">PO: ${item.maxQty}</span>` : ''}
                             </div>
                         </td>
@@ -439,14 +412,14 @@
                             <input type="text" value="${item.spec || ''}" oninput="updateItem(${index}, 'spec', this.value)" class="input-bare text-xs text-slate-600 font-medium h-full" placeholder="-">
                         </td>
                         <td class="p-4 align-top">
-                            <input type="number" value="${item.qty}" min="0" oninput="updateItem(${index}, 'qty', this.value)" class="input-bare text-left pl-2 text-sm font-bold text-slate-700">
-                            ${item.maxQty ? `<div class="text-[10px] text-slate-400 mt-1 pl-2">Sisa: ${item.maxQty}</div>` : ''}
+                            <input type="number" value="${item.qty}" min="0" oninput="updateItem(${index}, 'qty', this.value)" class="input-bare text-center text-sm font-bold text-slate-700">
+                            ${item.maxQty ? `<div class="text-[10px] text-center text-slate-400 mt-1">Sisa: ${item.maxQty}</div>` : ''}
                         </td>
                         <td class="p-4 align-top">
-                            <input type="number" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)" class="input-bare text-left pl-2 text-sm font-mono text-slate-600">
+                            <input type="number" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)" class="input-bare text-right text-sm font-mono text-slate-600">
                         </td>
                         <td class="p-4 align-top">
-                            <input type="number" value="${item.disc}" oninput="updateItem(${index}, 'disc', this.value)" class="input-bare text-left pl-2 text-sm font-mono text-red-500">
+                            <input type="number" value="${item.disc}" oninput="updateItem(${index}, 'disc', this.value)" class="input-bare text-right text-sm font-mono text-red-500">
                         </td>
                         <td class="p-4 align-top text-right font-bold text-slate-800 font-mono text-sm">
                             ${formatRupiah(lineTotal)}
@@ -487,7 +460,10 @@
                 satuan: "Unit",
                 typeProduk: "M",
                 spec: "",
-                qty: 1, price: 0, disc: 0, checked: true
+                qty: 1,
+                price: 0,
+                disc: 0,
+                checked: true
             });
             renderBillItems();
         }
@@ -515,12 +491,13 @@
             }
 
             const grand = dpp + ppn + adj;
+
             document.getElementById('display-subtotal').innerText = formatRupiah(dpp);
             document.getElementById('display-ppn').innerText = formatRupiah(ppn);
             document.getElementById('display-grand-total').innerText = formatRupiah(grand);
         }
 
-        // --- Database Product Modal ---
+        // --- Product Database Logic ---
         async function openProductModal() {
             const vendorName = document.getElementById('bill-vendor').value;
             if(!vendorName) { showNotification("Vendor belum terisi."); return; }
@@ -535,7 +512,6 @@
                     body: JSON.stringify({ action: 'getProducts', vendor: vendorName }) 
                 });
                 const json = await res.json();
-                
                 if(json.status === 'success') {
                     dbProducts = json.products;
                     filterProducts();
@@ -551,7 +527,6 @@
             const search = document.getElementById('searchProduct').value.toLowerCase();
             const container = document.getElementById('productListContainer');
             container.innerHTML = '';
-            
             const filtered = dbProducts.filter(p => p.namaItem.toLowerCase().includes(search));
 
             if (filtered.length === 0) {
@@ -588,18 +563,17 @@
                 satuan: product.satuan,
                 typeProduk: product.typeProduk,
                 spec: "",
-                qty: 1, price: 0, disc: 0, checked: true
+                qty: 1,
+                price: product.price || 0,
+                disc: 0,
+                checked: true
             });
             renderBillItems();
         }
 
-        function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
-        function closeModal() { document.getElementById('billModal').classList.add('hidden'); }
-        function showNotification(msg) { document.getElementById('notif-message').innerText = msg; document.getElementById('notificationModal').classList.remove('hidden'); }
-        function closeNotification() { document.getElementById('notificationModal').classList.add('hidden'); }
-        function toggleLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
-        function formatRupiah(n) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n); }
-        function formatDate(d) { return d ? new Date(d).toLocaleDateString('id-ID') : '-'; }
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
 
         async function submitBill() {
             const invNum = document.getElementById('bill-inv-number').value;
@@ -615,7 +589,7 @@
                     dueDate: document.getElementById('bill-due-date').value,
                     taxMode: document.getElementById('tax-mode').value,
                     forceClose: document.getElementById('check-force-close').checked,
-                    items: activeItems
+                    items: activeItems 
                 }
             };
 
@@ -636,6 +610,13 @@
                 document.getElementById('modalLoading').classList.add('hidden');
             }
         }
+
+        function closeModal() { document.getElementById('billModal').classList.add('hidden'); }
+        function showNotification(msg) { document.getElementById('notif-message').innerText = msg; document.getElementById('notificationModal').classList.remove('hidden'); }
+        function closeNotification() { document.getElementById('notificationModal').classList.add('hidden'); }
+        function toggleLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
+        function formatRupiah(n) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n); }
+        function formatDate(d) { return d ? new Date(d).toLocaleDateString('id-ID') : '-'; }
     </script>
 </body>
 </html>
