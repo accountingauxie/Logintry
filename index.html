@@ -431,13 +431,9 @@
                                </div>`;
                 }
 
-                // --- 2. TAMPILKAN TOMBOL REJECT (Hanya Jika Status BUKAN Partial dan BUKAN Pending) ---
-                let rejectBtn = "";
-                if (po.status !== 'Pending' && po.status !== 'Partial') {
-                    rejectBtn = `<button onclick="rejectPO('${po.id}')" class="mt-2 w-full py-2 rounded-lg font-bold text-xs text-red-500 border border-red-200 hover:bg-red-50 transition flex justify-center items-center gap-1">
-                                    <i class="fas fa-undo"></i> Reject / Revisi
-                                 </button>`;
-                }
+                // --- 2. TOMBOL REJECT DIHILANGKAN UNTUK BILLED ---
+                // Sesuai permintaan: Billed dilock, tidak bisa revisi.
+                let rejectBtn = ""; 
 
                 const html = `
                 <div class="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg hover:border-primary/30 transition-all duration-300 flex flex-col justify-between h-full group relative overflow-hidden">
@@ -901,44 +897,6 @@
                 else showNotification(json.message);
             } catch(e) { showNotification("Error requesting import."); }
             finally { document.getElementById('modalLoading').classList.add('hidden'); }
-        }
-
-        // ================= REJECT / REVISI PO =================
-        async function rejectPO(idPO) {
-            if (!confirm(`Apakah Anda yakin ingin me-reject PO ${idPO}? Status akan kembali ke PENDING.`)) return;
-
-            const reason = prompt("Masukkan alasan reject/revisi (Wajib diisi):");
-            if (!reason || reason.trim() === "") {
-                alert("Alasan wajib diisi untuk melakukan reject.");
-                return;
-            }
-
-            toggleLoading(true);
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'reject_po',
-                        idPO: idPO,
-                        reason: reason
-                    })
-                });
-                const json = await res.json();
-
-                toggleLoading(false);
-
-                if (json.status === 'success') {
-                    alert("Berhasil! PO dikembalikan ke status Pending.");
-                    fetchData(); // Refresh data
-                } else {
-                    alert("Gagal: " + json.message);
-                }
-            } catch (e) {
-                toggleLoading(false);
-                console.error(e);
-                alert("Terjadi kesalahan koneksi.");
-            }
         }
 
         // ================= HELPERS & UTILS =================
