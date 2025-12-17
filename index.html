@@ -368,56 +368,51 @@
                 });
             }
 
-    // --- RENDER BILLED (TABLE LIST) ---
+            // --- RENDER BILLED (TABLE LIST) ---
             if (billedData.length === 0) {
                 billedContainer.innerHTML = `
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-8 opacity-60">
                     <p class="text-slate-400 text-xs italic">Belum ada riwayat Billed.</p>
                 </div>`;
             } else {
-                // Header Table disesuaikan dengan permintaan
+                // Construct Table Structure
                 let tableHTML = `
                 <div class="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
                     <table class="w-full text-sm text-left text-slate-600">
                         <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
                             <tr>
+                                <th scope="col" class="px-6 py-3">PO Number</th>
                                 <th scope="col" class="px-6 py-3">Vendor</th>
-                                <th scope="col" class="px-6 py-3">Invoice No</th>
-                                <th scope="col" class="px-6 py-3">ID PO</th>
-                                <th scope="col" class="px-6 py-3">Invoice Date</th>
-                                <th scope="col" class="px-6 py-3">Due Date</th>
-                                <th scope="col" class="px-6 py-3 text-right">Grand Total</th>
-                                <th scope="col" class="px-6 py-3 text-center">Action</th>
+                                <th scope="col" class="px-6 py-3">Invoice #</th>
+                                <th scope="col" class="px-6 py-3">Date</th>
+                                <th scope="col" class="px-6 py-3 text-center">Status</th>
+                                <th scope="col" class="px-6 py-3 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                 `;
 
                 billedData.forEach(po => {
-                    // Logic pewarnaan status (optional, biar cantik)
                     let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
                     if (po.status === 'Billed') statusClass = 'bg-sky-50 text-sky-600 border border-sky-100';
+                    else if (po.status === 'Process to Import') statusClass = 'bg-orange-50 text-orange-600 border border-orange-100 animate-pulse';
                     else if (po.status === 'Success Imported') statusClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
 
-                    // Isi Baris Table
                     tableHTML += `
                         <tr class="bg-white hover:bg-slate-50 transition cursor-pointer" onclick="openBillModal('${po.id}', '${po.invNumber || ''}')">
-                            <td class="px-6 py-4 font-bold text-slate-700 truncate max-w-[150px]">${po.vendor}</td>
-                            
-                            <td class="px-6 py-4 font-mono text-xs text-slate-600">
-                                <span class="bg-slate-100 px-2 py-1 rounded border border-slate-200">${po.invNumber || '-'}</span>
+                            <td class="px-6 py-4 font-bold text-slate-800">${po.id}</td>
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-slate-700 truncate max-w-[200px]">${po.vendor}</div>
                             </td>
-                            
-                            <td class="px-6 py-4 text-xs font-bold text-slate-500">${po.id}</td>
-                            
+                            <td class="px-6 py-4 font-mono text-xs text-slate-500">${po.invNumber || '-'}</td>
                             <td class="px-6 py-4 text-xs text-slate-500">${formatDate(po.tanggalInput)}</td>
-                            
-                            <td class="px-6 py-4 text-xs text-red-500 font-medium">${formatDate(po.dueDate)}</td>
-                            
-                            <td class="px-6 py-4 text-right font-bold text-slate-700">${formatRupiah(po.grandTotal || 0)}</td>
-                            
                             <td class="px-6 py-4 text-center">
-                                <button class="text-primary hover:text-primary-hover font-bold text-xs flex items-center justify-center gap-1 mx-auto border border-slate-200 bg-white px-3 py-1.5 rounded-lg shadow-sm hover:shadow-md transition">
+                                <span class="${statusClass} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide inline-block min-w-[80px]">
+                                    ${po.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-slate-400 hover:text-primary transition font-bold text-xs flex items-center gap-1 justify-end ml-auto">
                                     <i class="fas fa-eye"></i> View
                                 </button>
                             </td>
@@ -428,6 +423,7 @@
                 tableHTML += `</tbody></table></div>`;
                 billedContainer.innerHTML = tableHTML;
             }
+        }
 async function openBillModal(idPO, targetInvNumber = null) {
             // 1. Cari data PO di list lokal untuk info awal
             const poFromList = allData.find(d => d.id === idPO && (targetInvNumber ? d.invNumber === targetInvNumber : true));
