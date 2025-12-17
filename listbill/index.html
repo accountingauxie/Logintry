@@ -3,224 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PO Dashboard</title>
+    <title>AUXILIUM | Bill Entry System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-      body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; font-size: 0.9rem; }
-      
-      /* Card Styling */
-      .card { border: none; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-      
-      /* Table Styling */
-      .table thead th { 
-        background-color: #f8f9fa; color: #6c757d; font-weight: 600; 
-        font-size: 0.8rem; border-bottom: 2px solid #e9ecef; text-transform: uppercase;
+      :root {
+        --primary-teal: #008080;
+        --secondary-purple: #6f42c1;
+        --bg-color: #f5f7fb;
+        --text-dark: #343a40;
+        --text-muted: #6c757d;
       }
-      .table td { vertical-align: middle; color: #495057; }
+      body { background-color: var(--bg-color); font-family: 'Inter', sans-serif; color: var(--text-dark); }
       
-      /* Modal Styling khusus Bill Entry */
-      .bill-header-alert {
-        background-color: #d1e7dd; color: #0f5132; 
-        padding: 10px 15px; border-radius: 5px; font-weight: 600;
-        margin-bottom: 15px; display: flex; align-items: center;
-      }
-      .bill-header-alert i { margin-right: 8px; }
-      
-      /* File Upload & View Section */
-      .file-section {
-        background-color: #fff; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px;
-      }
-      .view-doc-box {
-        background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 5px;
-        padding: 10px; text-align: center; height: 100%; display: flex; 
-        flex-direction: column; justify-content: center; align-items: center;
-      }
-      
-      /* Item Table inside Modal */
-      .modal-table th { background-color: #fff !important; font-size: 0.75rem; }
-      .modal-table td { font-size: 0.85rem; padding: 10px; }
-      .bg-light-input { background-color: #f8f9fa; border: 1px solid #ced4da; }
+      /* --- Header & Nav --- */
+      .navbar-brand { font-weight: 800; letter-spacing: 0.5px; }
+      .main-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 5px; }
+      .breadcrumb { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
 
-      /* Footer Totals */
-      .total-box {
-        background-color: #fff; padding: 15px; border-radius: 5px;
+      /* --- Custom Tabs (The Toggle) --- */
+      .view-switcher { display: flex; gap: 10px; margin-bottom: 20px; }
+      .view-btn {
+        border: 1px solid #e0e0e0; background: #fff; padding: 10px 20px;
+        border-radius: 6px; font-weight: 600; color: var(--text-muted);
+        cursor: pointer; display: flex; align-items: center; gap: 8px;
+        transition: all 0.2s; font-size: 0.9rem;
       }
-      .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-      .grand-total { font-size: 1.2rem; font-weight: bold; color: #0f5132; border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 5px; }
+      .view-btn:hover { background: #f8f9fa; }
+      .view-btn.active {
+        color: var(--primary-teal); border-color: var(--primary-teal); background-color: #e6fffa;
+      }
+      .view-btn .badge { background-color: var(--primary-teal); margin-left: 5px; }
+      
+      /* --- Filter Pills --- */
+      .filter-pills { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+      .filter-pill {
+        padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500;
+        border: 1px solid transparent; cursor: pointer; background: #fff; color: var(--text-muted);
+      }
+      .filter-pill.active { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; }
+      .filter-pill.active.partial { background-color: #e2d9f3; color: #59359a; }
+      .filter-pill.active.pending { background-color: #fff3cd; color: #856404; }
 
-      /* Loader */
+      /* --- Card Styles (Grid View) --- */
+      .po-card {
+        background: #fff; border: 1px solid #eef0f3; border-radius: 8px;
+        padding: 20px; height: 100%; transition: transform 0.2s, box-shadow 0.2s;
+        display: flex; flex-direction: column; justify-content: space-between;
+      }
+      .po-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+      .po-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+      .po-number { font-weight: 700; font-size: 1rem; color: #212529; }
+      .po-vendor { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; display: block; }
+      .po-date { font-size: 0.8rem; color: #adb5bd; margin-bottom: 15px; }
+      
+      .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
+      .bg-pending { background-color: #fff3cd; color: #856404; }
+      .bg-partial { background-color: #e2d9f3; color: #59359a; }
+      .bg-billed { background-color: #d1e7dd; color: #0f5132; }
+      
+      .invoice-box {
+        background-color: #f0fff4; border: 1px solid #b7ebc7; color: #0f5132;
+        padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600;
+        margin-bottom: 15px; display: inline-block; width: 100%;
+      }
+
+      .btn-card-action { width: 100%; font-weight: 600; font-size: 0.9rem; border-radius: 6px; padding: 8px; }
+      .btn-create { background-color: var(--primary-teal); color: white; border: none; }
+      .btn-create:hover { background-color: #006666; color: white;}
+      .btn-partial { background-color: var(--secondary-purple); color: white; border: none; }
+      .btn-partial:hover { background-color: #5a32a3; color: white;}
+      .btn-view { background-color: #fff; color: var(--text-dark); border: 1px solid #dee2e6; }
+      .btn-view:hover { background-color: #f8f9fa; }
+
+      /* --- Table Styles (List View) --- */
+      .table-container { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+      .table thead th { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); background: #fff; border-bottom: 2px solid #f0f0f0; }
+      .table td { vertical-align: middle; font-size: 0.9rem; color: #495057; padding: 12px 10px; }
+      .action-icons i { cursor: pointer; margin: 0 5px; transition: color 0.2s; }
+      .action-icons i:hover { color: var(--primary-teal); }
+
+      /* --- Utilities --- */
+      .d-none { display: none !important; }
       #loader { display: flex; justify-content: center; margin-top: 50px; }
     </style>
 </head>
 <body>
 
-    <div class="container-fluid py-4 px-4">
+    <nav class="navbar navbar-light bg-white sticky-top">
+      <div class="container-fluid px-4">
+        <span class="navbar-brand"><i class="fas fa-th-large me-2"></i>AUXILIUM <span class="fw-normal text-muted ms-2" style="font-size: 0.9rem;">| Bill Entry System</span></span>
+      </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
       
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4><i class="fas fa-file-invoice me-2"></i>Dashboard PO Purchase</h4>
-        <button class="btn btn-light btn-sm shadow-sm border" onclick="fetchData()">
-          <i class="fas fa-sync"></i> Refresh
-        </button>
+      <div class="mb-4">
+        <h2 class="main-title">List Overview</h2>
+        <div class="breadcrumb">Dashboard • Bill Entry</div>
       </div>
 
-      <div class="card p-3 mb-3">
-        <input type="text" id="searchInput" class="form-control" placeholder="Search Vendor, PO ID, or Invoice...">
-      </div>
-
-      <div class="card p-4">
-        <div id="loader">
-          <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+      <div class="row mb-3">
+        <div class="col-md-4 ms-auto">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search PO, Vendor, or Invoice...">
+            <button class="btn btn-light border" onclick="fetchData()"><i class="fas fa-sync-alt"></i></button>
+          </div>
         </div>
-        
-        <div class="table-responsive">
-          <table class="table table-hover d-none" id="dataTable">
+      </div>
+
+      <div class="view-switcher">
+        <div class="view-btn active" onclick="switchView('cards')" id="btnTabCards">
+          <i class="fas fa-file-invoice-dollar"></i> Kelola Tagihan PO <span class="badge rounded-pill" id="countPending">0</span>
+        </div>
+        <div class="view-btn" onclick="switchView('table')" id="btnTabTable">
+          <i class="fas fa-list"></i> Daftar Tagihan <i class="fas fa-external-link-alt small text-muted ms-1" style="font-size: 0.7em;"></i>
+        </div>
+      </div>
+
+      <div class="filter-pills">
+        <span class="filter-pill active" onclick="applyFilter('all', this)">Semua</span>
+        <span class="filter-pill pending" onclick="applyFilter('Pending', this)">● Pending</span>
+        <span class="filter-pill partial" onclick="applyFilter('Partial', this)">● Partial</span>
+        <span class="filter-pill" onclick="applyFilter('Billed', this)">● Selesai / Billed</span>
+      </div>
+
+      <div id="loader">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+      </div>
+
+      <div id="view-cards" class="d-none">
+        <div class="row g-3" id="cardsContainer">
+          </div>
+      </div>
+
+      <div id="view-table" class="d-none">
+        <div class="table-container">
+          <table class="table table-hover">
             <thead>
               <tr>
+                <th>REFERENCE</th>
                 <th>VENDOR</th>
-                <th>ID PO</th>
-                <th>INVOICE NO</th>
-                <th>INVOICE DATE</th>
-                <th>DUE DATE</th>
-                <th class="text-end">INV TOTAL</th>
+                <th>ORDER DATE</th>
+                <th>INVOICE #</th>
+                <th>STATUS</th>
                 <th class="text-center">ACTION</th>
               </tr>
             </thead>
-            <tbody id="tableBody"></tbody>
+            <tbody id="tableBody">
+              </tbody>
           </table>
         </div>
       </div>
+
     </div>
 
-    <div class="modal fade" id="billModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal fade" id="billModal" tabindex="-1" data-bs-backdrop="static">
       <div class="modal-dialog modal-xl">
         <div class="modal-content" style="background-color: #f4f6f9;">
-          
-          <div class="modal-header bg-white border-bottom-0 pb-0">
+          <div class="modal-header bg-white border-bottom-0">
             <div>
-              <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice-dollar text-success me-2"></i>Bill Entry / Detail</h5>
-              <p class="text-muted small mb-2">PO Ref: <span id="modalPoRef" class="fw-bold text-dark"></span></p>
+              <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice text-success me-2"></i>Bill Entry / Detail</h5>
+              <p class="text-muted small mb-0">PO Ref: <span id="modalPoRef" class="fw-bold text-dark"></span></p>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
-
           <div class="modal-body">
-            
-            <div class="bill-header-alert">
-              <i class="fas fa-check-circle"></i> <span id="modalStatusText">Ready to Import.</span>
+            <div class="alert alert-success d-flex align-items-center py-2 mb-3" role="alert">
+              <i class="fas fa-check-circle me-2"></i> <div id="modalStatusText">Ready to Import.</div>
             </div>
 
             <form id="billForm">
-              <div class="card p-3 mb-3">
+              <div class="card border-0 shadow-sm p-3 mb-3">
                 <div class="row g-3">
-                  <div class="col-md-3">
-                    <label class="form-label small text-muted fw-bold">VENDOR NAME</label>
-                    <input type="text" class="form-control fw-bold" id="modalVendor" readonly style="background-color: #fff; border:none; padding-left:0;">
+                  <div class="col-md-4">
+                    <label class="small text-muted fw-bold">VENDOR NAME</label>
+                    <input type="text" class="form-control fw-bold border-0 bg-white p-0" id="modalVendor" readonly>
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label small text-muted fw-bold">INV NUMBER <span class="text-danger">*</span></label>
+                    <label class="small text-muted fw-bold">INV NUMBER <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="modalInvNo">
                   </div>
                   <div class="col-md-2">
-                    <label class="form-label small text-muted fw-bold">INV DATE</label>
+                    <label class="small text-muted fw-bold">INV DATE</label>
                     <input type="date" class="form-control" id="modalInvDate">
                   </div>
-                  <div class="col-md-2">
-                    <label class="form-label small text-muted fw-bold">DUE DATE</label>
-                    <input type="date" class="form-control" id="modalDueDate">
-                  </div>
-                  <div class="col-md-2">
-                    <label class="form-label small text-muted fw-bold">TAX MODE</label>
+                  <div class="col-md-3">
+                    <label class="small text-muted fw-bold">TAX MODE</label>
                     <select class="form-select" id="modalTaxMode">
                       <option value="Tax Exclusive">Tax Exclusive</option>
                       <option value="Tax Inclusive">Tax Inclusive</option>
-                      <option value="No Tax">No Tax</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              <div class="card p-3 mb-3">
-                <div class="row">
-                  <div class="col-md-9 border-end">
-                    <label class="fw-bold text-success mb-2"><i class="fas fa-paperclip"></i> UPLOAD INVOICE</label>
-                    <div class="input-group mb-2">
-                      <input type="file" class="form-control" id="inputGroupFile01" disabled> </div>
-                    <small class="text-muted">Fitur upload belum aktif (gunakan link GDrive di sheet).</small>
-                  </div>
-                  
-                  <div class="col-md-3">
-                    <div class="view-doc-box">
-                      <small class="text-muted mb-2 text-uppercase fw-bold" style="font-size: 0.7rem;">Current File</small>
-                      <div id="viewDocContainer">
-                        </div>
+              <div class="card border-0 shadow-sm p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <label class="fw-bold text-success mb-1"><i class="fas fa-paperclip"></i> UPLOAD INVOICE</label>
+                    <div class="input-group input-group-sm">
+                      <input type="file" class="form-control" disabled>
                     </div>
+                  </div>
+                  <div class="bg-light border rounded p-2 text-center" style="min-width: 150px;">
+                    <small class="text-muted d-block" style="font-size: 0.65rem;">CURRENT FILE</small>
+                    <div id="viewDocContainer"></div>
                   </div>
                 </div>
               </div>
 
-              <div class="card p-0 mb-3 overflow-hidden">
+              <div class="card border-0 shadow-sm mb-3">
                 <div class="table-responsive">
-                  <table class="table modal-table table-borderless mb-0">
-                    <thead class="border-bottom">
+                  <table class="table table-borderless mb-0 small">
+                    <thead class="bg-light border-bottom">
                       <tr>
-                        <th style="width: 5%;">#</th>
-                        <th style="width: 10%;">TYPE</th>
-                        <th style="width: 30%;">ITEM DETAILS</th>
-                        <th>SPEC NOTE</th>
+                        <th>TYPE</th>
+                        <th width="35%">ITEM DETAILS</th>
                         <th class="text-end">QTY</th>
                         <th class="text-end">PRICE</th>
-                        <th class="text-end">DISC</th>
                         <th class="text-end">AMOUNT</th>
                       </tr>
                     </thead>
-                    <tbody id="modalItemsBody" class="bg-white">
-                      </tbody>
+                    <tbody id="modalItemsBody" class="bg-white"></tbody>
                   </table>
                 </div>
               </div>
 
-              <div class="row">
-                <div class="col-md-7">
-                  <div class="card p-3 h-100">
-                    <label class="form-label small text-muted fw-bold">INTERNAL NOTES</label>
-                    <textarea class="form-control" rows="4" placeholder="Catatan internal..." disabled></textarea>
-                  </div>
-                </div>
+              <div class="row justify-content-end">
                 <div class="col-md-5">
-                  <div class="total-box shadow-sm">
-                    <div class="total-row">
-                      <span>Subtotal (DPP)</span>
-                      <span id="txtSubtotal" class="fw-bold">0</span>
-                    </div>
-                    <div class="total-row">
-                      <span>PPN (11%)</span>
-                      <span id="txtPPN">0</span>
-                    </div>
-                    <div class="total-row align-items-center">
-                      <span>Adjustment</span>
-                      <input type="number" class="form-control form-control-sm text-end" style="width: 100px;" value="0" disabled>
-                    </div>
-                    <div class="total-row grand-total">
-                      <span>GRAND TOTAL</span>
-                      <span id="txtGrandTotal">0</span>
-                    </div>
+                  <div class="bg-white p-3 rounded shadow-sm border">
+                    <div class="d-flex justify-content-between mb-1"><span>Subtotal</span><span id="txtSubtotal" class="fw-bold">0</span></div>
+                    <div class="d-flex justify-content-between mb-1"><span>PPN (11%)</span><span id="txtPPN">0</span></div>
+                    <div class="d-flex justify-content-between pt-2 mt-2 border-top"><span class="fw-bold h5">GRAND TOTAL</span><span id="txtGrandTotal" class="fw-bold h5 text-success">0</span></div>
                   </div>
                 </div>
               </div>
-
             </form>
           </div>
-
           <div class="modal-footer bg-white">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-info text-white"><i class="fas fa-file-export"></i> Import to Xero</button>
+            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
             <button type="button" class="btn btn-warning text-white fw-bold" onclick="submitEdit()">
-              <i class="fas fa-edit"></i> Save / Edit Bill
+              <i class="fas fa-edit"></i> Edit Bill
             </button>
           </div>
-
         </div>
       </div>
     </div>
@@ -228,189 +257,225 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       // ==========================================
-      // GANTI DENGAN URL WEB APP KAMU
+      // PASTE URL WEB APP KAMU DISINI
       // ==========================================
-      const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbww5AlasQStBrqGgmjtVZCVWTvk-S2c7rVqm6lxdXvyc8qwoBhRBQJeGj4dXc7kpQ41Hg/exec"; 
+      const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1xAM3w3YhsuPXj-CmxLXjyau4NBtdgNJDYxnJ-n5HFJ0Fsp7UQGRU19Znrjb-tiarOw/exec"; 
       
-      let globalDataRaw = [];
-      let globalGroupedData = {}; // Object untuk menyimpan data yg sudah di group by ID_PO
+      let globalData = [];
+      let globalGrouped = {};
+      let currentFilter = 'all';
+      let currentEditingId = '';
       const billModal = new bootstrap.Modal(document.getElementById('billModal'));
-      let currentEditingId = "";
 
-      document.addEventListener('DOMContentLoaded', fetchData);
+      document.addEventListener('DOMContentLoaded', () => {
+        fetchData();
+        switchView('cards'); // Default view
+      });
 
-      // --- 1. FETCH DATA & GROUPING ---
+      // --- 1. VIEW SWITCHING LOGIC ---
+      function switchView(viewName) {
+        // Toggle Buttons
+        document.getElementById('btnTabCards').classList.remove('active');
+        document.getElementById('btnTabTable').classList.remove('active');
+        
+        // Toggle Containers
+        const cardContainer = document.getElementById('view-cards');
+        const tableContainer = document.getElementById('view-table');
+
+        if (viewName === 'cards') {
+          document.getElementById('btnTabCards').classList.add('active');
+          cardContainer.classList.remove('d-none');
+          tableContainer.classList.add('d-none');
+        } else {
+          document.getElementById('btnTabTable').classList.add('active');
+          cardContainer.classList.add('d-none');
+          tableContainer.classList.remove('d-none');
+        }
+      }
+
+      // --- 2. DATA FETCHING ---
       function fetchData() {
-        document.getElementById('loader').style.display = 'flex';
-        document.getElementById('dataTable').classList.add('d-none');
+        document.getElementById('loader').classList.remove('d-none');
+        document.getElementById('view-cards').classList.add('d-none');
+        document.getElementById('view-table').classList.add('d-none');
         
         fetch(APPS_SCRIPT_URL)
-          .then(response => response.json())
+          .then(res => res.json())
           .then(data => {
-            globalDataRaw = data;
-            processData(data); // Grouping Data
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('dataTable').classList.remove('d-none');
-          })
-          .catch(error => {
-            console.error(error);
-            alert("Gagal koneksi ke database.");
+            processData(data);
+            document.getElementById('loader').classList.add('d-none');
+            // Restore current view visibility
+            if(document.getElementById('btnTabCards').classList.contains('active')) {
+              document.getElementById('view-cards').classList.remove('d-none');
+            } else {
+              document.getElementById('view-table').classList.remove('d-none');
+            }
           });
       }
 
       function processData(rawData) {
-        globalGroupedData = {};
+        globalGrouped = {};
         
         rawData.forEach(row => {
-          if (!globalGroupedData[row.id_po]) {
-            // Inisialisasi Header PO jika belum ada
-            globalGroupedData[row.id_po] = {
-              id_po: row.id_po,
-              vendor: row.vendor,
-              invoice_no: row.invoice_no,
-              invoice_date: row.invoice_date,
-              due_date: row.due_date,
-              tax_mode: row.tax_mode,
-              status: row.status,
-              pdf_url: row.pdf_url,
-              grand_total: 0, // Akan dihitung ulang sum items
+          if (!globalGrouped[row.id_po]) {
+            globalGrouped[row.id_po] = {
+              ...row,
               items: []
             };
           }
-          // Push Item ke array items
-          globalGroupedData[row.id_po].items.push({
-            type: row.type_prod,
-            desc: row.item_desc,
-            spec: row.spec_note,
-            qty: parseNumber(row.qty),
-            price: parseNumber(row.unit_price),
-            disc: parseNumber(row.disc),
-            amount: parseNumber(row.amount),
-            ppn: parseNumber(row.ppn)
-          });
+          globalGrouped[row.id_po].items.push(row);
         });
 
-        renderList(globalGroupedData);
+        // Convert object back to array for filtering
+        globalData = Object.values(globalGrouped);
+        
+        // Update badge count for Pending
+        const pendingCount = globalData.filter(d => d.status === 'Pending').length;
+        document.getElementById('countPending').innerText = pendingCount;
+
+        renderAll();
       }
 
-      // --- 2. RENDER LIST UTAMA ---
-      function renderList(groupedData) {
+      // --- 3. RENDERING ---
+      function renderAll() {
+        // Filter Data
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = globalData.filter(item => {
+          const matchesSearch = item.vendor.toLowerCase().includes(keyword) || item.id_po.toLowerCase().includes(keyword);
+          const matchesFilter = currentFilter === 'all' || 
+                                (currentFilter === 'Pending' && (item.status === 'Pending' || item.status === 'Menunggu Persetujuan')) ||
+                                item.status === currentFilter;
+          return matchesSearch && matchesFilter;
+        });
+
+        renderCards(filtered);
+        renderTable(filtered);
+      }
+
+      function renderCards(data) {
+        const container = document.getElementById('cardsContainer');
+        container.innerHTML = '';
+
+        data.forEach(po => {
+          let badgeClass = 'bg-light text-dark';
+          let btnHtml = '';
+          let invoiceHtml = '';
+
+          // Logic Tampilan per Status
+          if (po.status === 'Pending' || po.status === 'Menunggu Persetujuan') {
+            badgeClass = 'bg-pending';
+            btnHtml = `<button class="btn btn-create btn-card-action" onclick="openModal('${po.id_po}')"><i class="fas fa-plus me-1"></i> Create Bill</button>`;
+          } else if (po.status === 'Partial') {
+            badgeClass = 'bg-partial';
+            btnHtml = `<button class="btn btn-partial btn-card-action" onclick="openModal('${po.id_po}')"><i class="fas fa-plus me-1"></i> Add Bill (Partial)</button>`;
+          } else if (po.status === 'Billed') {
+            badgeClass = 'bg-billed';
+            btnHtml = `<button class="btn btn-view btn-card-action" onclick="openModal('${po.id_po}')"><i class="fas fa-eye me-1"></i> Lihat Detail</button>`;
+            if (po.invoice_no) {
+              invoiceHtml = `<div class="invoice-box"><i class="fas fa-file-invoice me-1"></i> ${po.invoice_no}</div>`;
+            }
+          }
+
+          const col = document.createElement('div');
+          col.className = 'col-md-6 col-lg-4 col-xl-3';
+          col.innerHTML = `
+            <div class="po-card">
+              <div>
+                <div class="po-header">
+                  <span class="po-number">${po.id_po}</span>
+                  <span class="badge ${badgeClass} status-badge">${po.status}</span>
+                </div>
+                <span class="po-vendor">${po.vendor}</span>
+                ${invoiceHtml}
+                <div class="po-date"><i class="far fa-calendar-alt me-1"></i> ${formatDate(po.timestamp_po)}</div>
+              </div>
+              <div class="mt-3">
+                ${btnHtml}
+              </div>
+            </div>
+          `;
+          container.appendChild(col);
+        });
+      }
+
+      function renderTable(data) {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
-        const poKeys = Object.keys(groupedData);
 
-        poKeys.forEach(key => {
-          const po = groupedData[key];
-          
-          // Hitung Grand Total dari Items untuk tampilan list (atau pakai data raw sheet)
-          const totalAmount = po.items.reduce((sum, item) => sum + item.amount + item.ppn, 0);
-
-          let actionBtn = '';
-          // Cek Status untuk tombol Action
-          if (po.status === 'Billed') {
-             // Tombol Edit yang membuka Modal Detail
-            actionBtn = `<button class="btn btn-sm btn-outline-primary" onclick="openModal('${po.id_po}')">
-                           <i class="fas fa-edit"></i> Edit
-                         </button>`;
-          } else {
-            // Tombol Lock tapi tetap bisa View Detail (Opsional: ganti onclick jadi openModal tapi mode readonly)
-            actionBtn = `<button class="btn btn-sm btn-light text-muted border" onclick="openModal('${po.id_po}')">
-                           <i class="fas fa-lock"></i> Locked
-                         </button>`;
-          }
+        data.forEach(po => {
+          let statusBadge = '';
+          if(po.status === 'Billed') statusBadge = '<span class="badge bg-billed text-dark rounded-pill">Billed</span>';
+          else if(po.status === 'Pending') statusBadge = '<span class="badge bg-pending text-dark rounded-pill">Pending</span>';
+          else statusBadge = `<span class="badge bg-light text-dark border rounded-pill">${po.status}</span>`;
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td class="fw-bold text-dark">${po.vendor}</td>
-            <td class="text-primary">${po.id_po}</td>
+            <td class="fw-bold">${po.id_po}</td>
+            <td>${po.vendor}</td>
+            <td>${formatDate(po.timestamp_po)}</td>
             <td>${po.invoice_no || '-'}</td>
-            <td>${formatDateDisplay(po.invoice_date)}</td>
-            <td>${formatDateDisplay(po.due_date)}</td>
-            <td class="text-end fw-bold">${formatCurrency(totalAmount)}</td>
-            <td class="text-center">${actionBtn}</td>
+            <td>${statusBadge}</td>
+            <td class="text-center action-icons">
+               <i class="fas fa-print text-muted" title="Print"></i>
+               <i class="fas fa-eye text-primary" onclick="openModal('${po.id_po}')" title="View/Edit"></i>
+            </td>
           `;
           tbody.appendChild(tr);
         });
       }
 
-      // --- 3. OPEN MODAL DETAIL (Bill Entry View) ---
+      // --- 4. MODAL LOGIC ---
       function openModal(id_po) {
-        const po = globalGroupedData[id_po];
+        const po = globalGrouped[id_po];
         currentEditingId = id_po;
 
-        // Isi Header Form
         document.getElementById('modalPoRef').innerText = po.id_po;
         document.getElementById('modalVendor').value = po.vendor;
         document.getElementById('modalInvNo').value = po.invoice_no;
-        document.getElementById('modalInvDate').value = parseDateForInput(po.invoice_date);
-        document.getElementById('modalDueDate').value = parseDateForInput(po.due_date);
-        document.getElementById('modalTaxMode').value = po.tax_mode || "Tax Exclusive";
-        
-        // Status Text
-        const statusText = document.getElementById('modalStatusText');
-        statusText.innerText = (po.status === 'Billed') ? "Ready to Import / Edit." : `Status: ${po.status}`;
-        
-        // Logika Tombol File
-        const fileContainer = document.getElementById('viewDocContainer');
-        if (po.pdf_url && po.pdf_url.length > 5) {
-          fileContainer.innerHTML = `
-            <a href="${po.pdf_url}" target="_blank" class="btn btn-outline-danger btn-sm w-100 fw-bold">
-               <i class="fas fa-file-pdf"></i> View Document
-            </a>`;
+        document.getElementById('modalInvDate').value = parseDate(po.invoice_date);
+        document.getElementById('modalTaxMode').value = po.tax_mode || 'Tax Exclusive';
+
+        // Doc Button
+        const docDiv = document.getElementById('viewDocContainer');
+        if(po.pdf_url && po.pdf_url.length > 5) {
+          docDiv.innerHTML = `<a href="${po.pdf_url}" target="_blank" class="btn btn-sm btn-outline-danger w-100 fw-bold"><i class="fas fa-file-pdf"></i> View</a>`;
         } else {
-          fileContainer.innerHTML = `<span class="text-muted small fw-bold"><i class="fas fa-times-circle"></i> No File</span>`;
+          docDiv.innerHTML = `<span class="text-muted small">No File</span>`;
         }
 
-        // Render Items Table & Calculate Totals
-        const itemBody = document.getElementById('modalItemsBody');
-        itemBody.innerHTML = '';
-        
+        // Items
+        const tbody = document.getElementById('modalItemsBody');
+        tbody.innerHTML = '';
         let subTotal = 0;
-        let totalPPN = 0;
+        let ppn = 0;
 
-        po.items.forEach((item, idx) => {
-          subTotal += item.amount;
-          totalPPN += item.ppn;
+        po.items.forEach(item => {
+           const amt = parseFloat(item.amount) || 0;
+           const tax = parseFloat(item.ppn) || 0;
+           subTotal += amt;
+           ppn += tax;
 
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td><input type="checkbox" checked disabled></td>
-            <td><span class="badge bg-light text-dark border">${item.type || 'Item'}</span></td>
-            <td>
-              <div class="fw-bold">${item.desc}</div>
-              <small class="text-muted">Code: ${idx+1}</small>
-            </td>
-            <td><input type="text" class="form-control form-control-sm bg-light-input" value="${item.spec || '-'}" readonly></td>
-            <td class="text-end fw-bold">${item.qty}</td>
-            <td class="text-end">${formatCurrency(item.price)}</td>
-            <td class="text-end text-danger">${item.disc > 0 ? formatCurrency(item.disc) : '-'}</td>
-            <td class="text-end fw-bold">${formatCurrency(item.amount)}</td>
-          `;
-          itemBody.appendChild(tr);
+           const tr = document.createElement('tr');
+           tr.innerHTML = `
+             <td><span class="badge bg-light text-dark border">${item.type_prod}</span></td>
+             <td><div class="fw-bold">${item.item_desc}</div></td>
+             <td class="text-end fw-bold">${item.qty}</td>
+             <td class="text-end">${formatMoney(item.unit_price)}</td>
+             <td class="text-end fw-bold">${formatMoney(amt)}</td>
+           `;
+           tbody.appendChild(tr);
         });
 
-        // Set Totals Footer
-        document.getElementById('txtSubtotal').innerText = formatCurrency(subTotal);
-        document.getElementById('txtPPN').innerText = formatCurrency(totalPPN);
-        document.getElementById('txtGrandTotal').innerText = formatCurrency(subTotal + totalPPN);
-
-        // Disable Save Button if NOT Billed
-        const saveBtn = document.querySelector('.modal-footer .btn-warning');
-        if (po.status !== 'Billed') {
-          saveBtn.disabled = true;
-          saveBtn.innerHTML = '<i class="fas fa-lock"></i> Locked';
-        } else {
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = '<i class="fas fa-edit"></i> Save / Edit Bill';
-        }
+        document.getElementById('txtSubtotal').innerText = formatMoney(subTotal);
+        document.getElementById('txtPPN').innerText = formatMoney(ppn);
+        document.getElementById('txtGrandTotal').innerText = formatMoney(subTotal + ppn);
 
         billModal.show();
       }
 
-      // --- 4. SUBMIT EDIT ---
       function submitEdit() {
         const btn = document.querySelector('.modal-footer .btn-warning');
-        const oldText = btn.innerHTML;
+        const oldHtml = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
         btn.disabled = true;
 
@@ -418,60 +483,44 @@
           id_po: currentEditingId,
           invoice_no: document.getElementById('modalInvNo').value,
           invoice_date: document.getElementById('modalInvDate').value,
-          due_date: document.getElementById('modalDueDate').value,
           tax_mode: document.getElementById('modalTaxMode').value
         };
 
         fetch(APPS_SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(payload)
+            method: 'POST',
+            body: JSON.stringify(payload)
         })
         .then(res => res.json())
         .then(data => {
-          if(data.success) {
-            alert("Data berhasil disimpan!");
-            billModal.hide();
-            fetchData(); // Refresh list
-          } else {
             alert(data.message);
-          }
-          btn.innerHTML = oldText;
-          btn.disabled = false;
-        })
-        .catch(err => {
-          alert("Error saving data");
-          btn.innerHTML = oldText;
-          btn.disabled = false;
+            billModal.hide();
+            fetchData();
+            btn.innerHTML = oldHtml;
+            btn.disabled = false;
         });
       }
 
-      // Search Logic
-      document.getElementById('searchInput').addEventListener('keyup', function(e) {
-        const keyword = e.target.value.toLowerCase();
-        // Filter object GroupedData
-        const filteredKeys = Object.keys(globalGroupedData).filter(key => {
-          const po = globalGroupedData[key];
-          return po.vendor.toLowerCase().includes(keyword) || 
-                 po.id_po.toLowerCase().includes(keyword) ||
-                 (po.invoice_no && po.invoice_no.toLowerCase().includes(keyword));
-        });
-        
-        // Reconstruct temp object for render
-        const filteredObj = {};
-        filteredKeys.forEach(k => filteredObj[k] = globalGroupedData[k]);
-        renderList(filteredObj);
-      });
+      // --- UTILITIES ---
+      function applyFilter(filter, el) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        renderAll();
+      }
+      
+      document.getElementById('searchInput').addEventListener('keyup', renderAll);
 
-      // Utilities
-      function parseNumber(v) { return v ? parseFloat(v.toString().replace(/,/g, '')) : 0; }
-      function formatDateDisplay(d) { return (!d || d.includes('Invalid')) ? '-' : new Date(d).toLocaleDateString('id-ID'); }
-      function parseDateForInput(d) {
-        if(!d || d.includes('Invalid')) return '';
+      function formatDate(d) { 
+        if(!d || d.includes('Invalid')) return '-';
+        return d.split('T')[0]; // Simple format
+      }
+      function parseDate(d) {
+        if(!d) return '';
         const dt = new Date(d);
-        return !isNaN(dt) ? dt.toISOString().split('T')[0] : '';
+        return isNaN(dt) ? '' : dt.toISOString().split('T')[0];
       }
-      function formatCurrency(num) {
-        return "Rp " + num.toLocaleString('id-ID', {minimumFractionDigits: 0});
+      function formatMoney(n) {
+        return 'Rp ' + parseFloat(n).toLocaleString('id-ID');
       }
     </script>
 </body>
