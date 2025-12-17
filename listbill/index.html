@@ -32,9 +32,9 @@
         .filter-pill.active { background-color: #ccfbf1; color: #0f766e; border-color: #99f6e4; font-weight: 700; }
         .filter-pill.inactive { background-color: white; color: #64748b; border-color: #e2e8f0; }
         /* Badge Styles */
-        .badge-import { background-color: #dcfce7; color: #166534; } /* Hijau */
-        .badge-batal { background-color: #fee2e2; color: #991b1b; } /* Merah */
-        .badge-pending { background-color: #fef3c7; color: #92400e; } /* Kuning */
+        .badge-import { background-color: #dcfce7; color: #166534; } 
+        .badge-batal { background-color: #fee2e2; color: #991b1b; } 
+        .badge-pending { background-color: #fef3c7; color: #92400e; } 
     </style>
 </head>
 <body class="text-slate-800 font-sans antialiased">
@@ -86,7 +86,7 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Import
             </button>
             <button onclick="setFilterStatus('batal')" id="filter-batal" class="filter-pill inactive border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm flex items-center gap-2 transition-all">
-                <span class="w-2 h-2 rounded-full bg-red-500"></span> Batal
+                <span class="w-2 h-2 rounded-full bg-red-500"></span> Batal (Rejected)
             </button>
         </div>
 
@@ -228,7 +228,12 @@
                     </label>
                 </div>
                 <div class="flex gap-3">
+                    <button onclick="submitBill('Rejected')" class="px-4 py-2.5 border border-red-200 bg-red-50 text-red-600 rounded-lg font-bold hover:bg-red-100 transition mr-2">
+                        <i class="fas fa-ban mr-1"></i> Tolak / Batal
+                    </button>
+                    
                     <button onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition">Cancel</button>
+                    
                     <button onclick="submitBill()" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition">
                         <i class="fas fa-check"></i> Approve & Save
                     </button>
@@ -260,16 +265,16 @@
 
     <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center border border-slate-100">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3>
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-teal-50 mb-5 border border-teal-100"><i class="fas fa-info-circle text-3xl text-primary"></i></div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Informasi</h3>
             <p id="notif-message" class="text-slate-500 mb-6 text-sm leading-relaxed">Message</p>
-            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg transition">OK, Mengerti</button>
+            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-lg transition">OK</button>
         </div>
     </div>
 
     <script>
         // PASTE URL ANDA DISINI
-        const API_URL = "https://script.google.com/macros/s/AKfycbydYgWd0oi-gOjQJ2fcrKxIwvffSl7C6CxCtg_YDm4qbkVBlie_ZboorqFf8SIHadhmmQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyRKC1zG75x1rnKMh-7sibwfbbLUBsZ4dQ6ZatjMo0meWRr2DY4F1qjw_5SqCd7UN7C9A/exec";
         
         const TAX_RATE = 0.11;
         let allData = [];
@@ -305,11 +310,11 @@
                 
                 let matchStatus = true;
                 if (currentFilterStatus === 'import') {
-                    // Import = Data yang sudah ada Nomor Invoicenya
-                    matchStatus = !!p.invNumber; 
+                    // Import: Ada invNumber dan BUKAN rejected
+                    matchStatus = !!p.invNumber && p.status !== 'Rejected'; 
                 } else if (currentFilterStatus === 'batal') {
-                    // Batal = Status spesifik 'Batal'
-                    matchStatus = p.status === 'Batal'; 
+                    // Batal: Status Batal atau Rejected
+                    matchStatus = p.status === 'Rejected' || p.status === 'Batal'; 
                 }
                 
                 return matchSearch && matchStatus;
@@ -343,12 +348,12 @@
             data.forEach(po => {
                 // Logic Badge Status Tampilan
                 let statusBadge;
-                if(po.status === 'Batal') {
-                    statusBadge = `<span class="badge-batal px-2 py-1 rounded text-xs font-bold">Batal</span>`;
+                if(po.status === 'Batal' || po.status === 'Rejected') {
+                    statusBadge = `<span class="badge-batal px-2 py-1 rounded text-xs font-bold">Rejected</span>`;
                 } else if (!po.invNumber) {
                     statusBadge = `<span class="badge-pending px-2 py-1 rounded text-xs font-bold">Pending</span>`;
                 } else {
-                    statusBadge = `<span class="badge-import px-2 py-1 rounded text-xs font-bold">Import</span>`;
+                    statusBadge = `<span class="badge-import px-2 py-1 rounded text-xs font-bold">Imported</span>`;
                 }
                 
                 let viewBtn = po.fileUrl ? `<a href="${po.fileUrl}" target="_blank" class="text-red-500 hover:text-red-700"><i class="fas fa-file-pdf text-xl"></i></a>` : `<span class="text-slate-300">-</span>`;
@@ -383,7 +388,7 @@
             if (!po) return;
             
             currentPOId = po.id;
-            originalInvNumber = po.invNumber || ""; // Capture Invoice Lama
+            originalInvNumber = po.invNumber || ""; 
             
             document.getElementById('bill-po-id').innerText = po.id;
             document.getElementById('bill-vendor').value = po.vendor;
@@ -415,6 +420,10 @@
             document.getElementById('billModal').classList.remove('hidden');
         }
 
+        // --- CORE BUG FIX: FUNGSI INPUT ---
+        // Masalah sebelumnya: renderBillItems() dipanggil setiap mengetik, mereset DOM -> kursor hilang.
+        // Solusi: Hanya update text node via ID untuk perhitungan, jangan render ulang row.
+        
         function renderBillItems() {
             const tbody = document.getElementById('bill-items-body');
             tbody.innerHTML = '';
@@ -451,7 +460,7 @@
                             <input type="number" value="${item.disc}" oninput="updateItem(${index}, 'disc', this.value)" class="input-bare text-right text-sm font-mono text-red-500">
                         </td>
                         <td class="p-4 align-top text-right font-bold text-slate-800 font-mono text-sm">
-                            ${formatRupiah(lineTotal)}
+                            <span id="amount-${index}">${formatRupiah(lineTotal)}</span>
                         </td>
                         <td class="p-4 align-top text-center">
                             <button onclick="deleteItem(${index})" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-trash"></i></button>
@@ -464,22 +473,34 @@
 
         function toggleItem(index, isChecked) {
             currentItems[index].checked = isChecked;
-            renderBillItems();
+            renderBillItems(); // Kalau toggle checkbox, render ulang tak apa karena layout berubah (opacity)
         }
 
+        // Logic Update Item Tanpa Render Ulang Tabel
         function updateItem(index, field, value) {
             if(['qty', 'price', 'disc'].includes(field)) {
                 currentItems[index][field] = Number(value);
+                
+                // Hitung baris ini saja
+                const item = currentItems[index];
+                const newLineTotal = (item.price - item.disc) * item.qty;
+                
+                // Update tampilan Amount baris ini via ID (DOM Manipulation langsung)
+                const amountEl = document.getElementById(`amount-${index}`);
+                if(amountEl) amountEl.innerText = formatRupiah(newLineTotal);
+                
+                // Hitung ulang Total Footer
+                calculateTotal();
             } else {
                 currentItems[index][field] = value;
             }
-            renderBillItems();
+            // PENTING: Jangan panggil renderBillItems() di sini saat oninput!
         }
 
         function deleteItem(index) {
             if(confirm("Hapus baris ini?")) {
                 currentItems.splice(index, 1);
-                renderBillItems();
+                renderBillItems(); // Hapus baris perlu render ulang
             }
         }
 
@@ -494,7 +515,7 @@
                 disc: 0,
                 checked: true
             });
-            renderBillItems();
+            renderBillItems(); // Tambah baris perlu render ulang
         }
 
         function calculateTotal() {
@@ -603,8 +624,10 @@
         function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
 
         // --- SUBMIT LOGIC ---
-        async function submitBill() {
+        // Parameter customStatus untuk tombol "Rejected"
+        async function submitBill(customStatus = null) {
             const invNum = document.getElementById('bill-inv-number').value;
+            // Validasi Invoice Number (Kecuali jika direject, mungkin boleh kosong? Tapi defaultnya wajib)
             if(!invNum) { showNotification("Invoice Number wajib diisi!"); return; }
 
             const activeItems = currentItems.filter(i => i.checked);
@@ -614,13 +637,14 @@
                 action: 'save_bill',
                 data: {
                     idPO: currentPOId,
-                    vendor: document.getElementById('bill-vendor').value, // KIRIM VENDOR JUGA
+                    vendor: document.getElementById('bill-vendor').value, 
                     oldInvNumber: originalInvNumber,
                     invNumber: invNum,
                     invDate: document.getElementById('bill-date').value,
                     dueDate: document.getElementById('bill-due-date').value,
                     taxMode: document.getElementById('tax-mode').value,
                     forceClose: document.getElementById('check-force-close').checked,
+                    customStatus: customStatus, // Menerima status custom (misal: "Rejected")
                     items: activeItems,
                     existingFileUrl: currentFileUrl
                 }
