@@ -13,23 +13,29 @@
                 extend: {
                     colors: { primary: '#008080', 'primary-hover': '#006666', bglight: '#eef2f6', darktext: '#1e293b' },
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out' },
-                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } } }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #eef2f6; }
+        body { background-color: #f1f5f9; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
         .input-bare { background: transparent; border: 1px solid transparent; width: 100%; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
         .input-bare:hover { border-color: #E2E8F0; background: white; }
         .input-bare:focus { border-color: #008080; background: white; outline: none; box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.1); }
         input:disabled, select:disabled, textarea:disabled { background-color: #F8FAFC; color: #64748B; cursor: not-allowed; border-color: transparent; }
+        
+        /* Tab Styles */
+        .tab-btn { position: relative; transition: all 0.3s; }
+        .tab-btn.active { color: #008080; background-color: white; border-color: #e2e8f0; border-bottom-color: white; }
+        .tab-btn.inactive { color: #64748b; background-color: transparent; border-color: transparent; }
+        .tab-btn.inactive:hover { background-color: #e2e8f0; color: #334155; }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 font-sans">
 
     <nav class="fixed top-0 w-full bg-white border-b border-slate-200 z-40 px-6 py-3 flex justify-between items-center shadow-sm h-[70px]">
         <div class="flex items-center gap-3">
@@ -47,7 +53,7 @@
     </nav>
 
     <div class="max-w-7xl mx-auto p-4 md:p-6 mt-20"> 
-        <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900">List Overview</h1>
                 <p class="text-sm text-slate-500 mt-1">Dashboard • Bill Entry</p>
@@ -71,48 +77,39 @@
             </div>
         </div>
 
+        <div class="flex items-end gap-2 border-b border-slate-200 mb-6 pl-1 overflow-x-auto">
+            <button onclick="switchTab('active')" id="tab-active" class="tab-btn active px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px]">
+                <div class="bg-amber-100 text-amber-600 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-inbox"></i></div>
+                PO to Create Bill
+                <span id="count-active" class="ml-2 bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+            
+            <button onclick="switchTab('billed')" id="tab-billed" class="tab-btn inactive px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px]">
+                <div class="bg-sky-100 text-sky-600 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-history"></i></div>
+                Billed History
+                <span id="count-billed" class="ml-2 bg-slate-200 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+        </div>
+
         <div id="loading" class="flex flex-col items-center justify-center py-20">
             <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-primary mb-3"></div>
             <p class="text-slate-500 text-sm font-medium">Memuat Data...</p>
         </div>
 
-        <div class="mb-10 animate-fade-in-up">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-1 h-8 bg-amber-500 rounded-full"></div>
-                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-file-invoice text-amber-500"></i> 
-                    PO to Create Bill
-                    <span id="count-active" class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full border border-amber-200 ml-2">0</span>
-                </h2>
-            </div>
+        <div id="content-area" class="min-h-[300px]">
             
-            <div id="activeContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-h-[100px]">
+            <div id="activeContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in">
                 </div>
-        </div>
 
-        <div class="relative flex items-center py-5">
-            <div class="flex-grow border-t border-slate-300"></div>
-            <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full shadow-sm border border-slate-200">Completed / History</span>
-            <div class="flex-grow border-t border-slate-300"></div>
-        </div>
-
-        <div class="mt-6 mb-20 animate-fade-in-up">
-            <div class="flex items-center gap-3 mb-4 opacity-75 hover:opacity-100 transition-opacity">
-                <div class="w-1 h-8 bg-sky-600 rounded-full"></div>
-                <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
-                    <i class="fas fa-history text-sky-600"></i> 
-                    Billed List
-                    <span id="count-billed" class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full border border-slate-300 ml-2">0</span>
-                </h2>
-            </div>
-
-            <div id="billedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div id="billedContainer" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in">
                 </div>
+
         </div>
-        </div>
+
+    </div>
 
     <div id="billModal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative animate-fade-in-up border border-slate-200">
+        <div class="bg-white w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative animate-fade-in border border-slate-200">
             
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
                 <div class="flex items-center gap-4">
@@ -251,7 +248,7 @@
     </div>
 
     <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-fade-in-up border border-slate-100">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-fade-in border border-slate-100">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div>
             <h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3>
             <p id="notif-message" class="text-slate-500 mb-6 text-sm">Error Message</p>
@@ -273,7 +270,6 @@
 
         async function fetchData() {
             document.getElementById('loading').style.display = 'flex';
-            // Clear both containers
             document.getElementById('activeContainer').innerHTML = '';
             document.getElementById('billedContainer').innerHTML = '';
 
@@ -290,11 +286,38 @@
         }
         window.onload = fetchData;
 
+        // FUNGSI GANTI TAB FOLDER
+        function switchTab(tabName) {
+            const activeCont = document.getElementById('activeContainer');
+            const billedCont = document.getElementById('billedContainer');
+            const tabActive = document.getElementById('tab-active');
+            const tabBilled = document.getElementById('tab-billed');
+
+            if(tabName === 'active') {
+                activeCont.classList.remove('hidden');
+                billedCont.classList.add('hidden');
+                
+                tabActive.classList.add('active');
+                tabActive.classList.remove('inactive');
+                
+                tabBilled.classList.add('inactive');
+                tabBilled.classList.remove('active');
+            } else {
+                activeCont.classList.add('hidden');
+                billedCont.classList.remove('hidden');
+                
+                tabActive.classList.add('inactive');
+                tabActive.classList.remove('active');
+                
+                tabBilled.classList.add('active');
+                tabBilled.classList.remove('inactive');
+            }
+        }
+
         function renderCards(data) {
             const activeContainer = document.getElementById('activeContainer');
             const billedContainer = document.getElementById('billedContainer');
             
-            // Reset Container
             activeContainer.innerHTML = '';
             billedContainer.innerHTML = '';
 
@@ -306,7 +329,6 @@
             document.getElementById('count-active').innerText = activeData.length;
             document.getElementById('count-billed').innerText = billedData.length;
 
-            // Helper function untuk membuat HTML Card
             const createCardHTML = (po) => {
                 let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
                 let btnText = 'View Bill';
@@ -347,7 +369,7 @@
                 </div>`;
             };
 
-            // 1. RENDER ACTIVE SECTION
+            // RENDER ACTIVE
             if (activeData.length === 0) {
                 activeContainer.innerHTML = `
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
@@ -360,7 +382,7 @@
                 });
             }
 
-            // 2. RENDER BILLED SECTION
+            // RENDER BILLED
             if (billedData.length === 0) {
                 billedContainer.innerHTML = `
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-8 opacity-60">
