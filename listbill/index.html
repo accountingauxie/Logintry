@@ -53,7 +53,7 @@
     </nav>
 
     <div class="max-w-7xl mx-auto p-4 md:p-6 mt-20"> 
-        <div class="flex flex-col md:flex-row justify-between items-end mb-4 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900">List Overview</h1>
                 <p class="text-sm text-slate-500 mt-1">Dashboard • Daftar Tagihan</p>
@@ -65,8 +65,6 @@
                 </div>
             </div>
         </div>
-
-        <hr class="border-slate-200 mb-6">
 
         <div class="flex items-end gap-1 border-b border-slate-200 mb-6 pl-1 overflow-x-auto">
             <button class="bg-white px-5 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-slate-200 border-b-0 min-w-max text-primary relative top-[1px] z-10 shadow-sm cursor-default">
@@ -310,7 +308,7 @@
                     // Import = Data yang sudah ada Nomor Invoicenya
                     matchStatus = !!p.invNumber; 
                 } else if (currentFilterStatus === 'batal') {
-                    // Batal = Status spesifik 'Batal' (Sesuaikan jika di DB beda string)
+                    // Batal = Status spesifik 'Batal'
                     matchStatus = p.status === 'Batal'; 
                 }
                 
