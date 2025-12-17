@@ -13,8 +13,15 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: '#008080', 'primary-hover': '#006666', bglight: '#f8fafc', darktext: '#1e293b' },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                    colors: {
+                        primary: '#008080',
+                        'primary-hover': '#006666',
+                        bglight: '#f8fafc',
+                        darktext: '#1e293b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
                 }
             }
         }
@@ -24,10 +31,25 @@
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .input-bare { background: transparent; border: 1px solid transparent; width: 100%; padding: 4px 8px; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .input-bare {
+            background: transparent; border: 1px solid transparent; width: 100%;
+            padding: 4px 8px; border-radius: 4px; transition: all 0.2s;
+        }
+        .input-bare:hover { border-color: #e2e8f0; background: white; }
         .input-bare:focus { border-color: #008080; background: white; outline: none; }
+
+        .bill-input {
+            transition: all 0.2s;
+        }
+        .bill-input:focus {
+            ring: 2px; ring-color: #008080; border-color: #008080;
+        }
+
         .tab-btn.active { color: #008080; background-color: white; border-color: #e2e8f0; border-bottom-color: white; }
         .tab-btn.inactive { color: #64748b; background-color: transparent; border-color: transparent; }
+        
         .filter-pill.active { background-color: #ccfbf1; color: #0f766e; border-color: #99f6e4; font-weight: 700; }
         .filter-pill.inactive { background-color: white; color: #64748b; border-color: #e2e8f0; }
     </style>
@@ -42,13 +64,12 @@
                 <span class="font-normal text-sm text-slate-500 tracking-tight">Bill List View</span>
             </div>
         </div>
-        <button onclick="fetchData()" class="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-primary transition">
+        <button onclick="fetchData()" class="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-primary hover:bg-teal-50 transition">
             <i class="fas fa-sync-alt"></i>
         </button>
     </nav>
 
     <div class="max-w-7xl mx-auto p-4 md:p-6 mt-20"> 
-        
         <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900">List Overview</h1>
@@ -63,7 +84,7 @@
         </div>
 
         <div class="flex items-end gap-2 border-b border-slate-200 mb-6 pl-1 overflow-x-auto">
-            <button class="tab-btn active px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px]">
+            <button class="tab-btn active px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px] cursor-default">
                 <div class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-receipt"></i></div>
                 Daftar Tagihan
                 <span id="count-total" class="ml-2 bg-teal-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
@@ -100,35 +121,48 @@
                 </table>
             </div>
             <div id="empty-state" class="hidden p-10 text-center">
+                <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-search text-slate-300"></i></div>
                 <p class="text-slate-400 text-sm">Tidak ada data yang cocok.</p>
             </div>
         </div>
     </div>
 
-    <div id="billModal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative border border-slate-200">
+    <div id="billModal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative border border-slate-200">
+            
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
-                <h2 class="text-lg font-bold text-slate-800"><span id="modal-title-text">Bill Entry</span> - <span id="bill-po-id" class="text-primary"></span></h2>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-lg"></i></button>
+                <div class="flex items-center gap-4">
+                    <div class="bg-teal-50 p-2.5 rounded-lg text-primary border border-teal-100 shadow-sm"><i class="fas fa-file-invoice-dollar text-xl"></i></div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Bill Entry / Detail</h2>
+                        <p class="text-xs text-slate-500">PO Ref: <span id="bill-po-id" class="font-mono font-bold text-slate-700"></span></p>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
             </div>
             
             <div class="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div>
-                        <label class="text-[11px] font-bold text-slate-400 uppercase block mb-1">Vendor</label>
-                        <input type="text" id="bill-vendor" readonly class="w-full font-bold text-slate-800 bg-transparent border-b border-transparent cursor-default">
+                
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="md:col-span-1">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Vendor Name</label>
+                        <input type="text" id="bill-vendor" readonly class="w-full font-bold text-slate-800 bg-transparent border-b border-transparent outline-none py-1 text-base truncate cursor-default">
                     </div>
                     <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Inv Number</label>
-                        <input type="text" id="bill-inv-number" class="bill-input w-full border border-slate-300 rounded px-2 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Number <span class="text-red-500">*</span></label>
+                        <input type="text" id="bill-inv-number" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary outline-none">
                     </div>
                     <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Inv Date</label>
-                        <input type="date" id="bill-date" class="bill-input w-full border border-slate-300 rounded px-2 py-1.5 text-sm focus:border-primary outline-none">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Inv Date</label>
+                        <input type="date" id="bill-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary outline-none">
                     </div>
                     <div>
-                        <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Tax Mode</label>
-                        <select id="tax-mode" class="bill-input w-full border border-slate-300 rounded px-2 py-1.5 text-sm focus:border-primary outline-none">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Due Date</label>
+                        <input type="date" id="bill-due-date" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:border-primary outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1 block">Tax Mode</label>
+                        <select id="tax-mode" onchange="calculateTotal()" class="bill-input w-full border border-slate-300 rounded-md px-3 py-2 text-sm bg-white focus:border-primary outline-none">
                             <option value="exclusive">Tax Exclusive</option>
                             <option value="inclusive">Tax Inclusive</option>
                             <option value="no_tax">No Tax</option>
@@ -136,90 +170,150 @@
                     </div>
                 </div>
 
+                <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-primary shadow-sm">
+                    <label class="text-xs font-bold text-primary uppercase mb-2 block flex items-center gap-2"><i class="fas fa-paperclip"></i> Upload Invoice</label>
+                    <div class="flex items-center gap-4">
+                        <input type="file" id="bill-file" class="bill-input text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-primary hover:file:bg-teal-100 cursor-pointer">
+                        <div id="existing-file-link" class="hidden text-sm">
+                            <a href="#" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i class="fas fa-external-link-alt"></i> View Existing File</a>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
                     <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase text-[11px]">
+                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase text-[11px] tracking-wider">
                             <tr>
-                                <th class="p-4">Item Name</th>
-                                <th class="p-4 text-center">Qty</th>
-                                <th class="p-4 text-right">Price</th>
-                                <th class="p-4 text-right">Disc</th>
-                                <th class="p-4 text-right">Amount</th>
+                                <th class="p-4 w-10 text-center"><i class="fas fa-check-square"></i></th>
+                                <th class="p-4 w-16 text-center">Type</th>
+                                <th class="p-4 w-1/4">Item Details</th>
+                                <th class="p-4 w-32 bg-yellow-50/50">Spec Note</th>
+                                <th class="p-4 w-24 text-center">Qty</th>
+                                <th class="p-4 w-32 text-right">Price</th>
+                                <th class="p-4 w-32 text-right">Disc</th>
+                                <th class="p-4 w-40 text-right">Amount</th>
+                                <th class="p-4 w-10"></th>
                             </tr>
                         </thead>
                         <tbody id="bill-items-body" class="divide-y divide-slate-100"></tbody>
                     </table>
+                    
+                    <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
+                        <button onclick="openProductModal()" class="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-teal-50 transition">
+                            <i class="fas fa-database"></i> Tambah Item Database
+                        </button>
+                        <button onclick="addCustomItem()" class="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-100 transition">
+                            <i class="fas fa-plus-circle"></i> Tambah Item Manual
+                        </button>
+                    </div>
                 </div>
 
-                <div class="flex justify-end">
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm w-full md:w-1/3">
-                        <div class="flex justify-between mb-2"><span>Subtotal</span> <span id="display-subtotal" class="font-bold">0</span></div>
-                        <div class="flex justify-between mb-2"><span>PPN (11%)</span> <span id="display-ppn" class="font-bold">0</span></div>
-                        <div class="border-t pt-2 mt-2 flex justify-between"><span class="text-lg font-bold">Total</span> <span id="display-grand-total" class="text-xl font-bold text-primary">0</span></div>
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <div class="w-full md:w-1/2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase mb-2 block tracking-wide">Internal Notes</label>
+                        <textarea id="bill-note" rows="4" class="bill-input w-full border border-slate-300 rounded-xl p-3 text-sm focus:border-primary outline-none resize-none" placeholder="Catatan internal..."></textarea>
+                    </div>
+                    <div class="w-full md:w-1/2 bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex justify-between mb-3 text-slate-500 text-sm"><span>Subtotal (DPP)</span> <span id="display-subtotal" class="font-semibold text-slate-700">Rp 0</span></div>
+                        <div class="flex justify-between mb-3 text-slate-500 text-sm items-center"><span>PPN (11%)</span> <span id="display-ppn" class="font-semibold text-slate-700">Rp 0</span></div>
+                        <div class="flex justify-between mb-4 items-center">
+                            <span class="text-slate-500 text-sm">Adjustment</span> 
+                            <input type="number" id="bill-adjustment" value="0" oninput="calculateTotal()" class="bill-input text-right w-32 border border-slate-300 rounded-md px-2 py-1 text-sm focus:border-primary outline-none">
+                        </div>
+                        <div class="border-t border-dashed border-slate-300 my-4"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-bold text-slate-800">GRAND TOTAL</span> 
+                            <span id="display-grand-total" class="text-2xl font-bold text-primary">Rp 0</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="p-5 bg-white border-t border-slate-200 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-6 py-2 border rounded-lg font-bold text-slate-600 hover:bg-slate-50 transition">Cancel</button>
-                <button onclick="submitBill()" id="btn-save" class="px-6 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg transition flex items-center gap-2">
-                    <i class="fas fa-save"></i> <span>Save Bill</span>
-                </button>
+            <div class="p-5 bg-white border-t border-slate-200 flex justify-between items-center z-10">
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
+                        <input type="checkbox" id="check-force-close" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary accent-primary">
+                        <span class="font-medium text-slate-700">Tandai PO Selesai (Abaikan Sisa)</span>
+                    </label>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition">Cancel</button>
+                    <button onclick="submitBill()" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition">
+                        <i class="fas fa-check"></i> Approve & Save
+                    </button>
+                </div>
             </div>
-             <div id="modalLoading" class="hidden absolute inset-0 bg-white/80 flex items-center justify-center z-50">
-                <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-primary"></div>
+
+            <div id="modalLoading" class="hidden absolute inset-0 bg-white/90 backdrop-blur-[1px] flex flex-col items-center justify-center z-50 rounded-2xl">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-primary mb-4"></div>
+                <p class="font-bold text-slate-700 animate-pulse">Processing...</p>
             </div>
+        </div>
+    </div>
+
+    <div id="productModal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col h-[80vh]">
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h3 class="font-bold text-slate-800">Pilih Produk Database</h3>
+                    <p class="text-xs text-slate-500">Filter: <span id="product-vendor-filter" class="font-bold text-primary"></span></p>
+                </div>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-3 bg-white border-b border-slate-100">
+                <input type="text" id="searchProduct" onkeyup="filterProducts()" placeholder="Cari nama produk..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary outline-none shadow-sm">
+            </div>
+            <div class="flex-1 overflow-y-auto p-0" id="productListContainer">
+                </div>
         </div>
     </div>
 
     <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
-            <h3 class="text-lg font-bold mb-2">Info</h3>
-            <p id="notif-message" class="text-slate-500 mb-6">Message</p>
-            <button onclick="document.getElementById('notificationModal').classList.add('hidden')" class="w-full py-2 bg-primary text-white rounded-lg font-bold">OK</button>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center border border-slate-100">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3>
+            <p id="notif-message" class="text-slate-500 mb-6 text-sm leading-relaxed">Error Message</p>
+            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg transition">OK, Mengerti</button>
         </div>
     </div>
 
     <script>
-        // =========================================================================
-        // PENTING: GANTI URL DI BAWAH INI DENGAN URL DARI LANGKAH 2 (DEPLOY)
-        // =========================================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbzVRcI1ZD8JDcPbcvCRpJsrxyXJoTtGog8tWZNMSoFuYnRFq9vf27cfWCmBByelNOv0xQ/exec"; 
+        // GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT ANDA
+        const API_URL = "https://script.google.com/macros/s/AKfycbwwKi832EJQPML9_OW5EK7ceF0ETg4JZB2R3OlQVskwRDqn2dciTve_1RPiejoGqbI5dQ/exec";
         
         const TAX_RATE = 0.11;
         let allData = [];
         let currentItems = [];
+        let dbProducts = [];
         let currentPOId = "";
+        let currentFileUrl = "";
         let currentFilterStatus = 'all';
 
         window.onload = fetchData;
 
+        // --- Data Fetching ---
         async function fetchData() {
             toggleLoading(true);
             try {
                 const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
                 const data = await response.json();
-                
-                if(data.error) {
-                     showNotification("Error Backend: " + data.error);
-                } else {
-                    allData = data;
-                    applyFilters();
-                }
+                allData = data;
+                applyFilters();
             } catch (error) {
                 console.error(error);
-                showNotification("Gagal memuat data. Periksa URL API atau koneksi internet.");
+                showNotification("Gagal memuat data. Periksa koneksi internet.");
             } finally {
                 toggleLoading(false);
             }
         }
 
+        // --- Filter & Table Render ---
         function applyFilters() {
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allData.filter(p => {
                 const matchSearch = p.id.toLowerCase().includes(searchVal) || p.vendor.toLowerCase().includes(searchVal) || (p.invNumber && p.invNumber.toLowerCase().includes(searchVal));
                 let matchStatus = true;
-                if (currentFilterStatus === 'pending') matchStatus = !p.invNumber; 
+                if (currentFilterStatus === 'pending') matchStatus = !p.invNumber;
                 else if (currentFilterStatus === 'billed') matchStatus = !!p.invNumber;
                 return matchSearch && matchStatus;
             });
@@ -253,15 +347,12 @@
                 let statusBadge = !po.invNumber 
                     ? `<span class="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs font-bold">Pending</span>` 
                     : `<span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">Billed</span>`;
+                
+                let viewBtn = po.fileUrl ? `<a href="${po.fileUrl}" target="_blank" class="text-red-500 hover:text-red-700"><i class="fas fa-file-pdf text-xl"></i></a>` : `<span class="text-slate-300">-</span>`;
 
-                // LOGIK TOMBOL VIEW (PDF)
-                // Jika ada fileUrl dari backend, tampilkan icon PDF merah
-                let viewBtn = `<span class="text-slate-300">-</span>`;
-                if(po.fileUrl && po.fileUrl.length > 5) {
-                    viewBtn = `<a href="${po.fileUrl}" target="_blank" class="text-red-500 hover:text-red-700 transition" title="Lihat Dokumen">
-                                <i class="fas fa-file-pdf text-xl"></i>
-                               </a>`;
-                }
+                // Logic Edit Button (Billed = Edit, Pending = Bill Entry)
+                let btnLabel = po.invNumber ? "Edit" : "Entry";
+                let btnIcon = po.invNumber ? "fa-edit" : "fa-plus";
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
@@ -275,7 +366,7 @@
                     <td class="px-6 py-4 text-center">${viewBtn}</td>
                     <td class="px-6 py-4 text-center">
                         <button onclick="openBillModal('${po.id}')" class="text-xs font-bold text-primary border border-primary px-3 py-1.5 rounded hover:bg-primary hover:text-white transition">
-                            <i class="fas fa-edit mr-1"></i> Edit
+                            <i class="fas ${btnIcon} mr-1"></i> ${btnLabel}
                         </button>
                     </td>
                 `;
@@ -283,6 +374,7 @@
             });
         }
 
+        // --- Bill Modal Logic ---
         function openBillModal(idPO) {
             const po = allData.find(d => d.id === idPO);
             if (!po) return;
@@ -290,32 +382,30 @@
             currentPOId = idPO;
             document.getElementById('bill-po-id').innerText = po.id;
             document.getElementById('bill-vendor').value = po.vendor;
+            document.getElementById('bill-inv-number').value = po.invNumber || '';
             
-            const invInput = document.getElementById('bill-inv-number');
-            const dateInput = document.getElementById('bill-date');
-            
-            // Set Values
-            invInput.value = po.invNumber || '';
-            
-            // Ubah Judul Modal dan Text Tombol agar user tau ini Edit Mode
-            const modalTitle = document.getElementById('modal-title-text');
-            const saveBtnText = document.querySelector('#btn-save span');
+            if(po.invDate) document.getElementById('bill-date').value = new Date(po.invDate).toISOString().split('T')[0];
+            else document.getElementById('bill-date').valueAsDate = new Date();
 
-            if (po.invNumber) {
-                modalTitle.innerText = "Edit Tagihan";
-                saveBtnText.innerText = "Update Invoice";
-            } else {
-                modalTitle.innerText = "Bill Entry";
-                saveBtnText.innerText = "Save Bill";
-            }
-
-            if(po.invDate) dateInput.value = new Date(po.invDate).toISOString().split('T')[0];
-            else dateInput.valueAsDate = new Date();
+            if(po.dueDate) document.getElementById('bill-due-date').value = new Date(po.dueDate).toISOString().split('T')[0];
+            else document.getElementById('bill-due-date').value = '';
 
             document.getElementById('tax-mode').value = po.taxMode || 'exclusive';
+            document.getElementById('check-force-close').checked = po.status === 'Billed';
             
-            // Map items
-            currentItems = po.items || [];
+            // Handle File Link
+            const fileLinkDiv = document.getElementById('existing-file-link');
+            if(po.fileUrl) {
+                fileLinkDiv.classList.remove('hidden');
+                fileLinkDiv.querySelector('a').href = po.fileUrl;
+                currentFileUrl = po.fileUrl;
+            } else {
+                fileLinkDiv.classList.add('hidden');
+            }
+
+            // Map Items: Create Deep Copy to avoid mutating original data directly until saved
+            // Add 'checked' property for checkboxes
+            currentItems = po.items.map(i => ({...i, checked: true}));
             
             renderBillItems();
             document.getElementById('billModal').classList.remove('hidden');
@@ -324,41 +414,209 @@
         function renderBillItems() {
             const tbody = document.getElementById('bill-items-body');
             tbody.innerHTML = '';
-            let total = 0;
-
-            currentItems.forEach(item => {
+            
+            currentItems.forEach((item, index) => {
                 const lineTotal = (item.price - item.disc) * item.qty;
-                total += lineTotal;
+                
+                // Class styling based on Checked state
+                const rowClass = item.checked ? "bg-white" : "bg-gray-50 opacity-60";
+                
+                // Tipe Produk Badge
+                const typeBadge = item.typeProduk 
+                    ? `<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-[10px] font-bold border border-gray-200">${item.typeProduk}</span>`
+                    : `<span class="text-gray-300 text-xs">-</span>`;
+
                 tbody.innerHTML += `
-                    <tr>
-                        <td class="p-4 font-medium text-slate-700">${item.namaItem}<div class="text-xs text-slate-400">${item.spec || ''}</div></td>
-                        <td class="p-4 text-center">${item.qty}</td>
-                        <td class="p-4 text-right font-mono">${formatRupiah(item.price)}</td>
-                        <td class="p-4 text-right font-mono text-red-500">${formatRupiah(item.disc)}</td>
-                        <td class="p-4 text-right font-bold font-mono">${formatRupiah(lineTotal)}</td>
+                    <tr class="${rowClass} border-b border-slate-50 last:border-0 transition">
+                        <td class="p-4 align-top text-center">
+                            <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItem(${index}, this.checked)" class="w-4 h-4 text-primary rounded cursor-pointer accent-primary">
+                        </td>
+                        <td class="p-4 align-top text-center">${typeBadge}</td>
+                        <td class="p-4 align-top">
+                            <div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>
+                            <div class="text-[10px] text-slate-400 mt-1 flex gap-2 items-center">
+                                <span class="bg-slate-100 px-1.5 rounded font-bold">${item.satuan}</span>
+                                ${item.maxQty ? `<span class="bg-blue-50 text-blue-600 px-1.5 rounded">PO: ${item.maxQty}</span>` : ''}
+                            </div>
+                        </td>
+                        <td class="p-4 align-top bg-yellow-50/30">
+                            <input type="text" value="${item.spec || ''}" oninput="updateItem(${index}, 'spec', this.value)" class="input-bare text-xs text-slate-600 font-medium h-full" placeholder="-">
+                        </td>
+                        <td class="p-4 align-top">
+                            <input type="number" value="${item.qty}" min="0" oninput="updateItem(${index}, 'qty', this.value)" class="input-bare text-center text-sm font-bold text-slate-700">
+                            ${item.maxQty ? `<div class="text-[10px] text-center text-slate-400 mt-1">Sisa: ${item.maxQty}</div>` : ''}
+                        </td>
+                        <td class="p-4 align-top">
+                            <input type="number" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)" class="input-bare text-right text-sm font-mono text-slate-600">
+                        </td>
+                        <td class="p-4 align-top">
+                            <input type="number" value="${item.disc}" oninput="updateItem(${index}, 'disc', this.value)" class="input-bare text-right text-sm font-mono text-red-500">
+                        </td>
+                        <td class="p-4 align-top text-right font-bold text-slate-800 font-mono text-sm">
+                            ${formatRupiah(lineTotal)}
+                        </td>
+                        <td class="p-4 align-top text-center">
+                            <button onclick="deleteItem(${index})" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-trash"></i></button>
+                        </td>
                     </tr>
                 `;
             });
 
-            // Calc Summary
-            const taxMode = document.getElementById('tax-mode').value;
-            let dpp = total, ppn = 0;
-
-            if(taxMode === 'exclusive') { ppn = total * TAX_RATE; }
-            else if(taxMode === 'inclusive') { dpp = total / (1 + TAX_RATE); ppn = total - dpp; }
-            
-            document.getElementById('display-subtotal').innerText = formatRupiah(dpp);
-            document.getElementById('display-ppn').innerText = formatRupiah(ppn);
-            document.getElementById('display-grand-total').innerText = formatRupiah(dpp + ppn);
-            
-            document.getElementById('display-subtotal').dataset.val = dpp;
-            document.getElementById('display-ppn').dataset.val = ppn;
-            document.getElementById('display-grand-total').dataset.val = dpp + ppn;
+            calculateTotal();
         }
 
+        // --- Item Logic ---
+        function toggleItem(index, isChecked) {
+            currentItems[index].checked = isChecked;
+            renderBillItems();
+        }
+
+        function updateItem(index, field, value) {
+            if(['qty', 'price', 'disc'].includes(field)) {
+                currentItems[index][field] = Number(value);
+            } else {
+                currentItems[index][field] = value;
+            }
+            renderBillItems(); // Re-render to update Amount column
+        }
+
+        function deleteItem(index) {
+            if(confirm("Hapus baris ini?")) {
+                currentItems.splice(index, 1);
+                renderBillItems();
+            }
+        }
+
+        function addCustomItem() {
+            currentItems.push({
+                namaItem: "Manual Item",
+                satuan: "Unit",
+                typeProduk: "M",
+                spec: "",
+                qty: 1,
+                price: 0,
+                disc: 0,
+                checked: true
+            });
+            renderBillItems();
+        }
+
+        function calculateTotal() {
+            let totalLine = 0;
+            currentItems.forEach(item => {
+                if(item.checked) {
+                    totalLine += (item.price - item.disc) * item.qty;
+                }
+            });
+
+            const taxMode = document.getElementById('tax-mode').value;
+            const adj = Number(document.getElementById('bill-adjustment').value) || 0;
+            let dpp = 0, ppn = 0;
+
+            if (taxMode === 'exclusive') { 
+                dpp = totalLine; 
+                ppn = dpp * TAX_RATE; 
+            } else if (taxMode === 'inclusive') { 
+                dpp = totalLine / (1 + TAX_RATE); 
+                ppn = totalLine - dpp; 
+            } else { 
+                dpp = totalLine; 
+            }
+
+            const grand = dpp + ppn + adj;
+
+            document.getElementById('display-subtotal').innerText = formatRupiah(dpp);
+            document.getElementById('display-ppn').innerText = formatRupiah(ppn);
+            document.getElementById('display-grand-total').innerText = formatRupiah(grand);
+        }
+
+        // --- Product Database Logic ---
+        async function openProductModal() {
+            const vendorName = document.getElementById('bill-vendor').value;
+            if(!vendorName) { showNotification("Vendor belum terisi."); return; }
+
+            document.getElementById('productModal').classList.remove('hidden');
+            document.getElementById('product-vendor-filter').innerText = vendorName;
+            document.getElementById('productListContainer').innerHTML = '<div class="text-center p-10"><i class="fas fa-spinner fa-spin text-primary text-2xl"></i><p class="mt-2 text-slate-500">Mengambil data produk...</p></div>';
+
+            try {
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'getProducts', vendor: vendorName }) 
+                });
+                const json = await res.json();
+                
+                if(json.status === 'success') {
+                    dbProducts = json.products;
+                    filterProducts();
+                } else {
+                    document.getElementById('productListContainer').innerHTML = `<div class="p-4 text-center text-red-500">${json.message}</div>`;
+                }
+            } catch(e) {
+                document.getElementById('productListContainer').innerHTML = '<div class="p-4 text-center text-red-500">Error fetching products.</div>';
+            }
+        }
+
+        function filterProducts() {
+            const search = document.getElementById('searchProduct').value.toLowerCase();
+            const container = document.getElementById('productListContainer');
+            container.innerHTML = '';
+            
+            const filtered = dbProducts.filter(p => p.namaItem.toLowerCase().includes(search));
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-400 p-8">Produk tidak ditemukan.</div>';
+                return;
+            }
+
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center p-4 border-b border-slate-100 hover:bg-teal-50 cursor-pointer group transition";
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold text-slate-700 text-sm group-hover:text-primary">${p.namaItem}</div>
+                        <div class="text-xs text-slate-400 mt-0.5 flex gap-2">
+                            <span class="bg-slate-100 px-1.5 rounded">${p.satuan}</span>
+                            <span class="bg-gray-100 text-gray-600 px-1.5 rounded font-bold">${p.typeProduk}</span>
+                        </div>
+                    </div>
+                    <button class="text-xs bg-white border border-slate-200 text-primary px-3 py-1.5 rounded-lg font-bold shadow-sm hover:bg-primary hover:text-white transition">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                `;
+                div.onclick = () => {
+                    addDbItemToBill(p);
+                    closeProductModal();
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function addDbItemToBill(product) {
+            currentItems.push({
+                namaItem: product.namaItem,
+                satuan: product.satuan,
+                typeProduk: product.typeProduk,
+                spec: "",
+                qty: 1,
+                price: product.price || 0,
+                disc: 0,
+                checked: true
+            });
+            renderBillItems();
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        // --- Submit ---
         async function submitBill() {
             const invNum = document.getElementById('bill-inv-number').value;
             if(!invNum) { showNotification("Invoice Number wajib diisi!"); return; }
+
+            // Filter only checked items
+            const activeItems = currentItems.filter(i => i.checked);
 
             const payload = {
                 action: 'save_bill',
@@ -366,21 +624,21 @@
                     idPO: currentPOId,
                     invNumber: invNum,
                     invDate: document.getElementById('bill-date').value,
+                    dueDate: document.getElementById('bill-due-date').value,
                     taxMode: document.getElementById('tax-mode').value,
-                    dueDate: '' // Tambahkan input due date jika perlu
+                    forceClose: document.getElementById('check-force-close').checked,
+                    items: activeItems // Send updated items (optional implementation on backend needed to fully save items)
                 }
             };
 
             document.getElementById('modalLoading').classList.remove('hidden');
-            
             try {
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const json = await res.json();
-                
                 if(json.status === 'success') {
                     showNotification("Berhasil disimpan!");
                     closeModal();
-                    fetchData(); // Refresh data
+                    fetchData();
                 } else {
                     showNotification("Gagal: " + json.message);
                 }
@@ -391,10 +649,11 @@
             }
         }
 
+        // --- Helpers ---
         function closeModal() { document.getElementById('billModal').classList.add('hidden'); }
         function showNotification(msg) { document.getElementById('notif-message').innerText = msg; document.getElementById('notificationModal').classList.remove('hidden'); }
+        function closeNotification() { document.getElementById('notificationModal').classList.add('hidden'); }
         function toggleLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
-        
         function formatRupiah(n) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n); }
         function formatDate(d) { return d ? new Date(d).toLocaleDateString('id-ID') : '-'; }
     </script>
