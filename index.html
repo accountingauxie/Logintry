@@ -308,7 +308,7 @@
 
     <script>
         // ================= CONFIGURATION =================
-        const API_URL = "https://script.google.com/macros/s/AKfycbzhSdVM4m-YCIF5s_ZNOUc1uJgYSy7Cxlten_bU0HtFNLnWTXJOewr6oQvzteUNgmCc/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbz9iXeqiacLK3C4A8R6HGe0HPipTor8ZpHbxyVLB5sg6Zuv9rdoTcZbMMtvX7mYc2E/exec"; 
         const TAX_RATE = 0.11;
 
         // ================= GLOBAL VARIABLES =================
@@ -413,9 +413,11 @@
                     btnIcon = '<i class="fas fa-plus"></i>';
                     btnClass = 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
                 } else {
+                    // Status Billed/Selesai
                     statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
                     if(po.status === 'Process to Import') statusClass = 'bg-orange-50 text-orange-600 border-orange-100';
                     else if(po.status === 'Success Imported') statusClass = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                    else if(po.status.includes('Failed')) statusClass = 'bg-red-50 text-red-600 border-red-100';
                     
                     statusBadge = po.status;
                     btnText = 'Lihat Detail';
@@ -431,8 +433,8 @@
                                </div>`;
                 }
 
-                // --- 2. TOMBOL REJECT DIHILANGKAN UNTUK BILLED ---
-                // Sesuai permintaan: Billed dilock, tidak bisa revisi.
+                // --- 2. TOMBOL REJECT DIHILANGKAN UNTUK BILLED (LOCKED) ---
+                // Tidak ada tombol reject/revisi sesuai request
                 let rejectBtn = ""; 
 
                 const html = `
@@ -553,10 +555,10 @@
             
             setFormState(false); 
             
-            if (bill.status === 'Billed') {
-                document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200"><i class="fas fa-check-circle"></i> Ready to Import.</div>`;
-                document.getElementById('btn-edit').classList.remove('hidden');
+            if (bill.status === 'Billed' || bill.status.includes('Import')) {
+                document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200"><i class="fas fa-lock"></i> Bill Locked. Ready to Import / Imported.</div>`;
                 document.getElementById('btn-xero').classList.remove('hidden');
+                // Removed btn-edit because it's locked
             } else {
                 document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-blue-200"><i class="fas fa-info-circle"></i> Status: ${bill.status}</div>`;
             }
