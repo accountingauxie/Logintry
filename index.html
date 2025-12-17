@@ -285,7 +285,7 @@
 
     <script>
         // ================= CONFIGURATION =================
-        const API_URL = "https://script.google.com/macros/s/AKfycbx69Cstvtxv5DRkLyEImDcYzLNuORUGg0NHrYKfZGdJDTRlzCAg2Uf_YkVg8cvERuUL/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbymamfvUjjRXX7wYnJ9LMHDrNAxO_ULLGT-uxV8Xgg5uAER7r4NlRTYlMyYlPodEcKv/exec"; 
         const TAX_RATE = 0.11;
 
         // ================= GLOBAL VARIABLES =================
@@ -394,7 +394,7 @@
                     btnIcon = '<i class="fas fa-eye"></i>';
                     btnClass = 'text-slate-400 bg-slate-50 border-slate-200 cursor-not-allowed';
                     // Tombol Revert
-                    secondaryBtn = `<button onclick="revertPO('${po.id}')" class="w-full mt-2 py-2 rounded-lg font-bold text-sm text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition shadow-sm"><i class="fas fa-undo mr-1"></i> Revert to Pending</button>`;
+                    secondaryBtn = `<button onclick="revertPO('${po.id}')" class="w-full mt-2 py-2 rounded-lg font-bold text-sm text-amber-600 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition shadow-sm"><i class="fas fa-undo mr-1"></i> Revert Status</button>`;
                 } else {
                     // Billed / Finished
                     statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
@@ -489,18 +489,19 @@
         }
 
         async function revertPO(idPO) {
-            if (!confirm(`Kembalikan status PO ${idPO} menjadi Pending?`)) return;
+            if (!confirm(`Kembalikan status PO ${idPO} ke semula?`)) return;
 
             toggleLoading(true);
             try {
+                // Status 'Pending' di sini hanya trigger untuk backend menghitung ulang status
                 const res = await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'update_po_status', idPO: idPO, status: 'Pending', reason: 'Reverted to Pending by User' })
+                    body: JSON.stringify({ action: 'update_po_status', idPO: idPO, status: 'Pending', reason: 'Reverted to Previous Status by User' })
                 });
                 const json = await res.json();
                 if (json.status === 'success') {
                     await fetchData();
-                    showNotification("PO Berhasil dikembalikan ke Pending.");
+                    showNotification(`PO Berhasil dikembalikan ke status: ${json.newStatus}`);
                 } else {
                     showNotification("Gagal revert: " + json.message);
                 }
