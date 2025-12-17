@@ -256,7 +256,7 @@
 
     <script>
         // --- PASTE URL BARU DI SINI SETELAH DEPLOY ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbwvYXevkgsna_6h4lATo_6bLBI4Fi1KWNav4VIYjUx6Y_Q0QtP3D2t52Nbz0bcnilsU/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxSjqrUBZtLd14hTwG-_OC1btwOxFq30eEZ2I5Av0tFCJwLdLd8YdBKtdPaQaDkKqdaSA/exec";
         
         const TAX_RATE = 0.11;
         let allData = [];
@@ -286,6 +286,7 @@
         function applyFilters() {
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allData.filter(p => {
+                // Pencarian bisa berdasarkan ID PO Asli atau Nomor Invoice
                 const matchSearch = p.id.toLowerCase().includes(searchVal) || p.vendor.toLowerCase().includes(searchVal) || (p.invNumber && p.invNumber.toLowerCase().includes(searchVal));
                 let matchStatus = true;
                 if (currentFilterStatus === 'pending') matchStatus = !p.invNumber;
@@ -332,6 +333,8 @@
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                
+                // Menggunakan uniqueKey (InvNo atau IDPO) sebagai identifier di tombol Edit
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-bold text-slate-800">${po.vendor}</td>
                     <td class="px-6 py-4 text-primary font-medium">${po.id}</td>
@@ -342,7 +345,7 @@
                     <td class="px-6 py-4 text-center">${statusBadge}</td>
                     <td class="px-6 py-4 text-center">${viewBtn}</td>
                     <td class="px-6 py-4 text-center">
-                        <button onclick="openBillModal('${po.id}')" class="text-xs font-bold text-primary border border-primary px-3 py-1.5 rounded hover:bg-primary hover:text-white transition">
+                        <button onclick="openBillModal('${po.uniqueKey}')" class="text-xs font-bold text-primary border border-primary px-3 py-1.5 rounded hover:bg-primary hover:text-white transition">
                             <i class="fas ${btnIcon} mr-1"></i> ${btnLabel}
                         </button>
                     </td>
@@ -351,11 +354,12 @@
             });
         }
 
-        function openBillModal(idPO) {
-            const po = allData.find(d => d.id === idPO);
+        function openBillModal(uniqueKey) {
+            // Cari data berdasarkan Unique Key (InvNo atau PO ID)
+            const po = allData.find(d => d.uniqueKey === uniqueKey);
             if (!po) return;
             
-            currentPOId = idPO;
+            currentPOId = po.id; // Simpan ID PO Asli
             document.getElementById('bill-po-id').innerText = po.id;
             document.getElementById('bill-vendor').value = po.vendor;
             document.getElementById('bill-inv-number').value = po.invNumber || '';
@@ -369,6 +373,9 @@
             document.getElementById('tax-mode').value = po.taxMode || 'exclusive';
             document.getElementById('check-force-close').checked = po.status === 'Billed';
             
+            // Reset File Input
+            document.getElementById('bill-file').value = ""; 
+
             const fileLinkDiv = document.getElementById('existing-file-link');
             if(po.fileUrl) {
                 fileLinkDiv.classList.remove('hidden');
@@ -376,6 +383,7 @@
                 currentFileUrl = po.fileUrl;
             } else {
                 fileLinkDiv.classList.add('hidden');
+                currentFileUrl = "";
             }
 
             currentItems = po.items.map(i => ({...i, checked: true}));
@@ -388,7 +396,6 @@
             tbody.innerHTML = '';
             
             currentItems.forEach((item, index) => {
-                // Rumus: (Price - Disc) * Qty
                 const lineTotal = (item.price - item.disc) * item.qty;
                 const rowClass = item.checked ? "bg-white" : "bg-gray-50 opacity-60";
                 const typeBadge = item.typeProduk 
@@ -575,11 +582,14 @@
             document.getElementById('productModal').classList.add('hidden');
         }
 
+        // --- SUBMIT BILL With File Handling ---
         async function submitBill() {
             const invNum = document.getElementById('bill-inv-number').value;
             if(!invNum) { showNotification("Invoice Number wajib diisi!"); return; }
 
             const activeItems = currentItems.filter(i => i.checked);
+            
+            // Siapkan payload dasar
             const payload = {
                 action: 'save_bill',
                 data: {
@@ -589,10 +599,38 @@
                     dueDate: document.getElementById('bill-due-date').value,
                     taxMode: document.getElementById('tax-mode').value,
                     forceClose: document.getElementById('check-force-close').checked,
-                    items: activeItems 
+                    items: activeItems,
+                    existingFileUrl: currentFileUrl
                 }
             };
 
+            // Handle File Input: Ubah ke Base64 jika ada file
+            const fileInput = document.getElementById('bill-file');
+            
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = async function() {
+                    const base64String = reader.result.split(',')[1]; // Hapus header data:application/pdf;base64,
+                    
+                    payload.data.fileData = base64String;
+                    payload.data.fileName = file.name;
+                    payload.data.mimeType = file.type;
+
+                    await sendData(payload);
+                };
+                reader.onerror = function() {
+                    showNotification("Gagal membaca file.");
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Kirim tanpa file baru
+                await sendData(payload);
+            }
+        }
+
+        async function sendData(payload) {
             document.getElementById('modalLoading').classList.remove('hidden');
             try {
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
