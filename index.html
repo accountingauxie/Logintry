@@ -168,6 +168,7 @@
                         <label class="text-xs font-bold text-primary uppercase mb-2 block flex items-center gap-2"><i class="fas fa-paperclip"></i> Upload Invoice</label>
                         <input type="file" id="bill-file" class="bill-input text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-teal-50 file:text-primary hover:file:bg-teal-100 cursor-pointer w-full">
                     </div>
+                    
                     <div id="existing-file-container" class="hidden w-full md:w-auto text-right bg-slate-50 p-3 rounded-lg border border-slate-100">
                         <p class="text-[10px] text-slate-400 mb-1 uppercase font-bold">Current File</p>
                         <a id="btn-view-file" href="#" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-white text-primary rounded-lg border border-slate-200 text-sm font-bold hover:bg-teal-50 border-primary transition shadow-sm gap-2">
@@ -222,7 +223,9 @@
                     <button id="btn-reject-modal" onclick="actionPo(currentPOId, 'reject_po')" class="hidden px-6 py-2.5 border border-red-200 text-red-500 bg-red-50 rounded-lg font-bold hover:bg-red-100 transition flex items-center gap-2"><i class="fas fa-times-circle"></i> Reject PO</button>
 
                     <button onclick="requestXeroImport()" id="btn-xero" class="hidden px-6 py-2.5 bg-sky-600 text-white rounded-lg font-bold hover:bg-sky-700 shadow-md flex items-center gap-2 transition"><i class="fas fa-file-export"></i> Import to Xero</button>
+                    
                     <button onclick="enableEditMode()" id="btn-edit" class="hidden px-6 py-2.5 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shadow-md flex items-center gap-2 transition"><i class="fas fa-edit"></i> Edit Bill</button>
+                    
                     <button onclick="submitBill()" id="btn-save" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition"><i class="fas fa-check"></i> Approve & Save</button>
                 </div>
             </div>
@@ -244,7 +247,7 @@
     <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-fade-in border border-slate-100"><div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div><h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3><p id="notif-message" class="text-slate-500 mb-6 text-sm">Error Message</p><button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg">OK</button></div></div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyzlOe9iYXBLKG6fL4YkDl_quYLhlU8Z0MSFeyPc8IMDBIelRU2Lba7VSKqWYNaNyCV/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbz56tv3JUIB4De1ALsuiGn2agh79aTvY3fjedW0y-EIOKFjJdRch_LlDO9r6t2Dl2Lm/exec"; 
         const TAX_RATE = 0.11;
 
         let allData = [];
@@ -345,16 +348,13 @@
                 else if (po.status === 'Reject') statusClass = 'bg-red-50 text-red-600 border-red-100';
 
                 // REVISI: Tombol Reject DIHAPUS dari kartu. 
-                // Tombol utama hanya untuk membuka detail.
                 let actionBtns = '';
                 if(po.status === 'Reject') {
-                    // Jika Reject, bisa direvert dari luar (opsional, atau harus buka detail dulu juga bisa)
-                    // Sesuai request, reject ada fitur Revert. Kita taruh di kartu biar mudah.
                     actionBtns = `<button onclick="actionPo('${po.id}', 'revert_po')" class="flex-1 py-2 rounded-lg font-bold text-xs bg-amber-500 text-white hover:bg-amber-600 transition">Revert to Pending</button>`;
                 } else if(po.status === 'Billed') {
                     actionBtns = `<button class="flex-1 py-2 rounded-lg font-bold text-xs bg-slate-100 text-slate-400 cursor-not-allowed">Completed</button>`;
                 } else {
-                    // Pending & Partial: Hanya tombol Buka Detail/Create Bill
+                    // Pending & Partial
                     actionBtns = `
                         <button onclick="openBillModal('${po.id}')" class="flex-1 py-2 rounded-lg font-bold text-xs bg-primary text-white hover:bg-primary-hover shadow-md transition flex justify-center items-center gap-2">
                             ${po.status === 'Partial' ? '<i class="fas fa-plus"></i> Add Bill' : '<i class="fas fa-file-invoice"></i> Create Bill'}
@@ -440,7 +440,6 @@
             }
 
             document.getElementById('loading').style.display = 'flex';
-            // Jika dipanggil dari dalam modal, tutup modal dulu
             closeModal();
 
             try {
@@ -468,17 +467,19 @@
             const forceCloseContainer = document.getElementById('force-close-container');
             const btnEdit = document.getElementById('btn-edit'); 
             const btnXero = document.getElementById('btn-xero');
-            const btnRejectModal = document.getElementById('btn-reject-modal'); // Tombol Reject Baru
+            const btnRejectModal = document.getElementById('btn-reject-modal'); 
             
             // Hide all buttons first
             btnSave.classList.add('hidden');
             forceCloseContainer.classList.add('hidden');
             btnEdit.classList.add('hidden');
             btnXero.classList.add('hidden');
-            btnRejectModal.classList.add('hidden'); // Default hide
+            btnRejectModal.classList.add('hidden'); 
             
             document.getElementById('btn-add-item-db').classList.add('hidden');
             document.getElementById('btn-add-item-manual').classList.add('hidden');
+            // Hide file container by default
+            document.getElementById('existing-file-container').classList.add('hidden');
 
             document.getElementById('modalLoading').classList.remove('hidden');
             document.getElementById('billModal').classList.remove('hidden');
@@ -503,10 +504,28 @@
                         document.getElementById('bill-note').value = bill.note;
                         document.getElementById('bill-adjustment').value = bill.adjustment;
                         
+                        // FILE VIEW LOGIC (PERBAIKAN)
+                        if(bill.fileUrl && bill.fileUrl.trim() !== "") {
+                            currentFileUrl = bill.fileUrl;
+                            document.getElementById('existing-file-container').classList.remove('hidden');
+                            document.getElementById('btn-view-file').href = currentFileUrl;
+                        }
+
                         currentItems = bill.items.map(i => ({ ...i, poQty: 0, alreadyBilled: 0, checked: true, isCustom: true }));
                         
-                        setFormState(false); 
-                        if(bill.status === 'Billed') btnXero.classList.remove('hidden');
+                        setFormState(false); // Default Read Only
+                        
+                        // LOGIKA TOMBOL EDIT
+                        // Jika status = 'Billed' (Belum import), munculkan tombol edit
+                        if (bill.status === 'Billed') {
+                            btnEdit.classList.remove('hidden');
+                            btnXero.classList.remove('hidden');
+                        } else {
+                            // Kalau sudah success / process, hanya bisa view
+                            if(bill.status.includes('Success')) {
+                                document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-emerald-200"><i class="fas fa-check-double"></i> Imported to Xero.</div>`;
+                            }
+                        }
                         
                     } else { alert("Data Invoice tidak ditemukan."); closeModal(); }
 
@@ -517,11 +536,7 @@
                     document.getElementById('modal-title').innerText = "Create Bill";
                     document.getElementById('bill-ref-id').innerText = idPO;
                     
-                    // Ambil status PO dari data lokal untuk logika tombol
                     const localPO = allData.find(p => p.id === idPO);
-                    
-                    // LOGIKA TOMBOL REJECT:
-                    // Hanya muncul jika status PENDING. Jika Partial, jangan munculkan.
                     if (localPO && localPO.status === 'Pending') {
                         btnRejectModal.classList.remove('hidden');
                     }
@@ -548,7 +563,7 @@
                         
                         setFormState(true);
                         btnSave.classList.remove('hidden');
-                        forceCloseContainer.classList.remove('hidden'); // Munculkan "Tandai PO Selesai"
+                        forceCloseContainer.classList.remove('hidden'); 
                         document.getElementById('btn-add-item-db').classList.remove('hidden');
                         document.getElementById('btn-add-item-manual').classList.remove('hidden');
                     }
@@ -561,7 +576,24 @@
         }
 
         // --- HELPERS ---
+        // UPDATE: Enable Edit Mode
+        function enableEditMode() {
+            if(!confirm("Edit data Bill ini?")) return;
+            setFormState(true);
+            
+            // Toggle Buttons
+            document.getElementById('btn-edit').classList.add('hidden');
+            document.getElementById('btn-xero').classList.add('hidden');
+            document.getElementById('btn-save').classList.remove('hidden');
+            document.getElementById('force-close-container').classList.remove('hidden');
+            
+            // Allow Add Item
+            document.getElementById('btn-add-item-db').classList.remove('hidden');
+            document.getElementById('btn-add-item-manual').classList.remove('hidden');
+        }
+
         function setFormState(editable) { isEditMode = editable; document.querySelectorAll('.bill-input').forEach(el => el.disabled = !editable); renderBillItems(); }
+        
         function renderBillItems() {
             const tbody = document.getElementById('bill-items-body'); tbody.innerHTML = '';
             const thead = document.querySelector('#billModal table thead');
