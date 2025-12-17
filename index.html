@@ -75,6 +75,12 @@
         }
         .tab-btn.inactive { color: #64748b; background-color: transparent; border-color: transparent; }
         .tab-btn.inactive:hover { background-color: #e2e8f0; color: #334155; }
+
+        /* Filter Pills */
+        .filter-pill { transition: all 0.2s; }
+        .filter-pill.active { background-color: #ccfbf1; color: #0f766e; border-color: #99f6e4; font-weight: 700; }
+        .filter-pill.inactive { background-color: white; color: #64748b; border-color: #e2e8f0; }
+        .filter-pill.inactive:hover { border-color: #cbd5e1; color: #334155; }
     </style>
 </head>
 <body class="text-slate-800 font-sans antialiased">
@@ -113,16 +119,31 @@
         </div>
 
         <div class="flex items-end gap-2 border-b border-slate-200 mb-6 pl-1 overflow-x-auto">
-            <button onclick="switchTab('active')" id="tab-active" class="tab-btn active px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px]">
-                <div class="bg-amber-100 text-amber-600 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-inbox"></i></div>
-                PO to Create Bill
-                <span id="count-active" class="ml-2 bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+            <button class="tab-btn active px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px] cursor-default">
+                <div class="bg-teal-100 text-teal-700 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-folder-open"></i></div>
+                Kelola Tagihan PO
+                <span id="count-total" class="ml-2 bg-teal-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
             </button>
             
-            <button onclick="switchTab('billed')" id="tab-billed" class="tab-btn inactive px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px]">
-                <div class="bg-sky-100 text-sky-600 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-history"></i></div>
-                Billed History
-                <span id="count-billed" class="ml-2 bg-slate-200 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+            <a href="Logintry/listbill/index.html" class="tab-btn inactive px-6 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-b-0 min-w-max relative top-[1px] group">
+                <div class="bg-slate-100 text-slate-500 group-hover:bg-slate-200 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-receipt"></i></div>
+                Daftar Tagihan
+                <i class="fas fa-arrow-up-right-from-square text-[10px] ml-1 opacity-50"></i>
+            </a>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button onclick="setFilterStatus('all')" id="filter-all" class="filter-pill active border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm">
+                Semua
+            </button>
+            <button onclick="setFilterStatus('pending')" id="filter-pending" class="filter-pill inactive border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span> Pending
+            </button>
+            <button onclick="setFilterStatus('partial')" id="filter-partial" class="filter-pill inactive border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-indigo-400"></span> Partial
+            </button>
+            <button onclick="setFilterStatus('billed')" id="filter-billed" class="filter-pill inactive border px-4 py-1.5 rounded-full text-xs font-medium shadow-sm flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Selesai / Billed
             </button>
         </div>
 
@@ -132,9 +153,7 @@
         </div>
 
         <div id="content-area" class="min-h-[300px]">
-            <div id="activeContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in"></div>
-            
-            <div id="billedContainer" class="hidden animate-fade-in"></div>
+            <div id="listContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in"></div>
         </div>
 
     </div>
@@ -274,7 +293,7 @@
                 <p class="text-[10px] text-slate-400 mt-2">Menampilkan produk dari vendor: <span id="product-vendor-filter" class="font-bold text-slate-600"></span></p>
             </div>
             <div class="flex-1 overflow-y-auto p-2" id="productListContainer">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -299,21 +318,21 @@
         let currentPOId = "";
         let currentFileUrl = "";
         let isEditMode = false;
+        let currentFilterStatus = 'all'; // Default Filter
 
         // ================= INITIALIZATION =================
         window.onload = fetchData;
 
         async function fetchData() {
             toggleLoading(true);
-            document.getElementById('activeContainer').innerHTML = '';
-            document.getElementById('billedContainer').innerHTML = '';
+            document.getElementById('listContainer').innerHTML = '';
 
             try {
                 const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
                 const data = await response.json();
                 allData = data;
                 toggleLoading(false);
-                applyFilters();
+                applyFilters(); // Apply filter after data load
             } catch (error) {
                 console.error(error);
                 toggleLoading(false);
@@ -321,148 +340,121 @@
             }
         }
 
-        // ================= TAB & FILTER LOGIC =================
-        function switchTab(tabName) {
-            const activeCont = document.getElementById('activeContainer');
-            const billedCont = document.getElementById('billedContainer');
-            const tabActive = document.getElementById('tab-active');
-            const tabBilled = document.getElementById('tab-billed');
+        // ================= FILTER LOGIC =================
+        function setFilterStatus(status) {
+            currentFilterStatus = status;
+            
+            // Update UI Button states
+            const pills = ['all', 'pending', 'partial', 'billed'];
+            pills.forEach(p => {
+                const el = document.getElementById(`filter-${p}`);
+                if (p === status) {
+                    el.classList.add('active');
+                    el.classList.remove('inactive');
+                } else {
+                    el.classList.add('inactive');
+                    el.classList.remove('active');
+                }
+            });
 
-            if(tabName === 'active') {
-                activeCont.classList.remove('hidden');
-                billedCont.classList.add('hidden');
-                
-                tabActive.classList.add('active');
-                tabActive.classList.remove('inactive');
-                
-                tabBilled.classList.add('inactive');
-                tabBilled.classList.remove('active');
-            } else {
-                activeCont.classList.add('hidden');
-                billedCont.classList.remove('hidden');
-                
-                tabActive.classList.add('inactive');
-                tabActive.classList.remove('active');
-                
-                tabBilled.classList.add('active');
-                tabBilled.classList.remove('inactive');
-            }
+            applyFilters();
         }
 
         function applyFilters() {
-            const s = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allData.filter(p => (
-                p.id.toLowerCase().includes(s) || 
-                p.vendor.toLowerCase().includes(s) || 
-                (p.invNumber && p.invNumber.toLowerCase().includes(s))
-            ));
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = allData.filter(p => {
+                // 1. Search Logic
+                const matchSearch = p.id.toLowerCase().includes(searchVal) || 
+                                    p.vendor.toLowerCase().includes(searchVal) || 
+                                    (p.invNumber && p.invNumber.toLowerCase().includes(searchVal));
+
+                // 2. Status Logic (Sub-menu)
+                let matchStatus = true;
+                if (currentFilterStatus === 'all') {
+                    matchStatus = true;
+                } else if (currentFilterStatus === 'pending') {
+                    matchStatus = p.status === 'Pending';
+                } else if (currentFilterStatus === 'partial') {
+                    matchStatus = p.status === 'Partial';
+                } else if (currentFilterStatus === 'billed') {
+                    // Logic for Billed/Completed (Anything NOT Pending OR Partial)
+                    matchStatus = !['Pending', 'Partial'].includes(p.status);
+                }
+
+                return matchSearch && matchStatus;
+            });
+
             renderCards(filtered);
         }
 
         function renderCards(data) {
-            const activeContainer = document.getElementById('activeContainer');
-            const billedContainer = document.getElementById('billedContainer');
+            const container = document.getElementById('listContainer');
+            container.innerHTML = '';
             
-            activeContainer.innerHTML = '';
-            billedContainer.innerHTML = '';
+            document.getElementById('count-total').innerText = allData.length;
 
-            const activeData = data.filter(po => ['Pending', 'Partial'].includes(po.status));
-            const billedData = data.filter(po => !['Pending', 'Partial'].includes(po.status));
-
-            document.getElementById('count-active').innerText = activeData.length;
-            document.getElementById('count-billed').innerText = billedData.length;
-
-            // --- RENDER ACTIVE CARDS ---
-            if (activeData.length === 0) {
-                activeContainer.innerHTML = `
+            if (data.length === 0) {
+                container.innerHTML = `
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
-                    <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-check text-slate-300"></i></div>
-                    <p class="text-slate-400 text-sm">Tidak ada PO Pending.</p>
+                    <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-search text-slate-300"></i></div>
+                    <p class="text-slate-400 text-sm">Tidak ada data yang cocok.</p>
                 </div>`;
-            } else {
-                activeData.forEach(po => {
-                    let statusClass = po.status === 'Pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100';
-                    let btnText = po.status === 'Pending' ? 'Create Bill' : 'Add Bill (Partial)';
-                    let btnIcon = '<i class="fas fa-plus"></i>';
-                    let btnClass = po.status === 'Pending' 
-                        ? 'text-white bg-primary hover:bg-primary-hover shadow-md border-transparent' 
-                        : 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
+                return;
+            }
 
-                    let invInfo = po.invNumber ? `<div class="mt-3 text-[11px] font-mono bg-slate-50 border border-slate-200 rounded px-2 py-1 inline-flex items-center text-slate-500 w-full"><i class="fas fa-hashtag text-slate-300 mr-2 text-xs"></i>${po.invNumber}</div>` : '';
+            data.forEach(po => {
+                // --- Determine Card Style based on Status ---
+                const isBilled = !['Pending', 'Partial'].includes(po.status);
+                
+                let statusClass, btnText, btnIcon, btnClass, statusBadge;
 
-                    const html = `
-                    <div class="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg hover:border-primary/30 transition-all duration-300 flex flex-col justify-between h-full group relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover:bg-primary transition-colors"></div>
-                        <div>
-                            <div class="flex justify-between items-start mb-3 pl-2">
-                                <div>
-                                    <h3 class="font-bold text-slate-800 text-lg tracking-tight">${po.id}</h3>
-                                    <p class="text-xs text-slate-500 font-medium truncate w-40" title="${po.vendor}">${po.vendor}</p>
-                                </div>
-                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${po.status}</span>
+                if (po.status === 'Pending') {
+                    statusClass = 'bg-amber-50 text-amber-600 border-amber-100';
+                    statusBadge = 'Pending';
+                    btnText = 'Create Bill';
+                    btnIcon = '<i class="fas fa-plus"></i>';
+                    btnClass = 'text-white bg-primary hover:bg-primary-hover shadow-md border-transparent';
+                } else if (po.status === 'Partial') {
+                    statusClass = 'bg-indigo-50 text-indigo-600 border-indigo-100';
+                    statusBadge = 'Partial';
+                    btnText = 'Add Bill (Partial)';
+                    btnIcon = '<i class="fas fa-plus"></i>';
+                    btnClass = 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
+                } else {
+                    // Status Selesai / Billed / Process / Success
+                    statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                    if(po.status === 'Process to Import') statusClass = 'bg-orange-50 text-orange-600 border-orange-100';
+                    
+                    statusBadge = po.status;
+                    btnText = 'Lihat Detail';
+                    btnIcon = '<i class="fas fa-eye"></i>';
+                    btnClass = 'text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-primary shadow-sm';
+                }
+
+                let invInfo = po.invNumber ? `<div class="mt-3 text-[11px] font-mono bg-slate-50 border border-slate-200 rounded px-2 py-1 inline-flex items-center text-slate-500 w-full"><i class="fas fa-hashtag text-slate-300 mr-2 text-xs"></i>${po.invNumber}</div>` : '';
+
+                const html = `
+                <div class="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg hover:border-primary/30 transition-all duration-300 flex flex-col justify-between h-full group relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover:bg-primary transition-colors"></div>
+                    <div>
+                        <div class="flex justify-between items-start mb-3 pl-2">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg tracking-tight">${po.id}</h3>
+                                <p class="text-xs text-slate-500 font-medium truncate w-40" title="${po.vendor}">${po.vendor}</p>
                             </div>
-                            ${invInfo}
-                            <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2"><i class="far fa-calendar-alt mr-2"></i> ${formatDate(po.tanggalInput)}</div>
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${statusBadge}</span>
                         </div>
-                        <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
-                            ${btnIcon} ${btnText}
-                        </button>
-                    </div>`;
-                    activeContainer.innerHTML += html;
-                });
-            }
-
-            // --- RENDER BILLED LIST ---
-            if (billedData.length === 0) {
-                billedContainer.innerHTML = `
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-8 opacity-60">
-                    <p class="text-slate-400 text-xs italic">Belum ada riwayat Billed.</p>
+                        ${invInfo}
+                        <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2"><i class="far fa-calendar-alt mr-2"></i> ${formatDate(po.tanggalInput)}</div>
+                    </div>
+                    <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
+                        ${btnIcon} ${btnText}
+                    </button>
                 </div>`;
-            } else {
-                let tableHTML = `
-                <div class="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
-                    <table class="w-full text-sm text-left text-slate-600">
-                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
-                            <tr>
-                                <th scope="col" class="px-6 py-3">PO Number</th>
-                                <th scope="col" class="px-6 py-3">Vendor</th>
-                                <th scope="col" class="px-6 py-3">Invoice #</th>
-                                <th scope="col" class="px-6 py-3">Date</th>
-                                <th scope="col" class="px-6 py-3 text-center">Status</th>
-                                <th scope="col" class="px-6 py-3 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">`;
-
-                billedData.forEach(po => {
-                    let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
-                    if (po.status === 'Billed') statusClass = 'bg-sky-50 text-sky-600 border border-sky-100';
-                    else if (po.status === 'Process to Import') statusClass = 'bg-orange-50 text-orange-600 border border-orange-100 animate-pulse';
-                    else if (po.status === 'Success Imported') statusClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
-
-                    tableHTML += `
-                        <tr class="bg-white hover:bg-slate-50 transition cursor-pointer group" onclick="openBillModal('${po.id}')">
-                            <td class="px-6 py-4 font-bold text-slate-800 group-hover:text-primary transition-colors">${po.id}</td>
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-slate-700 truncate max-w-[200px]">${po.vendor}</div>
-                            </td>
-                            <td class="px-6 py-4 font-mono text-xs text-slate-500">${po.invNumber || '-'}</td>
-                            <td class="px-6 py-4 text-xs text-slate-500">${formatDate(po.tanggalInput)}</td>
-                            <td class="px-6 py-4 text-center">
-                                <span class="${statusClass} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide inline-block min-w-[80px] text-center">
-                                    ${po.status}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <button class="text-slate-400 hover:text-primary transition font-bold text-xs flex items-center gap-1 justify-end ml-auto">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                            </td>
-                        </tr>`;
-                });
-                tableHTML += `</tbody></table></div>`;
-                billedContainer.innerHTML = tableHTML;
-            }
+                
+                container.innerHTML += html;
+            });
         }
 
         // ================= BILL MODAL FUNCTIONS =================
@@ -475,7 +467,7 @@
             resetModalFields(poFromList);
             
             // Show Modal & Loader
-            document.getElementById('modal-title').innerText = "Bill Entry / Partial";
+            document.getElementById('modal-title').innerText = "Bill Entry / Detail";
             document.getElementById('modalLoading').classList.remove('hidden');
             document.getElementById('loadingText').innerText = "Checking PO Data...";
             document.getElementById('billModal').classList.remove('hidden');
@@ -489,6 +481,7 @@
                 let isCreateMode = (poFromList.status === 'Pending' || poFromList.status === 'Partial');
                 let existingBillData = null;
 
+                // Jika status SUDAH selesai/billed, kita perlu data detail bill terakhir
                 if (!isCreateMode) {
                     const resDetail = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBillDetail', idPO: idPO }) });
                     const jsonDetail = await resDetail.json();
