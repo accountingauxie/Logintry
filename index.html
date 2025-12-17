@@ -20,7 +20,7 @@
         }
     </script>
     <style>
-        body { background-color: #f1f5f9; }
+        body { background-color: #f8fafc; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
         .input-bare { background: transparent; border: 1px solid transparent; width: 100%; padding: 4px 8px; border-radius: 4px; transition: all 0.2s; }
@@ -59,20 +59,12 @@
                 <p class="text-sm text-slate-500 mt-1">Dashboard • Bill Entry</p>
             </div>
             <div class="flex gap-3 w-full md:w-auto">
-                <div class="relative w-full md:w-64">
+                <div class="relative w-full md:w-80">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search PO or Vendor..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none shadow-sm">
+                    <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search PO, Vendor, or Invoice..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none shadow-sm transition">
                 </div>
-                <select id="filterStatus" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none bg-white shadow-sm cursor-pointer">
-                    <option value="All">All Status</option>
-                    <option value="Pending" selected>Pending</option>
-                    <option value="Partial">Partial</option>
-                    <option value="Billed">Billed</option>
-                    <option value="Process to Import">Process Import</option>
-                    <option value="Success Imported">Success</option>
-                </select>
-                <button onclick="fetchData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition">
-                    <i class="fa-solid fa-rotate-right mr-1"></i>
+                <button onclick="fetchData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition" title="Refresh Data">
+                    <i class="fa-solid fa-rotate-right"></i>
                 </button>
             </div>
         </div>
@@ -101,7 +93,7 @@
             <div id="activeContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in">
                 </div>
 
-            <div id="billedContainer" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in">
+            <div id="billedContainer" class="hidden animate-fade-in">
                 </div>
 
         </div>
@@ -329,6 +321,7 @@
             document.getElementById('count-active').innerText = activeData.length;
             document.getElementById('count-billed').innerText = billedData.length;
 
+            // --- RENDER ACTIVE (CARDS) ---
             const createCardHTML = (po) => {
                 let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
                 let btnText = 'View Bill';
@@ -342,12 +335,6 @@
                     statusClass = 'bg-indigo-50 text-indigo-600 border-indigo-100';
                     btnText = 'Add Bill (Partial)';
                     btnClass = 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
-                } else if (po.status === 'Billed') {
-                    statusClass = 'bg-sky-50 text-sky-600 border-sky-100';
-                } else if (po.status === 'Process to Import') {
-                    statusClass = 'bg-orange-50 text-orange-600 animate-pulse border-orange-100';
-                } else if (po.status === 'Success Imported') {
-                    statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
                 }
 
                 let invInfo = po.invNumber ? `<div class="mt-3 text-[11px] font-mono bg-slate-50 border border-slate-200 rounded px-2 py-1 inline-flex items-center text-slate-500 w-full"><i class="fas fa-hashtag text-slate-300 mr-2 text-xs"></i>${po.invNumber}</div>` : '';
@@ -369,7 +356,6 @@
                 </div>`;
             };
 
-            // RENDER ACTIVE
             if (activeData.length === 0) {
                 activeContainer.innerHTML = `
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
@@ -382,16 +368,60 @@
                 });
             }
 
-            // RENDER BILLED
+            // --- RENDER BILLED (TABLE LIST) ---
             if (billedData.length === 0) {
                 billedContainer.innerHTML = `
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-8 opacity-60">
                     <p class="text-slate-400 text-xs italic">Belum ada riwayat Billed.</p>
                 </div>`;
             } else {
+                // Construct Table Structure
+                let tableHTML = `
+                <div class="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">PO Number</th>
+                                <th scope="col" class="px-6 py-3">Vendor</th>
+                                <th scope="col" class="px-6 py-3">Invoice #</th>
+                                <th scope="col" class="px-6 py-3">Date</th>
+                                <th scope="col" class="px-6 py-3 text-center">Status</th>
+                                <th scope="col" class="px-6 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                `;
+
                 billedData.forEach(po => {
-                    billedContainer.innerHTML += createCardHTML(po);
+                    let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
+                    if (po.status === 'Billed') statusClass = 'bg-sky-50 text-sky-600 border border-sky-100';
+                    else if (po.status === 'Process to Import') statusClass = 'bg-orange-50 text-orange-600 border border-orange-100 animate-pulse';
+                    else if (po.status === 'Success Imported') statusClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+
+                    tableHTML += `
+                        <tr class="bg-white hover:bg-slate-50 transition cursor-pointer" onclick="openBillModal('${po.id}')">
+                            <td class="px-6 py-4 font-bold text-slate-800">${po.id}</td>
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-slate-700 truncate max-w-[200px]">${po.vendor}</div>
+                            </td>
+                            <td class="px-6 py-4 font-mono text-xs text-slate-500">${po.invNumber || '-'}</td>
+                            <td class="px-6 py-4 text-xs text-slate-500">${formatDate(po.tanggalInput)}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="${statusClass} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide inline-block min-w-[80px]">
+                                    ${po.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-slate-400 hover:text-primary transition font-bold text-xs flex items-center gap-1 justify-end ml-auto">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    `;
                 });
+
+                tableHTML += `</tbody></table></div>`;
+                billedContainer.innerHTML = tableHTML;
             }
         }
 
@@ -853,10 +883,14 @@
         function closeNotification() { document.getElementById('notificationModal').classList.add('hidden'); }
         function formatRupiah(n) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n); }
         function formatDate(d) { return d ? new Date(d).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'; }
+        
         function applyFilters() {
             const s = document.getElementById('searchInput').value.toLowerCase();
-            const st = document.getElementById('filterStatus').value;
-            const filtered = allData.filter(p => (st === 'All' || p.status === st) && (p.id.toLowerCase().includes(s) || p.vendor.toLowerCase().includes(s)));
+            // Dropdown dihapus, jadi filter hanya berdasarkan search text dan Tab (Active/Billed) yang sedang aktif
+            // Namun, karena renderCards sudah memisahkan logic filter (Active vs Billed) di dalamnya,
+            // kita cukup mengirim allData yang difilter string pencariannya saja.
+            
+            const filtered = allData.filter(p => (p.id.toLowerCase().includes(s) || p.vendor.toLowerCase().includes(s) || (p.invNumber && p.invNumber.toLowerCase().includes(s))));
             renderCards(filtered);
         }
     </script>
