@@ -229,7 +229,7 @@
 
     <script>
         // --- KONFIGURASI ---
-        const API_URL = "https://script.google.com/macros/s/AKfycby8vwg4DwG9eRdIqWaYJJTCzLzgeQN9u5KE3ajU3HeE-FKItF7rZQlMSp7wy11pBFbq/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbxmp3K-E1G7yepScMY6xFgy4steCa8eyH7kfsqh961rGjcqFlXCZNVz0sUvljJ8rQny/exec"; 
         const TAX_RATE = 0.11;
 
         let allData = [];
@@ -276,30 +276,32 @@
             }
         }
 
-        function renderCards(data) {
+     function renderCards(data) {
             const activeContainer = document.getElementById('activeContainer');
             const billedContainer = document.getElementById('billedContainer');
             
             activeContainer.innerHTML = '';
             billedContainer.innerHTML = '';
 
-            const activeData = data.filter(po => ['Pending', 'Partial'].includes(po.status));
-            const billedData = data.filter(po => !['Pending', 'Partial'].includes(po.status));
+            // === PERBAIKAN LOGIKA PEMISAHAN ===
+            // Gunakan flag 'isHistory' dari backend.
+            // isHistory = false -> Masuk Tab PO to Create Bill (Dari Data_PO)
+            // isHistory = true  -> Masuk Tab Billed History (Dari PO_Purchase)
+            const activeData = data.filter(po => po.isHistory === false);
+            const billedData = data.filter(po => po.isHistory === true);
 
             document.getElementById('count-active').innerText = activeData.length;
             document.getElementById('count-billed').innerText = billedData.length;
 
             // --- RENDER ACTIVE (CARDS) ---
             const createCardHTML = (po) => {
+                // Logic warna status default (untuk status Approved, New, dll)
                 let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
-                let btnText = 'View Bill';
-                let btnClass = 'text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200';
+                let btnText = 'Create Bill';
+                let btnClass = 'text-white bg-primary hover:bg-primary-hover shadow-md border-transparent';
 
-                if (po.status === 'Pending') {
-                    statusClass = 'bg-amber-50 text-amber-600 border-amber-100';
-                    btnText = 'Create Bill';
-                    btnClass = 'text-white bg-primary hover:bg-primary-hover shadow-md border-transparent';
-                } else if (po.status === 'Partial') {
+                // Khusus status Partial warnanya beda
+                if (po.status === 'Partial') {
                     statusClass = 'bg-indigo-50 text-indigo-600 border-indigo-100';
                     btnText = 'Add Bill (Partial)';
                     btnClass = 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
@@ -319,13 +321,13 @@
                         <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2"><i class="far fa-calendar-alt mr-2"></i> ${formatDate(po.tanggalInput)}</div>
                     </div>
                     <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
-                        ${(po.status === 'Pending' || po.status === 'Partial') ? '<i class="fas fa-plus"></i>' : '<i class="fas fa-eye"></i>'} ${btnText}
+                        <i class="fas fa-plus"></i> ${btnText}
                     </button>
                 </div>`;
             };
 
             if (activeData.length === 0) {
-                activeContainer.innerHTML = `<div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300"><div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-check text-slate-300"></i></div><p class="text-slate-400 text-sm">Tidak ada PO Pending. Good job!</p></div>`;
+                activeContainer.innerHTML = `<div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300"><div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-check text-slate-300"></i></div><p class="text-slate-400 text-sm">Tidak ada PO Pending (Aktif). Good job!</p></div>`;
             } else {
                 activeData.forEach(po => activeContainer.innerHTML += createCardHTML(po));
             }
@@ -352,6 +354,11 @@
                 `;
 
                 billedData.forEach(po => {
+                    let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
+                    if (po.status === 'Billed') statusClass = 'bg-sky-50 text-sky-600 border border-sky-100';
+                    else if (po.status === 'Success Imported') statusClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+                    else if (po.status === 'Failed to Import') statusClass = 'bg-red-50 text-red-600 border border-red-100';
+
                     tableHTML += `
                         <tr class="bg-white hover:bg-slate-50 transition cursor-pointer" onclick="openBillModal('${po.id}', '${po.invNumber || ''}')">
                             <td class="px-6 py-4 font-bold text-slate-700 truncate max-w-[150px]">${po.vendor}</td>
