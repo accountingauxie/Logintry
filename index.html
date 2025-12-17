@@ -230,8 +230,6 @@
                 </div>
                 <div class="flex gap-3">
                     <button onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition">Cancel</button>
-                    <button onclick="requestXeroImport()" id="btn-xero" class="hidden px-6 py-2.5 bg-sky-600 text-white rounded-lg font-bold hover:bg-sky-700 shadow-md flex items-center gap-2 transition"><i class="fas fa-file-export"></i> Import to Xero</button>
-                    <button onclick="enableEditMode()" id="btn-edit" class="hidden px-6 py-2.5 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shadow-md flex items-center gap-2 transition"><i class="fas fa-edit"></i> Edit Bill</button>
                     <button onclick="submitBill()" id="btn-save" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition"><i class="fas fa-check"></i> Approve & Save</button>
                 </div>
             </div>
@@ -285,7 +283,7 @@
 
     <script>
         // ================= CONFIGURATION =================
-        const API_URL = "https://script.google.com/macros/s/AKfycbymamfvUjjRXX7wYnJ9LMHDrNAxO_ULLGT-uxV8Xgg5uAER7r4NlRTYlMyYlPodEcKv/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbwNckrkHcfNVrvaCiLNvbr_NBZ8I9rp8b0s7-SRKuYd88pVFIed0TZ7hq2xhkzP9ZQO/exec"; 
         const TAX_RATE = 0.11;
 
         // ================= GLOBAL VARIABLES =================
@@ -513,7 +511,7 @@
             }
         }
 
-        // ================= BILL MODAL FUNCTIONS (EXISTING) =================
+        // ================= BILL MODAL FUNCTIONS =================
         async function openBillModal(idPO) {
             const poFromList = allData.find(d => d.id === idPO);
             if (!poFromList) return;
@@ -568,9 +566,11 @@
             document.getElementById('banner-container').innerHTML = '';
             document.getElementById('check-force-close').checked = false;
 
-            ['btn-edit', 'btn-xero', 'btn-save', 'btn-add-item-db', 'btn-add-item-manual', 'force-close-container'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
+            // Tombol edit dan xero sudah tidak ada di HTML, tapi kita pastikan container tombol save diatur ulang
+            document.getElementById('btn-save').classList.add('hidden');
+            document.getElementById('btn-add-item-db').classList.add('hidden');
+            document.getElementById('btn-add-item-manual').classList.add('hidden');
+            document.getElementById('force-close-container').classList.add('hidden');
         }
 
         function setupViewMode(bill, history) {
@@ -600,11 +600,13 @@
                 isCustom: (item.spec || "").includes("Ad-hoc") 
             }));
             
+            // STRICT LOCK MODE
             setFormState(false); 
             
             if (bill.status === 'Billed' || bill.status.includes('Import')) {
-                document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200"><i class="fas fa-lock"></i> Bill Locked. Ready to Import / Imported.</div>`;
-                document.getElementById('btn-xero').classList.remove('hidden');
+                document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-red-200"><i class="fas fa-lock"></i> Bill Locked. Data is Read-Only.</div>`;
+                // Pastikan tombol save tetap hidden
+                document.getElementById('btn-save').classList.add('hidden');
             } else {
                 document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-blue-200"><i class="fas fa-info-circle"></i> Status: ${bill.status}</div>`;
             }
@@ -635,18 +637,7 @@
             setFormState(true);
         }
 
-        function enableEditMode() {
-            if(confirm("Edit data Bill ini?")) {
-                setFormState(true);
-                document.getElementById('btn-edit').classList.add('hidden');
-                document.getElementById('btn-xero').classList.add('hidden');
-                document.getElementById('btn-save').classList.remove('hidden');
-                document.getElementById('btn-add-item-db').classList.remove('hidden');
-                document.getElementById('btn-add-item-manual').classList.remove('hidden');
-                document.getElementById('force-close-container').classList.remove('hidden');
-                document.getElementById('btn-save').innerHTML = '<i class="fas fa-save"></i> Update Changes';
-            }
-        }
+        // Logic Edit dihapus karena tombol edit sudah tidak ada.
 
         function setFormState(editable) {
             isEditMode = editable;
@@ -941,24 +932,6 @@
                     showNotification("Error: " + json.message);
                 }
             } catch(e) { showNotification("Terjadi kesalahan koneksi."); }
-            finally { document.getElementById('modalLoading').classList.add('hidden'); }
-        }
-
-        async function requestXeroImport() {
-            const invNum = document.getElementById('bill-inv-number').value;
-            if(!invNum) { showNotification("Nomor Invoice tidak ditemukan."); return; }
-            if(!confirm(`Import Invoice ${invNum} to Xero?`)) return;
-            
-            document.getElementById('modalLoading').classList.remove('hidden');
-            try {
-                const res = await fetch(API_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: 'import_xero', idPO: currentPOId, invNumber: invNum }) 
-                });
-                const json = await res.json();
-                if(json.status === 'success') { closeModal(); fetchData(); }
-                else showNotification(json.message);
-            } catch(e) { showNotification("Error requesting import."); }
             finally { document.getElementById('modalLoading').classList.add('hidden'); }
         }
     </script>
