@@ -318,7 +318,7 @@
         let currentPOId = "";
         let currentFileUrl = "";
         let isEditMode = false;
-        let currentFilterStatus = 'all'; // Default Filter
+        let currentFilterStatus = 'all'; 
 
         // ================= INITIALIZATION =================
         window.onload = fetchData;
@@ -332,7 +332,7 @@
                 const data = await response.json();
                 allData = data;
                 toggleLoading(false);
-                applyFilters(); // Apply filter after data load
+                applyFilters();
             } catch (error) {
                 console.error(error);
                 toggleLoading(false);
@@ -343,8 +343,6 @@
         // ================= FILTER LOGIC =================
         function setFilterStatus(status) {
             currentFilterStatus = status;
-            
-            // Update UI Button states
             const pills = ['all', 'pending', 'partial', 'billed'];
             pills.forEach(p => {
                 const el = document.getElementById(`filter-${p}`);
@@ -356,7 +354,6 @@
                     el.classList.remove('active');
                 }
             });
-
             applyFilters();
         }
 
@@ -364,12 +361,10 @@
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
             
             const filtered = allData.filter(p => {
-                // 1. Search Logic
                 const matchSearch = p.id.toLowerCase().includes(searchVal) || 
                                     p.vendor.toLowerCase().includes(searchVal) || 
                                     (p.invNumber && p.invNumber.toLowerCase().includes(searchVal));
 
-                // 2. Status Logic (Sub-menu)
                 let matchStatus = true;
                 if (currentFilterStatus === 'all') {
                     matchStatus = true;
@@ -378,7 +373,6 @@
                 } else if (currentFilterStatus === 'partial') {
                     matchStatus = p.status === 'Partial';
                 } else if (currentFilterStatus === 'billed') {
-                    // Logic for Billed/Completed (Anything NOT Pending OR Partial)
                     matchStatus = !['Pending', 'Partial'].includes(p.status);
                 }
 
@@ -404,9 +398,6 @@
             }
 
             data.forEach(po => {
-                // --- Determine Card Style based on Status ---
-                const isBilled = !['Pending', 'Partial'].includes(po.status);
-                
                 let statusClass, btnText, btnIcon, btnClass, statusBadge;
 
                 if (po.status === 'Pending') {
@@ -422,9 +413,9 @@
                     btnIcon = '<i class="fas fa-plus"></i>';
                     btnClass = 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
                 } else {
-                    // Status Selesai / Billed / Process / Success
                     statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
                     if(po.status === 'Process to Import') statusClass = 'bg-orange-50 text-orange-600 border-orange-100';
+                    else if(po.status === 'Success Imported') statusClass = 'bg-emerald-100 text-emerald-700 border-emerald-200';
                     
                     statusBadge = po.status;
                     btnText = 'Lihat Detail';
@@ -432,7 +423,21 @@
                     btnClass = 'text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-primary shadow-sm';
                 }
 
-                let invInfo = po.invNumber ? `<div class="mt-3 text-[11px] font-mono bg-slate-50 border border-slate-200 rounded px-2 py-1 inline-flex items-center text-slate-500 w-full"><i class="fas fa-hashtag text-slate-300 mr-2 text-xs"></i>${po.invNumber}</div>` : '';
+                // --- 1. TAMPILKAN INVOICE NUMBER (Jika Status Billed/Selesai) ---
+                let invInfo = "";
+                if (po.status !== 'Pending' && po.status !== 'Partial' && po.invNumber && po.invNumber !== '-') {
+                    invInfo = `<div class="mt-2 text-[11px] font-mono bg-green-50 border border-green-200 rounded px-2 py-1 inline-flex items-center text-green-700 w-full">
+                               <i class="fas fa-file-invoice mr-2 text-xs"></i>${po.invNumber}
+                               </div>`;
+                }
+
+                // --- 2. TAMPILKAN TOMBOL REJECT (Hanya Jika Status BUKAN Partial dan BUKAN Pending) ---
+                let rejectBtn = "";
+                if (po.status !== 'Pending' && po.status !== 'Partial') {
+                    rejectBtn = `<button onclick="rejectPO('${po.id}')" class="mt-2 w-full py-2 rounded-lg font-bold text-xs text-red-500 border border-red-200 hover:bg-red-50 transition flex justify-center items-center gap-1">
+                                    <i class="fas fa-undo"></i> Reject / Revisi
+                                 </button>`;
+                }
 
                 const html = `
                 <div class="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg hover:border-primary/30 transition-all duration-300 flex flex-col justify-between h-full group relative overflow-hidden">
@@ -445,12 +450,18 @@
                             </div>
                             <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${statusBadge}</span>
                         </div>
+                        
                         ${invInfo}
+
                         <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2"><i class="far fa-calendar-alt mr-2"></i> ${formatDate(po.tanggalInput)}</div>
                     </div>
-                    <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
-                        ${btnIcon} ${btnText}
-                    </button>
+                    
+                    <div>
+                        <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
+                            ${btnIcon} ${btnText}
+                        </button>
+                        ${rejectBtn}
+                    </div>
                 </div>`;
                 
                 container.innerHTML += html;
@@ -463,17 +474,13 @@
             if (!poFromList) return;
             currentPOId = idPO;
 
-            // Reset UI Fields
             resetModalFields(poFromList);
-            
-            // Show Modal & Loader
             document.getElementById('modal-title').innerText = "Bill Entry / Detail";
             document.getElementById('modalLoading').classList.remove('hidden');
             document.getElementById('loadingText').innerText = "Checking PO Data...";
             document.getElementById('billModal').classList.remove('hidden');
 
             try {
-                // Fetch Remaining Items from Backend
                 const resRem = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getPoRemaining', idPO: idPO }) });
                 const jsonRem = await resRem.json();
                 const history = jsonRem.history || {};
@@ -481,9 +488,8 @@
                 let isCreateMode = (poFromList.status === 'Pending' || poFromList.status === 'Partial');
                 let existingBillData = null;
 
-                // Jika status SUDAH selesai/billed, kita perlu data detail bill terakhir
                 if (!isCreateMode) {
-                    const resDetail = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBillDetail', idPO: idPO }) });
+                    const resDetail = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBillDetail', idPO: idPO, invNumber: poFromList.invNumber }) });
                     const jsonDetail = await resDetail.json();
                     if(jsonDetail.status === 'success') existingBillData = jsonDetail.data;
                 }
@@ -493,9 +499,7 @@
                 } else {
                     setupCreateMode(poFromList, history);
                 }
-
                 renderBillItems();
-
             } catch (err) {
                 console.error(err);
                 showNotification("Error loading data.");
@@ -519,7 +523,6 @@
             document.getElementById('banner-container').innerHTML = '';
             document.getElementById('check-force-close').checked = false;
 
-            // Hide all buttons initially
             ['btn-edit', 'btn-xero', 'btn-save', 'btn-add-item-db', 'btn-add-item-manual', 'force-close-container'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
@@ -552,7 +555,7 @@
                 isCustom: (item.spec || "").includes("Ad-hoc") 
             }));
             
-            setFormState(false); // Read Only
+            setFormState(false); 
             
             if (bill.status === 'Billed') {
                 document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200"><i class="fas fa-check-circle"></i> Ready to Import.</div>`;
@@ -585,7 +588,7 @@
                     isCustom: false
                 };
             });
-            setFormState(true); // Editable
+            setFormState(true);
         }
 
         function enableEditMode() {
@@ -680,7 +683,6 @@
             calculateTotal(); 
         }
 
-        // ================= ITEM MANIPULATION =================
         function toggleItem(index, isChecked) {
             currentItems[index].checked = isChecked;
             calculateTotal();
@@ -722,7 +724,6 @@
             el.innerText = formatRupiah(value);
         }
 
-        // ================= ADD ITEMS (DB & MANUAL) =================
         async function openProductModal() {
             document.getElementById('productModal').classList.remove('hidden');
             document.getElementById('productListContainer').innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-primary"></i> Memuat database...</div>';
@@ -810,7 +811,6 @@
             }
         }
 
-        // ================= SUBMIT / ACTIONS =================
         async function submitBill() {
             const checked = currentItems.filter(i => i.checked && i.qty > 0);
             if (checked.length === 0) { showNotification("Pilih minimal 1 item (Qty > 0)."); return; }
@@ -823,7 +823,6 @@
             
             let fileData = null, fileName = null, mimeType = null;
             
-            // Handle File Upload
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 if(file.size > 5*1024*1024) { showNotification("Max file size 5MB."); return; }
@@ -846,7 +845,6 @@
                 }
             }
 
-            // Prepare Payload
             const payload = {
                 action: 'save_bill',
                 data: {
@@ -903,6 +901,44 @@
                 else showNotification(json.message);
             } catch(e) { showNotification("Error requesting import."); }
             finally { document.getElementById('modalLoading').classList.add('hidden'); }
+        }
+
+        // ================= REJECT / REVISI PO =================
+        async function rejectPO(idPO) {
+            if (!confirm(`Apakah Anda yakin ingin me-reject PO ${idPO}? Status akan kembali ke PENDING.`)) return;
+
+            const reason = prompt("Masukkan alasan reject/revisi (Wajib diisi):");
+            if (!reason || reason.trim() === "") {
+                alert("Alasan wajib diisi untuk melakukan reject.");
+                return;
+            }
+
+            toggleLoading(true);
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'reject_po',
+                        idPO: idPO,
+                        reason: reason
+                    })
+                });
+                const json = await res.json();
+
+                toggleLoading(false);
+
+                if (json.status === 'success') {
+                    alert("Berhasil! PO dikembalikan ke status Pending.");
+                    fetchData(); // Refresh data
+                } else {
+                    alert("Gagal: " + json.message);
+                }
+            } catch (e) {
+                toggleLoading(false);
+                console.error(e);
+                alert("Terjadi kesalahan koneksi.");
+            }
         }
 
         // ================= HELPERS & UTILS =================
