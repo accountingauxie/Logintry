@@ -28,11 +28,15 @@
         .input-bare:focus { border-color: #008080; background: white; outline: none; box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.1); }
         input:disabled, select:disabled, textarea:disabled { background-color: #F8FAFC; color: #64748B; cursor: not-allowed; border-color: transparent; }
         
-        /* Tab Styles */
         .tab-btn { position: relative; transition: all 0.3s; }
         .tab-btn.active { color: #008080; background-color: white; border-color: #e2e8f0; border-bottom-color: white; }
         .tab-btn.inactive { color: #64748b; background-color: transparent; border-color: transparent; }
         .tab-btn.inactive:hover { background-color: #e2e8f0; color: #334155; }
+
+        .pill-btn { transition: all 0.2s; cursor: pointer; }
+        .pill-btn.active { background-color: #008080; color: white; border-color: #008080; }
+        .pill-btn.inactive { background-color: white; color: #64748b; border-color: #cbd5e1; }
+        .pill-btn.inactive:hover { border-color: #008080; color: #008080; }
     </style>
 </head>
 <body class="text-slate-800 font-sans">
@@ -61,7 +65,7 @@
             <div class="flex gap-3 w-full md:w-auto">
                 <div class="relative w-full md:w-80">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
-                    <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search PO, Vendor, or Invoice..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none shadow-sm transition">
+                    <input type="text" id="searchInput" onkeyup="applySearch()" placeholder="Search..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none shadow-sm transition">
                 </div>
                 <button onclick="fetchData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition" title="Refresh Data">
                     <i class="fa-solid fa-rotate-right"></i>
@@ -90,8 +94,18 @@
 
         <div id="content-area" class="min-h-[300px]">
             
-            <div id="activeContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in">
+            <div id="activeSection" class="animate-fade-in">
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <div onclick="filterActive('All')" class="pill-btn active px-4 py-1.5 rounded-full text-xs font-bold border" id="pill-All">All</div>
+                    <div onclick="filterActive('Pending')" class="pill-btn inactive px-4 py-1.5 rounded-full text-xs font-bold border" id="pill-Pending">Pending</div>
+                    <div onclick="filterActive('Partial')" class="pill-btn inactive px-4 py-1.5 rounded-full text-xs font-bold border" id="pill-Partial">Partial</div>
+                    <div onclick="filterActive('Billed')" class="pill-btn inactive px-4 py-1.5 rounded-full text-xs font-bold border" id="pill-Billed">Billed</div>
+                    <div onclick="filterActive('Reject')" class="pill-btn inactive px-4 py-1.5 rounded-full text-xs font-bold border text-red-500 border-red-200 hover:border-red-500 hover:text-red-600" id="pill-Reject">Reject</div>
                 </div>
+
+                <div id="activeContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    </div>
+            </div>
 
             <div id="billedContainer" class="hidden animate-fade-in">
                 </div>
@@ -102,7 +116,6 @@
 
     <div id="billModal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative animate-fade-in border border-slate-200">
-            
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
                 <div class="flex items-center gap-4">
                     <div class="bg-teal-50 p-2.5 rounded-lg text-primary border border-teal-100 shadow-sm">
@@ -110,7 +123,7 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-bold text-slate-800" id="modal-title">Bill Entry</h2>
-                        <p class="text-xs text-slate-500">PO Ref: <span id="bill-po-id" class="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded"></span></p>
+                        <p class="text-xs text-slate-500">Ref: <span id="bill-ref-id" class="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded"></span></p>
                     </div>
                 </div>
                 <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-red-50 hover:text-red-500 transition duration-200">
@@ -120,7 +133,6 @@
 
             <div class="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
                 <div id="banner-container"></div>
-
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     <div class="md:col-span-1">
                         <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1 block">Vendor Name</label>
@@ -166,18 +178,13 @@
 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
                     <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase text-[11px] tracking-wider">
-                            </thead>
+                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase text-[11px] tracking-wider"></thead>
                         <tbody id="bill-items-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                     
                     <div class="p-4 bg-slate-50 border-t border-slate-200 flex gap-3">
-                        <button id="btn-add-item-db" onclick="openProductModal()" class="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden">
-                            <i class="fas fa-database"></i> Tambah Item Database
-                        </button>
-                        <button id="btn-add-item-manual" onclick="addCustomItem()" class="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden">
-                            <i class="fas fa-plus-circle"></i> Tambah Item Manual
-                        </button>
+                        <button id="btn-add-item-db" onclick="openProductModal()" class="text-xs font-bold text-primary hover:text-primary-hover flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden"><i class="fas fa-database"></i> Tambah Item Database</button>
+                        <button id="btn-add-item-manual" onclick="addCustomItem()" class="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition hidden"><i class="fas fa-plus-circle"></i> Tambah Item Manual</button>
                     </div>
                 </div>
 
@@ -216,7 +223,6 @@
                     <button onclick="submitBill()" id="btn-save" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:bg-primary-hover shadow-lg flex items-center gap-2 transition"><i class="fas fa-check"></i> Approve & Save</button>
                 </div>
             </div>
-            
             <div id="modalLoading" class="hidden absolute inset-0 bg-white/90 backdrop-blur-[1px] flex flex-col items-center justify-center z-50 rounded-2xl">
                 <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-primary mb-4"></div>
                 <p class="font-bold text-slate-700 animate-pulse" id="loadingText">Processing...</p>
@@ -226,39 +232,24 @@
 
     <div id="productModal" class="fixed inset-0 z-[70] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col h-[80vh]">
-            <div class="p-4 border-b border-slate-200 flex justify-between items-center">
-                <h3 class="font-bold text-slate-800">Pilih Produk Database</h3>
-                <button onclick="closeProductModal()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-3 bg-slate-50 border-b border-slate-200">
-                <input type="text" id="searchProduct" onkeyup="filterProducts()" placeholder="Cari nama produk..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary outline-none">
-                <p class="text-[10px] text-slate-400 mt-1">Menampilkan produk dari vendor: <span id="product-vendor-filter" class="font-bold"></span></p>
-            </div>
-            <div class="flex-1 overflow-y-auto p-2" id="productListContainer">
-            </div>
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center"><h3 class="font-bold text-slate-800">Pilih Produk Database</h3><button onclick="closeProductModal()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button></div>
+            <div class="p-3 bg-slate-50 border-b border-slate-200"><input type="text" id="searchProduct" onkeyup="filterProducts()" placeholder="Cari nama produk..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:border-primary outline-none"><p class="text-[10px] text-slate-400 mt-1">Menampilkan produk dari vendor: <span id="product-vendor-filter" class="font-bold"></span></p></div>
+            <div class="flex-1 overflow-y-auto p-2" id="productListContainer"></div>
         </div>
     </div>
-
-    <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-fade-in border border-slate-100">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3>
-            <p id="notif-message" class="text-slate-500 mb-6 text-sm">Error Message</p>
-            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg">OK</button>
-        </div>
-    </div>
+    <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center animate-fade-in border border-slate-100"><div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div><h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3><p id="notif-message" class="text-slate-500 mb-6 text-sm">Error Message</p><button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg">OK</button></div></div>
 
     <script>
-        // PASTE URL DEPLOYMENT ANDA DISINI
-        const API_URL = "https://script.google.com/macros/s/AKfycbxu5r83Snwb0DJSgrZ4TV458AEcEKl9jllw8UInDZarWbb--SsXLRo6BPP2JHUhM2GQ/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbyzlOe9iYXBLKG6fL4YkDl_quYLhlU8Z0MSFeyPc8IMDBIelRU2Lba7VSKqWYNaNyCV/exec"; 
         const TAX_RATE = 0.11;
 
         let allData = [];
         let currentItems = [];
         let dbProducts = []; 
-        let currentPOId = "";
+        let currentPOId = ""; // Active PO ID
         let currentFileUrl = "";
         let isEditMode = false;
+        let currentFilterActive = 'All'; // Filter state for Active tab
 
         async function fetchData() {
             document.getElementById('loading').style.display = 'flex';
@@ -270,78 +261,107 @@
                 const data = await response.json();
                 allData = data;
                 document.getElementById('loading').style.display = 'none';
-                applyFilters();
+                applySearch();
             } catch (error) {
                 console.error(error);
-                alert("Gagal memuat data. Periksa koneksi.");
+                alert("Gagal memuat data.");
+                document.getElementById('loading').style.display = 'none';
             }
         }
         window.onload = fetchData;
 
-        // FUNGSI GANTI TAB FOLDER
         function switchTab(tabName) {
-            const activeCont = document.getElementById('activeContainer');
-            const billedCont = document.getElementById('billedContainer');
+            const activeSec = document.getElementById('activeSection');
+            const billedSec = document.getElementById('billedContainer');
             const tabActive = document.getElementById('tab-active');
             const tabBilled = document.getElementById('tab-billed');
 
             if(tabName === 'active') {
-                activeCont.classList.remove('hidden');
-                billedCont.classList.add('hidden');
-                
-                tabActive.classList.add('active');
-                tabActive.classList.remove('inactive');
-                
-                tabBilled.classList.add('inactive');
-                tabBilled.classList.remove('active');
+                activeSec.classList.remove('hidden');
+                billedSec.classList.add('hidden');
+                tabActive.classList.add('active'); tabActive.classList.remove('inactive');
+                tabBilled.classList.add('inactive'); tabBilled.classList.remove('active');
             } else {
-                activeCont.classList.add('hidden');
-                billedCont.classList.remove('hidden');
-                
-                tabActive.classList.add('inactive');
-                tabActive.classList.remove('active');
-                
-                tabBilled.classList.add('active');
-                tabBilled.classList.remove('inactive');
+                activeSec.classList.add('hidden');
+                billedSec.classList.remove('hidden');
+                tabActive.classList.add('inactive'); tabActive.classList.remove('active');
+                tabBilled.classList.add('active'); tabBilled.classList.remove('inactive');
             }
         }
 
-        function renderCards(data) {
-            const activeContainer = document.getElementById('activeContainer');
-            const billedContainer = document.getElementById('billedContainer');
+        // --- SUB MENU FILTER LOGIC ---
+        function filterActive(status) {
+            currentFilterActive = status;
+            // Update UI Pills
+            document.querySelectorAll('.pill-btn').forEach(el => {
+                el.classList.remove('active', 'border-transparent');
+                el.classList.add('inactive', 'border');
+                if(el.id === `pill-${status}`) {
+                    el.classList.remove('inactive', 'border');
+                    el.classList.add('active', 'border-transparent');
+                }
+            });
+            applySearch(); // Re-render
+        }
+
+        function applySearch() {
+            const s = document.getElementById('searchInput').value.toLowerCase();
             
-            activeContainer.innerHTML = '';
-            billedContainer.innerHTML = '';
+            // Filter Data Active (PO)
+            const activeData = allData.filter(p => {
+                if (p.source !== 'active') return false;
+                // Filter by Sub-menu status
+                if (currentFilterActive !== 'All' && p.status !== currentFilterActive) return false;
+                // Filter by Search text
+                return (p.id.toLowerCase().includes(s) || p.vendor.toLowerCase().includes(s));
+            });
 
-            // Pisahkan Data Berdasarkan Source atau Status
-            // Source 'active' dari Data_PO
-            const activeData = data.filter(po => po.source === 'active');
-            // Source 'history' dari PO_Purchase
-            const billedData = data.filter(po => po.source === 'history');
+            // Filter Data History (Invoice)
+            const billedData = allData.filter(p => {
+                if (p.source !== 'history') return false;
+                return (p.invNumber.toLowerCase().includes(s) || p.vendor.toLowerCase().includes(s) || (p.poList && p.poList.toLowerCase().includes(s)));
+            });
 
-            // Update Badge Count
-            document.getElementById('count-active').innerText = activeData.length;
-            document.getElementById('count-billed').innerText = billedData.length;
+            renderActive(activeData);
+            renderBilled(billedData);
+        }
 
-            // --- RENDER ACTIVE (CARDS) ---
-            const createCardHTML = (po) => {
+        function renderActive(data) {
+            const container = document.getElementById('activeContainer');
+            container.innerHTML = '';
+            document.getElementById('count-active').innerText = data.length;
+
+            if (data.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-10 bg-white rounded-xl border border-dashed border-slate-300 text-slate-400 text-sm">Tidak ada data untuk filter ini.</div>`;
+                return;
+            }
+
+            data.forEach(po => {
                 let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
-                let btnText = 'View Bill';
-                let btnClass = 'text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200';
+                if (po.status === 'Pending') statusClass = 'bg-amber-50 text-amber-600 border-amber-100';
+                else if (po.status === 'Partial') statusClass = 'bg-indigo-50 text-indigo-600 border-indigo-100';
+                else if (po.status === 'Billed') statusClass = 'bg-sky-50 text-sky-600 border-sky-100';
+                else if (po.status === 'Reject') statusClass = 'bg-red-50 text-red-600 border-red-100';
 
-                if (po.status === 'Pending') {
-                    statusClass = 'bg-amber-50 text-amber-600 border-amber-100';
-                    btnText = 'Create Bill';
-                    btnClass = 'text-white bg-primary hover:bg-primary-hover shadow-md border-transparent';
-                } else if (po.status === 'Partial') {
-                    statusClass = 'bg-indigo-50 text-indigo-600 border-indigo-100';
-                    btnText = 'Add Bill (Partial)';
-                    btnClass = 'text-white bg-indigo-500 hover:bg-indigo-600 shadow-md border-transparent';
+                // Action Buttons Logic
+                let actionBtns = '';
+                if(po.status === 'Reject') {
+                    // Show Revert
+                    actionBtns = `<button onclick="actionPo('${po.id}', 'revert_po')" class="flex-1 py-2 rounded-lg font-bold text-xs bg-amber-500 text-white hover:bg-amber-600 transition">Revert to Pending</button>`;
+                } else if(po.status === 'Billed') {
+                    // View Only?
+                    actionBtns = `<button class="flex-1 py-2 rounded-lg font-bold text-xs bg-slate-100 text-slate-400 cursor-not-allowed">Completed</button>`;
+                } else {
+                    // Create Bill & Reject
+                    actionBtns = `
+                        <button onclick="actionPo('${po.id}', 'reject_po')" class="px-3 py-2 rounded-lg font-bold text-xs bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 transition" title="Reject PO"><i class="fas fa-times"></i></button>
+                        <button onclick="openBillModal('${po.id}')" class="flex-1 py-2 rounded-lg font-bold text-xs bg-primary text-white hover:bg-primary-hover shadow-md transition flex justify-center items-center gap-2">
+                            ${po.status === 'Partial' ? '<i class="fas fa-plus"></i> Add Bill' : '<i class="fas fa-file-invoice"></i> Create Bill'}
+                        </button>
+                    `;
                 }
 
-                let invInfo = po.invNumber ? `<div class="mt-3 text-[11px] font-mono bg-slate-50 border border-slate-200 rounded px-2 py-1 inline-flex items-center text-slate-500 w-full"><i class="fas fa-hashtag text-slate-300 mr-2 text-xs"></i>${po.invNumber}</div>` : '';
-
-                return `
+                const html = `
                 <div class="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg transition-all duration-300 flex flex-col justify-between h-full group relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover:bg-primary transition-colors"></div>
                     <div>
@@ -349,310 +369,174 @@
                             <div><h3 class="font-bold text-slate-800 text-lg tracking-tight">${po.id}</h3><p class="text-xs text-slate-500 font-medium truncate w-40">${po.vendor}</p></div>
                             <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${po.status}</span>
                         </div>
-                        ${invInfo}
-                        <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2"><i class="far fa-calendar-alt mr-2"></i> ${formatDate(po.tanggalInput)}</div>
+                        <div class="text-xs text-slate-400 mt-2 mb-4 flex items-center pl-2 gap-3">
+                            <span><i class="far fa-calendar-alt mr-1"></i> ${formatDate(po.tanggalInput)}</span>
+                            <span class="bg-slate-50 px-2 py-0.5 rounded border border-slate-100"><i class="fas fa-box mr-1"></i> ${po.itemCount} Items</span>
+                        </div>
                     </div>
-                    <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
-                        ${(po.status === 'Pending' || po.status === 'Partial') ? '<i class="fas fa-plus"></i>' : '<i class="fas fa-eye"></i>'} ${btnText}
-                    </button>
+                    <div class="flex gap-2 mt-auto">
+                        ${actionBtns}
+                    </div>
                 </div>`;
-            };
-
-            if (activeData.length === 0) {
-                activeContainer.innerHTML = `
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
-                    <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-check text-slate-300"></i></div>
-                    <p class="text-slate-400 text-sm">Tidak ada PO Pending. Good job!</p>
-                </div>`;
-            } else {
-                activeData.forEach(po => {
-                    activeContainer.innerHTML += createCardHTML(po);
-                });
-            }
-
-            // --- RENDER BILLED (TABLE LIST) ---
-            if (billedData.length === 0) {
-                billedContainer.innerHTML = `
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-8 opacity-60">
-                    <p class="text-slate-400 text-xs italic">Belum ada riwayat Billed.</p>
-                </div>`;
-            } else {
-                // Construct Table Structure
-                // Columns: Vendor | PO Number | Invoice_No | Invoice_Date | Due_Date | Grand_Total | Status | View
-                let tableHTML = `
-                <div class="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
-                    <table class="w-full text-sm text-left text-slate-600">
-                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
-                            <tr>
-                                <th scope="col" class="px-6 py-3">Vendor</th>
-                                <th scope="col" class="px-6 py-3">PO Number</th>
-                                <th scope="col" class="px-6 py-3">Invoice #</th>
-                                <th scope="col" class="px-6 py-3">Inv Date</th>
-                                <th scope="col" class="px-6 py-3">Due Date</th>
-                                <th scope="col" class="px-6 py-3 text-right">Total</th>
-                                <th scope="col" class="px-6 py-3 text-center">Status</th>
-                                <th scope="col" class="px-6 py-3 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                `;
-
-                billedData.forEach(po => {
-                    let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
-                    let st = (po.status || "").toLowerCase();
-                    let displayStatus = po.status;
-
-                    if (st.includes('billed')) statusClass = 'bg-sky-50 text-sky-600 border border-sky-100';
-                    else if (st.includes('process')) statusClass = 'bg-orange-50 text-orange-600 border border-orange-100 animate-pulse';
-                    else if (st.includes('success')) statusClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
-                    else if (st.includes('failed')) statusClass = 'bg-red-50 text-red-600 border border-red-100';
-
-                    // Kita perlu memanggil openBillModal dengan 2 parameter agar spesifik ke invoice ini
-                    // onclick="openBillModal('ID_PO', 'NO_INVOICE')"
-                    
-                    tableHTML += `
-                        <tr class="bg-white hover:bg-slate-50 transition cursor-pointer group" onclick="openBillModal('${po.id}', '${po.invNumber}')">
-                            <td class="px-6 py-4">
-                                <div class="font-bold text-slate-700 truncate max-w-[180px]">${po.vendor}</div>
-                            </td>
-                            <td class="px-6 py-4 font-mono text-xs text-slate-500">${po.id}</td>
-                            <td class="px-6 py-4 font-mono text-xs font-bold text-primary">${po.invNumber || '-'}</td>
-                            <td class="px-6 py-4 text-xs text-slate-500">${formatDate(po.invDate)}</td>
-                            <td class="px-6 py-4 text-xs text-slate-500">${formatDate(po.dueDate)}</td>
-                            <td class="px-6 py-4 text-right font-mono text-slate-700 font-bold">${formatRupiah(po.grandTotal)}</td>
-                            <td class="px-6 py-4 text-center">
-                                <span class="${statusClass} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide inline-block min-w-[80px]">
-                                    ${displayStatus}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <button class="text-slate-400 group-hover:text-primary transition font-bold text-xs flex items-center gap-1 justify-end ml-auto">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-
-                tableHTML += `</tbody></table></div>`;
-                billedContainer.innerHTML = tableHTML;
-            }
+                container.innerHTML += html;
+            });
         }
 
-        async function openBillModal(idPO, invNumber = null) {
-            // Cari data di local dulu
-            let poFromList = allData.find(d => d.id === idPO && d.source === 'active');
+        function renderBilled(data) {
+            const container = document.getElementById('billedContainer');
+            document.getElementById('count-billed').innerText = data.length;
             
-            // Jika mode Billed/History, cari di source history
-            if (invNumber) {
-                poFromList = allData.find(d => d.id === idPO && d.invNumber === invNumber && d.source === 'history');
-                // Fallback cari di active jika tidak ketemu (kasus aneh)
-                if(!poFromList) poFromList = allData.find(d => d.id === idPO); 
-            } else {
-                // Jika tidak ada invNumber, prioritaskan active
-                if(!poFromList) poFromList = allData.find(d => d.id === idPO);
+            if (data.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 opacity-60 italic text-sm">Belum ada riwayat Billed.</div>`;
+                return;
             }
 
-            if (!poFromList) return;
-            currentPOId = idPO;
+            let html = `
+            <div class="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
+                <table class="w-full text-sm text-left text-slate-600">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-3">Vendor</th>
+                            <th class="px-6 py-3">Invoice #</th>
+                            <th class="px-6 py-3">PO List</th>
+                            <th class="px-6 py-3">Date</th>
+                            <th class="px-6 py-3 text-right">Total</th>
+                            <th class="px-6 py-3 text-center">Status</th>
+                            <th class="px-6 py-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">`;
 
+            data.forEach(inv => {
+                let statusClass = 'bg-slate-100 text-slate-600';
+                if (inv.status.includes('Success')) statusClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+                else if (inv.status.includes('Process')) statusClass = 'bg-orange-50 text-orange-600 border border-orange-100 animate-pulse';
+                else statusClass = 'bg-sky-50 text-sky-600 border border-sky-100';
+
+                html += `
+                    <tr class="bg-white hover:bg-slate-50 transition cursor-pointer" onclick="openBillModal(null, '${inv.invNumber}')">
+                        <td class="px-6 py-4 font-bold text-slate-700">${inv.vendor}</td>
+                        <td class="px-6 py-4 font-mono text-xs font-bold text-primary">${inv.invNumber}</td>
+                        <td class="px-6 py-4 text-xs text-slate-500 break-words max-w-xs">${inv.poList}</td>
+                        <td class="px-6 py-4 text-xs text-slate-500">${formatDate(inv.invDate)}</td>
+                        <td class="px-6 py-4 text-right font-mono font-bold text-slate-700">${formatRupiah(inv.grandTotal)}</td>
+                        <td class="px-6 py-4 text-center"><span class="${statusClass} text-[10px] font-bold px-2 py-1 rounded-full uppercase">${inv.status}</span></td>
+                        <td class="px-6 py-4 text-right"><button class="text-slate-400 hover:text-primary font-bold text-xs"><i class="fas fa-eye"></i> View</button></td>
+                    </tr>`;
+            });
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
+
+        // --- ACTIONS: REJECT / REVERT ---
+        async function actionPo(id, actionType) {
+            let note = "";
+            if (actionType === 'reject_po') {
+                note = prompt("Masukkan alasan penolakan PO ini:");
+                if (note === null) return; // Cancelled
+                if (note.trim() === "") { alert("Alasan wajib diisi!"); return; }
+            } else if (actionType === 'revert_po') {
+                if(!confirm("Kembalikan status PO ini menjadi Pending?")) return;
+            }
+
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: actionType, idPO: id, note: note })
+                });
+                const json = await res.json();
+                if(json.status === 'success') {
+                    await fetchData(); // Refresh data
+                } else {
+                    alert("Gagal: " + json.message);
+                }
+            } catch(e) { alert("Error koneksi"); }
+            finally { document.getElementById('loading').style.display = 'none'; }
+        }
+
+        // --- MODAL & LOGIC LAINNYA ---
+        // (Logic openBillModal akan sedikit berbeda: Jika InvNumber ada, berarti Mode View History)
+        
+        async function openBillModal(idPO, invNumber = null) {
             // Reset UI
-            document.getElementById('bill-po-id').innerText = poFromList.id;
-            document.getElementById('bill-vendor').value = poFromList.vendor;
-            
-            // Reset fields
             document.getElementById('bill-inv-number').value = '';
-            document.getElementById('bill-date').valueAsDate = new Date();
-            document.getElementById('bill-due-date').value = '';
             document.getElementById('bill-note').value = '';
             document.getElementById('bill-adjustment').value = 0;
-            document.getElementById('tax-mode').value = 'exclusive';
-            document.getElementById('bill-file').value = '';
-            document.getElementById('existing-file-container').classList.add('hidden');
-            document.getElementById('banner-container').innerHTML = '';
-            document.getElementById('check-force-close').checked = false;
-
-            const btnEdit = document.getElementById('btn-edit');
-            const btnXero = document.getElementById('btn-xero');
+            document.getElementById('activeContainer').classList.remove('z-50'); // Fix stacking context if any
+            
             const btnSave = document.getElementById('btn-save');
-            const btnAddDb = document.getElementById('btn-add-item-db');
-            const btnAddManual = document.getElementById('btn-add-item-manual');
             const forceCloseContainer = document.getElementById('force-close-container');
-
+            const btnEdit = document.getElementById('btn-edit'); 
+            const btnXero = document.getElementById('btn-xero');
+            
+            // Hide all buttons first
+            btnSave.classList.add('hidden');
+            forceCloseContainer.classList.add('hidden');
             btnEdit.classList.add('hidden');
             btnXero.classList.add('hidden');
-            btnSave.classList.add('hidden');
-            btnAddDb.classList.add('hidden');
-            btnAddManual.classList.add('hidden');
-            forceCloseContainer.classList.add('hidden');
+            document.getElementById('btn-add-item-db').classList.add('hidden');
+            document.getElementById('btn-add-item-manual').classList.add('hidden');
 
-            document.getElementById('modal-title').innerText = "Bill Entry / Partial";
             document.getElementById('modalLoading').classList.remove('hidden');
-            document.getElementById('loadingText').innerText = "Checking PO Data...";
             document.getElementById('billModal').classList.remove('hidden');
 
             try {
-                // 1. Ambil Sisa Qty (History)
-                const resRem = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getPoRemaining', idPO: idPO }) });
-                const jsonRem = await resRem.json();
-                const history = jsonRem.history || {};
+                // CASE 1: HISTORY VIEW (Ada InvNumber)
+                if (invNumber) {
+                    currentPOId = null; // No active PO ID context
+                    document.getElementById('modal-title').innerText = "Invoice Details";
+                    document.getElementById('bill-ref-id').innerText = invNumber;
+                    
+                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBillDetail', invNumber: invNumber }) });
+                    const json = await res.json();
+                    
+                    if(json.status === 'success' && json.data) {
+                        const bill = json.data;
+                        document.getElementById('bill-vendor').value = bill.vendor;
+                        document.getElementById('bill-inv-number').value = bill.invNumber;
+                        document.getElementById('bill-date').value = new Date(bill.invDate).toISOString().split('T')[0];
+                        document.getElementById('bill-due-date').value = new Date(bill.dueDate).toISOString().split('T')[0];
+                        document.getElementById('tax-mode').value = bill.taxMode;
+                        document.getElementById('bill-note').value = bill.note;
+                        document.getElementById('bill-adjustment').value = bill.adjustment;
+                        
+                        // Populate Items
+                        currentItems = bill.items.map(i => ({
+                            ...i, 
+                            poQty: 0, // View mode, no compare
+                            alreadyBilled: 0,
+                            checked: true,
+                            isCustom: true // Treat as custom to lock edits
+                        }));
+                        
+                        setFormState(false); // Read Only
+                        
+                        // Show Xero button if billed
+                        if(bill.status === 'Billed') btnXero.classList.remove('hidden');
+                        
+                    } else { alert("Data Invoice tidak ditemukan."); closeModal(); }
 
-                // Cek Mode: Create (Active) atau View (History)
-                let isCreateMode = (poFromList.source === 'active');
-                
-                let existingBillData = null;
+                } 
+                // CASE 2: CREATE NEW BILL (Ada ID PO)
+                else if (idPO) {
+                    currentPOId = idPO;
+                    document.getElementById('modal-title').innerText = "Create Bill";
+                    document.getElementById('bill-ref-id').innerText = idPO;
+                    
+                    // Cari Vendor dari data lokal
+                    const poData = allData.find(p => p.id === idPO);
+                    document.getElementById('bill-vendor').value = poData ? poData.vendor : '';
 
-                // Jika History/View, ambil detail bill spesifik
-                if (!isCreateMode) {
-                    const resDetail = await fetch(API_URL, { 
-                        method: 'POST', 
-                        body: JSON.stringify({ 
-                            action: 'getBillDetail', 
-                            idPO: idPO,
-                            invNumber: invNumber // Kirim parameter Invoice untuk ambil spesifik
-                        }) 
-                    });
-                    const jsonDetail = await resDetail.json();
-                    if(jsonDetail.status === 'success') existingBillData = jsonDetail.data;
-                }
-
-                if (existingBillData && !isCreateMode) {
-                    // --- MODE VIEW (HISTORY) ---
-                    const bill = existingBillData;
-                    document.getElementById('bill-inv-number').value = bill.invNumber || '';
-                    if(bill.invDate) document.getElementById('bill-date').value = new Date(bill.invDate).toISOString().split('T')[0];
-                    if(bill.dueDate) document.getElementById('bill-due-date').value = new Date(bill.dueDate).toISOString().split('T')[0];
-                    document.getElementById('tax-mode').value = bill.taxMode || 'exclusive';
-                    document.getElementById('bill-note').value = bill.note || '';
-                    document.getElementById('bill-adjustment').value = bill.adjustment || 0;
+                    // Fetch PO Items (Original vs Billed)
+                    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getPoRemaining', idPO: idPO }) });
+                    const json = await res.json();
                     
-                    if(bill.fileUrl) {
-                        currentFileUrl = bill.fileUrl;
-                        document.getElementById('existing-file-container').classList.remove('hidden');
-                        document.getElementById('btn-view-file').href = currentFileUrl;
-                    }
-
-                    currentItems = bill.items.map(item => ({
-                        ...item,
-                        poQty: item.qty, // Di history, poQty dianggap qty yang dibill saat itu
-                        qty: Number(item.qty),
-                        maxQty: Number(item.qty),
-                        price: Number(item.price),
-                        disc: Number(item.disc),
-                        typeProduk: item.typeProduk || "", 
-                        checked: true,
-                        alreadyBilled: 0, // Mode view tidak perlu hitung sisa
-                        isCustom: (item.spec || "").includes("Ad-hoc") 
-                    }));
-                    
-                    setFormState(false); // Read Only
-                    
-                    // Logic tombol berdasarkan status
-                    if (bill.status === 'Billed') {
-                        document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200"><i class="fas fa-check-circle"></i> Ready to Import.</div>`;
-                        btnEdit.classList.remove('hidden');
-                        btnXero.classList.remove('hidden');
-                    } else if (bill.status.includes('Success')) {
-                        document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-emerald-200"><i class="fas fa-check-double"></i> Successfully Imported to Xero.</div>`;
-                    } else if (bill.status.includes('Process')) {
-                        document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-orange-50 text-orange-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-orange-200"><i class="fas fa-clock"></i> Queued for Xero Import.</div>`;
-                    } else {
-                        document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-blue-200"><i class="fas fa-info-circle"></i> Status: ${bill.status}</div>`;
-                    }
-
-                } else {
-                    // --- MODE CREATE NEW (ACTIVE) ---
-                    // Disini kita perlu fetch detail PO Asli dari backend kalau belum ada items di list object
-                    // (Karena di list active kita cuma simpan header).
-                    // Namun, di implementasi handleRequest Backend tadi kita hapus items dari list active demi performa.
-                    // Jadi kita butuh 1 request lagi ke backend: ambilDataPOItems(idPO)
-                    // TAPI: demi simplifikasi, kita asumsikan FE masih punya data atau kita fetch ulang full PO detail (seperti getBillDetail tapi source Data_PO).
-                    
-                    // WORKAROUND: Kita fetch BillDetail tapi paksa ambil dari Data_PO? 
-                    // Tidak, kita pakai trik: karena Data_PO tidak disimpan di PO_Purchase (sumber getBillDetail),
-                    // kita harus tarik data mentah PO dari Data_PO lagi.
-                    
-                    // REVISI: Fetch ulang semua data terlalu berat.
-                    // Solusi: Kita pakai "getBillDetail" tapi modif backend dikit?
-                    // Ah, activeList di backend tadi kita kosongkan itemsnya.
-                    // Mari kita fetch ulang data PO saat modal dibuka.
-                    
-                    // Karena struktur backend `getBillDetail` baca `PO_Purchase`, dia gak bisa baca `Data_PO`.
-                    // KITA PERLU HACK: Di frontend `allData` sebenarnya bisa kita isi `items` di awal load.
-                    // Mari ubah Backend `handleRequest` bagian A (Active) untuk sertakan `items`.
-                    
-                    // (CATATAN: Code Backend di atas sudah saya ubah untuk sertakan `items` di bagian activeList.
-                    //  Wait, saya cek backend code di atas...
-                    //  Di bagian A (Active Tasks), saya melakukan: grouped[idPO].items.push(...)
-                    //  TAPI di fungsi final `handleRequest` yang baru, saya menulis: activeList.push({ invNumber:"", ... }) TANPA items.
-                    //  INI BUG POTENSIAL. SAYA AKAN PERBAIKI DI BAWAH INI SECARA OTOMATIS LEWAT LOGIKA FETCH KHUSUS)
-
-                    // Fix: Kita akan panggil 'getBillDetail' tapi karena ini Pending, resultnya null.
-                    // Kita akan gunakan data dari `poFromList.items` jika ada. 
-                    // Jika `poFromList` dari `handleRequest` di atas tidak punya items, kita harus fetch.
-                    
-                    // Solusi Paling Aman: 
-                    // Karena backend `handleRequest` (versi baru) saya buat ringan tanpa items untuk active list,
-                    // Kita butuh endpoint `getDataPOItems`.
-                    // TAPI agar tidak ribet ubah backend lagi, kita kembalikan items ke `handleRequest` backend.
-                    
-                    // *** SAYA AKAN ASUMSIKAN ANDA SUDAH COPY PASTE BACKEND CODE DI ATAS ***
-                    // Saya akan update code backend sedikit di pikiran saya:
-                    // Di Backend `handleRequest`, bagian A harusnya menyertakan items.
-                    // Cek Code Backend Bagian A:
-                    /* ...
-                       activeList.push({
-                         source: 'active',
-                         items: [] // <--- HARUS ADA INI
-                       });
-                       ...
-                       // Lalu loop dataPO lagi untuk isi items? Agak ribet.
-                    */
-                   
-                    // OKE, AGAR TIDAK ERROR, SAYA AKAN MENGGUNAKAN LOGIKA SEDERHANA:
-                    // Kita fetch ulang data PO via `getData` filtered by ID (agak boros tapi works)
-                    // ATAU, lebih baik: Backend `handleRequest` kembalikan items untuk active PO.
-                    
-                    // **KOREKSI BACKEND**: Saya menyadari di kode Backend yang saya berikan di atas, 
-                    // `activeList` TIDAK memuat `items`. Ini akan membuat Create Bill kosong.
-                    // SAYA AKAN PERBAIKI LOGIKA FETCH DI SINI (FRONTEND) UNTUK MENGATASI ITU.
-                    // Kita akan refresh halaman dan pastikan backend mengirim items.
-                    
-                    // TAPI TUNGGU, Code backend di atas sudah saya tulis ulang logicnya.
-                    // Bagian A hanya push header. Itemnya hilang.
-                    // SAYA PERBAIKI BACKEND DI CODE BLOCK PERTAMA AGAR MENYERTAKAN ITEM.
-                    // (Silakan cek kembali Code Backend di atas, saya akan pastikan logicnya benar-benar mengambil item).
-                    
-                    // UPDATE: Saya akan merevisi Code Backend di atas sedikit agar activeList punya items.
-                    // Tapi karena saya tidak bisa edit output di atas, saya berikan solusi di frontend:
-                    // Kita asumsikan saat load awal, `allData` belum punya detail item.
-                    // Kita fetch `getBillDetail` -> return null.
-                    // Kita mau fetch `getPoItems`. Gak ada endpointnya.
-                    
-                    // SOLUSI CEPAT: Reload Backend Code di atas agar activeList punya item.
-                    // (Di dalam pikiran simulasi: Code backend di atas memang belum punya loop item untuk activeList).
-                    
-                    // **PENTING**:
-                    // Untuk Backend yang sudah saya tulis di atas, tolong tambahkan logika ini di bagian A `handleRequest`:
-                    // (Sebenarnya agak kompleks parsing di sana).
-                    
-                    // ALTERNATIF MUDAH:
-                    // Gunakan data `allData` yang di-load di awal.
-                    // Saya akan ubah `fetchData` di frontend agar backend mengirim item.
-                    
-                    // Oke, agar 100% jalan, saya akan kasih update Backend Code (sedikit revisi) di bawah
-                    // untuk memastikan active PO punya items.
-                    
-                    // TAPI jika Anda pakai code backend yang saya tulis di atas, `activeList` cuma punya header.
-                    // Item nya gak ada.
-                    // Maka `currentItems` akan kosong.
-                    
-                    // SAYA AKAN REVISI BACKEND CODE DI BAWAH (FULL REPLACEMENT LAGI YANG FINAL).
-                    
-                    // Asumsi: Backend sudah fix (mengirim items).
-                    
-                    if (poFromList.items && poFromList.items.length > 0) {
-                        currentItems = poFromList.items.map(item => {
+                    if(json.status === 'success') {
+                        const history = json.history.billedHistory || {};
+                        const poItems = json.history.poItems || [];
+                        
+                        currentItems = poItems.map(item => {
                             const billed = history[item.namaItem] || 0;
                             const remaining = item.qty - billed;
                             return {
@@ -662,69 +546,59 @@
                                 qty: remaining > 0 ? remaining : 0,
                                 maxQty: remaining > 0 ? remaining : 0,
                                 price: 0, disc: 0, optionalSpec: '',
-                                typeProduk: item.typeProduk || "",
                                 checked: remaining > 0,
                                 isCustom: false
                             };
                         });
-                    } else {
-                         // Fallback jika backend lupa kirim item (kasus darurat)
-                         currentItems = [];
-                         // alert("Data item tidak ditemukan. Coba refresh.");
+                        
+                        setFormState(true);
+                        btnSave.classList.remove('hidden');
+                        forceCloseContainer.classList.remove('hidden');
+                        document.getElementById('btn-add-item-db').classList.remove('hidden');
+                        document.getElementById('btn-add-item-manual').classList.remove('hidden');
                     }
-
-                    btnSave.classList.remove('hidden');
-                    btnAddDb.classList.remove('hidden');
-                    btnAddManual.classList.remove('hidden');
-                    forceCloseContainer.classList.remove('hidden');
-                    btnSave.innerHTML = '<i class="fas fa-check"></i> Approve & Save';
-                    
-                    setFormState(true);
                 }
 
                 renderBillItems();
 
-            } catch (err) {
-                console.error(err);
-                alert("Error loading data details.");
-                closeModal();
-            } finally {
-                document.getElementById('modalLoading').classList.add('hidden');
-            }
+            } catch (e) { console.error(e); alert("Error opening modal"); closeModal(); }
+            finally { document.getElementById('modalLoading').classList.add('hidden'); }
         }
 
-        // ... (Sisa fungsi helper sama seperti sebelumnya) ...
-        function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
-        function addDbItemToBill(p) { currentItems.push({ namaItem: p.namaItem, satuan: p.satuan, optionalSpec: "", typeProduk: "Manual", qty: 1, maxQty: 999999, price: parseFloat(p.price)||0, disc: 0, poQty: 0, alreadyBilled: 0, checked: true, isCustom: true }); renderBillItems(); }
-        function addCustomItem() { currentItems.push({ namaItem: "Custom Item", satuan: "Unit", optionalSpec: "", typeProduk: "Manual", qty: 1, maxQty: 999999, price: 0, disc: 0, poQty: 0, alreadyBilled: 0, checked: true, isCustom: true }); renderBillItems(); }
-        function removeCustomItem(i) { if(confirm("Hapus?")) { currentItems.splice(i, 1); renderBillItems(); } }
+        // --- STANDARD HELPER FUNCTIONS (Sama seperti sebelumnya) ---
+        function setFormState(editable) {
+            isEditMode = editable;
+            document.querySelectorAll('.bill-input').forEach(el => el.disabled = !editable);
+            renderBillItems();
+        }
         
         function renderBillItems() {
             const tbody = document.getElementById('bill-items-body');
             tbody.innerHTML = '';
-            const thead = document.querySelector('thead#modal-thead') || document.querySelector('#billModal table thead');
-            thead.innerHTML = `<tr><th class="p-4 w-10 text-center"><i class="fas fa-check-square"></i></th><th class="p-4 w-16 text-center">Type</th><th class="p-4 w-1/4">Item Details</th><th class="p-4 w-32 bg-yellow-50/50">Spec Note</th><th class="p-4 w-24 text-center">Qty</th><th class="p-4 w-32 text-right">Price</th><th class="p-4 w-32 text-right">Disc</th><th class="p-4 w-40 text-right">Amount</th><th class="p-4 w-10"></th></tr>`;
+            const thead = document.querySelector('#billModal table thead');
+            thead.innerHTML = `<tr><th class="p-4 w-10 text-center"><i class="fas fa-check-square"></i></th><th class="p-4 w-1/4">Item Details</th><th class="p-4 w-32 bg-yellow-50/50">Spec Note</th><th class="p-4 w-24 text-center">Qty</th><th class="p-4 w-32 text-right">Price</th><th class="p-4 w-32 text-right">Disc</th><th class="p-4 w-40 text-right">Amount</th><th class="p-4 w-10"></th></tr>`;
 
             const disabledAttr = isEditMode ? '' : 'disabled';
             currentItems.forEach((item, index) => {
                 const checkedAttr = item.checked ? 'checked' : '';
-                const isPoEmpty = !item.isCustom && item.maxQty <= 0 && isEditMode;
-                const rowClass = isPoEmpty ? 'bg-gray-100 opacity-60' : 'hover:bg-slate-50';
-                const nameHtml = item.isCustom && isEditMode ? `<input type="text" value="${item.namaItem}" class="input-bare font-bold" oninput="updateItem(${index}, 'namaItem', this.value)">` : `<div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>`;
-                const infoHtml = item.isCustom ? `<div class="mt-1"><span class="bg-purple-50 text-purple-600 px-1.5 rounded text-[10px]">Ad-hoc</span></div>` : `<div class="text-[10px] text-slate-400 mt-1">PO: ${item.poQty} | Done: ${item.alreadyBilled}</div>`;
-                const deleteBtn = (item.isCustom && isEditMode) ? `<button onclick="removeCustomItem(${index})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash"></i></button>` : ``;
-                const typeInput = (!item.isCustom) ? `<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">${item.typeProduk||"-"}</span>` : `<input type="text" value="${item.typeProduk}" ${disabledAttr} oninput="updateItem(${index}, 'typeProduk', this.value)" class="input-bare text-center text-xs font-bold bg-white">`;
+                const rowClass = (!item.isCustom && item.maxQty <= 0 && isEditMode) ? 'bg-gray-100 opacity-60' : 'hover:bg-slate-50';
+                
+                // Show PO ID if available (History View)
+                const poRefHtml = item.idPO ? `<span class="bg-indigo-100 text-indigo-700 text-[10px] px-1 rounded mr-2">${item.idPO}</span>` : '';
 
-                tbody.innerHTML += `<tr class="${rowClass} border-b border-slate-50">
-                    <td class="p-4 text-center"><input type="checkbox" ${isPoEmpty?'disabled':disabledAttr} ${checkedAttr} onchange="toggleItem(${index}, this.checked)" class="w-4 h-4 text-primary rounded cursor-pointer"></td>
-                    <td class="p-4 text-center">${typeInput}</td>
-                    <td class="p-4">${nameHtml}${infoHtml}</td>
+                tbody.innerHTML += `
+                <tr class="${rowClass} border-b border-slate-50">
+                    <td class="p-4 text-center"><input type="checkbox" ${disabledAttr} ${checkedAttr} onchange="toggleItem(${index}, this.checked)" class="w-4 h-4 text-primary rounded cursor-pointer"></td>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-700 text-sm">${poRefHtml}${item.namaItem}</div>
+                        <div class="text-[10px] text-slate-400 mt-1">Satuan: ${item.satuan} ${!isEditMode && item.idPO ? '' : `| PO: ${item.poQty} | Done: ${item.alreadyBilled}`}</div>
+                    </td>
                     <td class="p-4 bg-yellow-50/30"><input type="text" value="${item.optionalSpec||''}" ${disabledAttr} oninput="updateItem(${index}, 'optionalSpec', this.value)" class="input-bare text-xs"></td>
                     <td class="p-4"><input type="number" value="${item.qty}" min="0" ${disabledAttr} oninput="updateItem(${index}, 'qty', this.value)" class="input-bare text-center font-bold"></td>
                     <td class="p-4"><input type="number" value="${item.price}" ${disabledAttr} oninput="updateItem(${index}, 'price', this.value)" class="input-bare text-right font-mono"></td>
                     <td class="p-4"><input type="number" value="${item.disc}" ${disabledAttr} oninput="updateItem(${index}, 'disc', this.value)" class="input-bare text-right font-mono text-red-500"></td>
                     <td class="p-4 text-right font-bold font-mono" id="row-total-${index}">0</td>
-                    <td class="p-4 text-center">${deleteBtn}</td>
+                    <td class="p-4 text-center">${isEditMode ? `<button onclick="removeCustomItem(${index})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash"></i></button>` : ''}</td>
                 </tr>`;
             });
             calculateTotal();
@@ -732,6 +606,9 @@
 
         function toggleItem(i, c) { currentItems[i].checked = c; calculateTotal(); }
         function updateItem(i, f, v) { if(['price','disc','qty'].includes(f)) currentItems[i][f]=parseFloat(v)||0; else currentItems[i][f]=v; calculateTotal(); }
+        function removeCustomItem(i) { if(confirm("Hapus?")) { currentItems.splice(i, 1); renderBillItems(); } }
+        function addCustomItem() { currentItems.push({ namaItem: "Custom Item", satuan: "Unit", qty: 1, price: 0, disc: 0, checked: true, isCustom: true }); renderBillItems(); }
+        
         function calculateTotal() {
             let totalLine = 0;
             currentItems.forEach((item, i) => {
@@ -747,22 +624,21 @@
             else dpp = totalLine;
             
             const grand = dpp + ppn + adj;
-            document.getElementById('display-subtotal').dataset.value = dpp; document.getElementById('display-subtotal').innerText = formatRupiah(dpp);
-            document.getElementById('display-ppn').dataset.value = ppn; document.getElementById('display-ppn').innerText = formatRupiah(ppn);
-            document.getElementById('display-grand-total').dataset.value = grand; document.getElementById('display-grand-total').innerText = formatRupiah(grand);
+            document.getElementById('display-subtotal').innerText = formatRupiah(dpp);
+            document.getElementById('display-ppn').innerText = formatRupiah(ppn);
+            document.getElementById('display-grand-total').innerText = formatRupiah(grand);
+            document.getElementById('display-grand-total').dataset.value = grand;
+            document.getElementById('display-subtotal').dataset.value = dpp;
+            document.getElementById('display-ppn').dataset.value = ppn;
         }
 
-        function enableEditMode() { if(confirm("Edit?")) { setFormState(true); document.getElementById('btn-edit').classList.add('hidden'); document.getElementById('btn-xero').classList.add('hidden'); document.getElementById('btn-save').classList.remove('hidden'); document.getElementById('force-close-container').classList.remove('hidden'); } }
-        function setFormState(e) { isEditMode = e; document.querySelectorAll('.bill-input').forEach(el => el.disabled = !e); renderBillItems(); }
-        
         async function submitBill() {
              const checked = currentItems.filter(i => i.checked && i.qty > 0);
-             if(checked.length===0) return showNotification("Pilih minimal 1 item.");
+             if(checked.length===0) return alert("Pilih minimal 1 item.");
              const invNum = document.getElementById('bill-inv-number').value;
-             if(!invNum) return showNotification("Isi No Invoice.");
+             if(!invNum) return alert("Isi No Invoice.");
              
              document.getElementById('modalLoading').classList.remove('hidden');
-             // Upload Logic Sederhana (File Data)
              const fileInput = document.getElementById('bill-file');
              let fileData=null, fileName=null, mimeType=null;
              if(fileInput.files.length>0) {
@@ -776,7 +652,7 @@
              const payload = {
                  action: 'save_bill',
                  data: {
-                     idPO: currentPOId,
+                     idPO: currentPOId, // ID PO yang sedang aktif
                      vendor: document.getElementById('bill-vendor').value,
                      invNumber: invNum,
                      invDate: document.getElementById('bill-date').value,
@@ -797,34 +673,47 @@
                  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                  const json = await res.json();
                  if(json.status === 'success') { closeModal(); fetchData(); }
-                 else showNotification(json.message);
-             } catch(e) { showNotification("Error koneksi"); }
-             finally { document.getElementById('modalLoading').classList.add('hidden'); }
-        }
-
-        async function requestXeroImport() {
-             const invNum = document.getElementById('bill-inv-number').value;
-             if(!confirm(`Import ${invNum} ke Xero?`)) return;
-             document.getElementById('modalLoading').classList.remove('hidden');
-             try {
-                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'import_xero', idPO: currentPOId, invNumber: invNum }) });
-                 const json = await res.json();
-                 if(json.status==='success') { closeModal(); fetchData(); }
                  else alert(json.message);
-             } catch(e) { alert("Error"); }
+             } catch(e) { alert("Error koneksi"); }
              finally { document.getElementById('modalLoading').classList.add('hidden'); }
         }
 
-        function closeModal() { document.getElementById('billModal').classList.add('hidden'); }
-        function showNotification(msg) { document.getElementById('notif-message').innerText = msg; document.getElementById('notificationModal').classList.remove('hidden'); }
-        function closeNotification() { document.getElementById('notificationModal').classList.add('hidden'); }
+        // --- Other Helpers (Product Search, Xero, Format) ---
         function formatRupiah(n) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n); }
         function formatDate(d) { return d ? new Date(d).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'; }
+        function closeModal() { document.getElementById('billModal').classList.add('hidden'); }
+        function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+        function closeNotification() { document.getElementById('notificationModal').classList.add('hidden'); }
         
-        function applyFilters() {
-            const s = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allData.filter(p => (p.id.toLowerCase().includes(s) || p.vendor.toLowerCase().includes(s) || (p.invNumber && p.invNumber.toLowerCase().includes(s))));
-            renderCards(filtered);
+        async function openProductModal() {
+            const vendorName = document.getElementById('bill-vendor').value;
+            if(!vendorName) return alert("Vendor tidak terdeteksi");
+            document.getElementById('productModal').classList.remove('hidden');
+            document.getElementById('product-vendor-filter').innerText = vendorName;
+            document.getElementById('productListContainer').innerHTML = 'Loading...';
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getProducts', vendor: vendorName }) });
+                const json = await res.json();
+                dbProducts = json.products;
+                filterProducts();
+            } catch(e){ alert("Error loading products"); }
+        }
+
+        function filterProducts() {
+            const s = document.getElementById('searchProduct').value.toLowerCase();
+            const filtered = dbProducts.filter(p => p.namaItem.toLowerCase().includes(s));
+            const c = document.getElementById('productListContainer'); c.innerHTML='';
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className="flex justify-between p-3 border-b";
+                div.innerHTML = `<div><div class="font-bold text-sm">${p.namaItem}</div><div class="text-xs text-gray-400">${p.satuan}</div></div><button onclick="addDbItemToBill('${p.namaItem}','${p.satuan}',${p.price})" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">Add</button>`;
+                c.appendChild(div);
+            });
+        }
+        function addDbItemToBill(name, unit, price) {
+            currentItems.push({ namaItem: name, satuan: unit, qty: 1, price: price, disc: 0, checked: true, isCustom: true });
+            renderBillItems();
+            closeProductModal();
         }
     </script>
 </body>
