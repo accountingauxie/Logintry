@@ -265,6 +265,7 @@
         let currentPOId = "";
         let currentFileUrl = "";
         let currentFilterStatus = 'all';
+        let originalInvNumber = ""; // VAR BARU UTK MENYIMPAN INV LAMA
 
         window.onload = fetchData;
 
@@ -286,7 +287,6 @@
         function applyFilters() {
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allData.filter(p => {
-                // Pencarian bisa berdasarkan ID PO Asli atau Nomor Invoice
                 const matchSearch = p.id.toLowerCase().includes(searchVal) || p.vendor.toLowerCase().includes(searchVal) || (p.invNumber && p.invNumber.toLowerCase().includes(searchVal));
                 let matchStatus = true;
                 if (currentFilterStatus === 'pending') matchStatus = !p.invNumber;
@@ -327,14 +327,11 @@
                 let viewBtn = po.fileUrl ? `<a href="${po.fileUrl}" target="_blank" class="text-red-500 hover:text-red-700"><i class="fas fa-file-pdf text-xl"></i></a>` : `<span class="text-slate-300">-</span>`;
                 let btnLabel = po.invNumber ? "Edit" : "Entry";
                 let btnIcon = po.invNumber ? "fa-edit" : "fa-plus";
-
-                // Menampilkan Total Est (DPP)
                 let displayTotal = formatRupiah(po.totalEst || 0);
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
                 
-                // Menggunakan uniqueKey (InvNo atau IDPO) sebagai identifier di tombol Edit
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-bold text-slate-800">${po.vendor}</td>
                     <td class="px-6 py-4 text-primary font-medium">${po.id}</td>
@@ -354,12 +351,14 @@
             });
         }
 
+        // --- UPDATE LOGIC MODAL ---
         function openBillModal(uniqueKey) {
-            // Cari data berdasarkan Unique Key (InvNo atau PO ID)
             const po = allData.find(d => d.uniqueKey === uniqueKey);
             if (!po) return;
             
-            currentPOId = po.id; // Simpan ID PO Asli
+            currentPOId = po.id;
+            originalInvNumber = po.invNumber || ""; // SIMPAN INV LAMA KE VARIABLE GLOBAL
+            
             document.getElementById('bill-po-id').innerText = po.id;
             document.getElementById('bill-vendor').value = po.vendor;
             document.getElementById('bill-inv-number').value = po.invNumber || '';
@@ -373,7 +372,6 @@
             document.getElementById('tax-mode').value = po.taxMode || 'exclusive';
             document.getElementById('check-force-close').checked = po.status === 'Billed';
             
-            // Reset File Input
             document.getElementById('bill-file').value = ""; 
 
             const fileLinkDiv = document.getElementById('existing-file-link');
@@ -582,18 +580,19 @@
             document.getElementById('productModal').classList.add('hidden');
         }
 
-        // --- SUBMIT BILL With File Handling ---
+        // --- SUBMIT BILL With File Handling (UPDATED) ---
         async function submitBill() {
             const invNum = document.getElementById('bill-inv-number').value;
             if(!invNum) { showNotification("Invoice Number wajib diisi!"); return; }
 
             const activeItems = currentItems.filter(i => i.checked);
             
-            // Siapkan payload dasar
+            // Siapkan payload dengan oldInvNumber
             const payload = {
                 action: 'save_bill',
                 data: {
                     idPO: currentPOId,
+                    oldInvNumber: originalInvNumber, // KIRIM INV LAMA
                     invNumber: invNum,
                     invDate: document.getElementById('bill-date').value,
                     dueDate: document.getElementById('bill-due-date').value,
@@ -604,7 +603,6 @@
                 }
             };
 
-            // Handle File Input: Ubah ke Base64 jika ada file
             const fileInput = document.getElementById('bill-file');
             
             if (fileInput.files.length > 0) {
@@ -612,7 +610,7 @@
                 const reader = new FileReader();
 
                 reader.onload = async function() {
-                    const base64String = reader.result.split(',')[1]; // Hapus header data:application/pdf;base64,
+                    const base64String = reader.result.split(',')[1]; 
                     
                     payload.data.fileData = base64String;
                     payload.data.fileName = file.name;
@@ -625,7 +623,6 @@
                 };
                 reader.readAsDataURL(file);
             } else {
-                // Kirim tanpa file baru
                 await sendData(payload);
             }
         }
@@ -636,7 +633,7 @@
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const json = await res.json();
                 if(json.status === 'success') {
-                    showNotification("Berhasil disimpan!");
+                    showNotification(json.message);
                     closeModal();
                     fetchData();
                 } else {
