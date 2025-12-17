@@ -28,13 +28,15 @@
         .input-bare:hover:not(:disabled) { border-color: #e2e8f0; background: white; }
         .input-bare:focus { border-color: #008080; background: white; outline: none; }
         .input-bare:disabled { color: #94a3b8; cursor: not-allowed; }
+        
         .bill-input:focus { ring: 2px; ring-color: #008080; border-color: #008080; outline: none; }
         .bill-input:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; border-color: #e2e8f0; }
-        
+
+        /* Filter Pill Styles */
         .filter-pill.active { background-color: #ccfbf1; color: #0f766e; border-color: #99f6e4; font-weight: 700; }
         .filter-pill.inactive { background-color: white; color: #64748b; border-color: #e2e8f0; }
         
-        /* Dynamic Badges */
+        /* Badge Styles V2 */
         .badge-billed { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; } 
         .badge-rejected { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; } 
         .badge-imported { background-color: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
@@ -48,7 +50,7 @@
             <div class="font-black text-xl text-slate-800 flex items-center gap-2">
                 <i class="fa-solid fa-table-cells text-slate-300 text-lg mr-1"></i>
                 <span class="border-r-2 border-slate-200 pr-4">AUXILIUM</span>
-                <span class="font-normal text-sm text-slate-500 tracking-tight">Bill List V2</span>
+                <span class="font-normal text-sm text-slate-500 tracking-tight">Bill List View</span>
             </div>
         </div>
         <button onclick="fetchData()" class="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-primary hover:bg-teal-50 transition">
@@ -76,6 +78,12 @@
                 Daftar Tagihan
                 <span id="count-total" class="ml-1 bg-teal-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
             </button>
+
+            <a href="https://accountingauxie.github.io/Logintry/" class="bg-transparent px-5 py-3 rounded-t-xl font-bold text-sm flex items-center gap-2 border border-transparent hover:bg-slate-50 text-slate-400 hover:text-slate-600 min-w-max transition relative top-[1px]">
+                <div class="bg-slate-100 text-slate-400 w-6 h-6 flex items-center justify-center rounded text-xs"><i class="fas fa-folder-open"></i></div>
+                Kelola Tagihan PO
+                <i class="fas fa-external-link-alt text-[10px] ml-1 opacity-70"></i>
+            </a>
         </div>
 
         <div class="flex flex-wrap gap-2 mb-6">
@@ -133,15 +141,16 @@
             </div>
             
             <div class="flex-1 overflow-y-auto p-6 bg-[#f8fafc]">
+                
                 <div id="locked-banner" class="hidden mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex justify-between items-center">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-lock text-red-500 text-xl"></i>
                         <div>
                             <h4 class="font-bold text-red-700">Tagihan Terkunci</h4>
-                            <p class="text-xs text-red-600">Tagihan ini berstatus <span id="locked-status-text" class="font-bold"></span>. Lakukan revisi untuk mengedit.</p>
+                            <p class="text-xs text-red-600">Tagihan ini berstatus <span id="locked-status-text" class="font-bold"></span>. <span id="revision-hint">Lakukan revisi untuk mengedit.</span></p>
                         </div>
                     </div>
-                    <button onclick="enableRevision()" class="bg-white border border-red-200 text-red-600 px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-red-100 transition">
+                    <button id="btn-revisi-action" onclick="enableRevision()" class="bg-white border border-red-200 text-red-600 px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-red-100 transition hidden">
                         <i class="fas fa-unlock mr-1"></i> Buka / Revisi
                     </button>
                 </div>
@@ -276,15 +285,15 @@
 
     <div id="notificationModal" class="fixed inset-0 z-[80] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center border border-slate-100">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-teal-50 mb-5 border border-teal-100"><i class="fas fa-info-circle text-3xl text-primary"></i></div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Informasi</h3>
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"><i class="fas fa-shield-halved text-3xl text-red-500"></i></div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Alert</h3>
             <p id="notif-message" class="text-slate-500 mb-6 text-sm leading-relaxed">Message</p>
-            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-lg transition">OK</button>
+            <button onclick="closeNotification()" class="w-full py-2.5 px-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg transition">OK, Mengerti</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxTPDcNQJ717W-edVh2QkMMImd-l-lG1Q91I43OAj5U8Mf4EqGj-acG6Ao2sAFgFV1yZQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbydYgWd0oi-gOjQJ2fcrKxIwvffSl7C6CxCtg_YDm4qbkVBlie_ZboorqFf8SIHadhmmQ/exec";
         
         const TAX_RATE = 0.11;
         let allData = [];
@@ -318,15 +327,18 @@
             const filtered = allData.filter(p => {
                 const matchSearch = p.id.toLowerCase().includes(searchVal) || p.vendor.toLowerCase().includes(searchVal) || (p.invNumber && p.invNumber.toLowerCase().includes(searchVal));
                 
-                // Logic Filter Status Lebih Akurat (String Match)
                 let matchStatus = true;
                 const statusLower = (p.status || "").toLowerCase();
 
                 if (currentFilterStatus === 'billed') {
-                    // Match 'billed' atau 'import' jika itu dianggap sama
-                    matchStatus = statusLower.includes('billed') || statusLower.includes('imported');
+                    // Match 'billed'
+                    matchStatus = statusLower.includes('billed');
                 } else if (currentFilterStatus === 'rejected') {
+                    // Match 'rejected' atau 'batal'
                     matchStatus = statusLower.includes('rejected') || statusLower.includes('batal');
+                } else if (currentFilterStatus === 'import') {
+                    // Filter untuk Imported/Lainnya jika diperlukan (sesuai tombol filter user)
+                    matchStatus = !!p.invNumber; 
                 }
                 
                 return matchSearch && matchStatus;
@@ -358,14 +370,15 @@
             }
 
             data.forEach(po => {
-                // LOGIC STATUS BADGE (Mengikuti Teks Asli dari Sheet)
+                // LOGIC STATUS BADGE V2
+                // Teks status diambil MENTAH dari data, tapi warna badge disesuaikan keyword
                 const rawStatus = po.status || "Pending";
                 const statusLower = rawStatus.toLowerCase();
                 let badgeClass = "badge-pending";
 
                 if (statusLower.includes('billed')) badgeClass = "badge-billed";
                 else if (statusLower.includes('rejected') || statusLower.includes('batal')) badgeClass = "badge-rejected";
-                else if (statusLower.includes('imported')) badgeClass = "badge-imported"; // Khusus Imported (Locked)
+                else if (statusLower.includes('imported')) badgeClass = "badge-imported"; // Khusus Imported
 
                 const statusBadge = `<span class="${badgeClass} px-2 py-1 rounded text-xs font-bold capitalize">${rawStatus}</span>`;
                 
@@ -374,6 +387,8 @@
                 // Logic Button Edit/View
                 let btnLabel = po.invNumber ? "Edit" : "Entry";
                 let btnIcon = po.invNumber ? "fa-edit" : "fa-plus";
+                
+                // Jika Rejected, tombol jadi View/Revise
                 if (statusLower.includes('rejected')) { btnLabel = "View/Revise"; btnIcon = "fa-eye"; }
 
                 let displayTotal = formatRupiah(po.totalEst || 0);
@@ -437,20 +452,46 @@
             currentItems = po.items.map(i => ({...i, checked: true}));
             renderBillItems();
 
-            // === LOGIC LOCKING (REJECTED / IMPORTED) ===
+            // === V2 LOGIC: LOCKING STATUS ===
             const statusLower = (po.status || "").toLowerCase();
-            const isLocked = statusLower.includes('rejected') || statusLower.includes('imported');
+            const isRejected = statusLower.includes('rejected') || statusLower.includes('batal');
+            const isImported = statusLower.includes('imported');
             
+            // Default: Mode Edit Aktif
+            let isLocked = false;
+            let showRevisiBtn = false;
+            let bannerText = "";
+
+            if (isRejected) {
+                isLocked = true;
+                showRevisiBtn = true; // Rejected bisa direvisi
+                bannerText = "Rejected / Batal";
+            } else if (isImported) {
+                isLocked = true;
+                showRevisiBtn = false; // Imported terkunci permanen (sesuai request)
+                bannerText = "Imported (Locked)";
+            }
+            // Note: "Billed" masuk sini sebagai false (Editable)
+
             if (isLocked) {
                 // MODE TERKUNCI
                 document.getElementById('locked-banner').classList.remove('hidden');
-                document.getElementById('locked-status-text').innerText = po.status;
+                document.getElementById('locked-status-text').innerText = bannerText;
+                
+                // Atur visibilitas tombol revisi
+                if(showRevisiBtn) {
+                    document.getElementById('btn-revisi-action').classList.remove('hidden');
+                    document.getElementById('revision-hint').innerText = "Lakukan revisi untuk mengedit.";
+                } else {
+                    document.getElementById('btn-revisi-action').classList.add('hidden');
+                    document.getElementById('revision-hint').innerText = "Data ini terkunci permanen.";
+                }
                 
                 // Disable Semua Input
                 document.querySelectorAll('.bill-input').forEach(el => el.disabled = true);
                 document.querySelectorAll('.action-btn').forEach(el => el.disabled = true);
                 
-                // Sembunyikan Tombol Aksi Utama
+                // Sembunyikan Tombol Save/Reject
                 document.getElementById('btn-save').classList.add('hidden');
                 document.getElementById('btn-reject').classList.add('hidden');
             } else {
@@ -469,9 +510,9 @@
             document.getElementById('billModal').classList.remove('hidden');
         }
 
-        // Fungsi untuk Membuka Kunci (Revisi)
+        // Fungsi Revisi: Membuka kunci form
         function enableRevision() {
-            if(confirm("Apakah Anda yakin ingin merevisi data ini? Status akan berubah setelah disimpan.")) {
+            if(confirm("Apakah Anda yakin ingin merevisi data ini? Status akan diperbarui setelah disimpan.")) {
                 document.getElementById('locked-banner').classList.add('hidden');
                 
                 // Enable All
@@ -482,17 +523,17 @@
                 document.getElementById('btn-save').classList.remove('hidden');
                 document.getElementById('btn-reject').classList.remove('hidden');
                 
-                // Render ulang items agar checkbox/tombol hapus aktif
+                // Render ulang table items agar tombol hapus aktif
                 renderBillItems();
             }
         }
 
-        // --- ITEM RENDERING (SAMA SEPERTI SEBELUMNYA) ---
+        // --- ITEM RENDERING ---
         function renderBillItems() {
             const tbody = document.getElementById('bill-items-body');
             tbody.innerHTML = '';
             
-            // Cek apakah sedang dalam mode locked untuk mendisable tombol baris
+            // Cek apakah form sedang terkunci (tombol save hidden)
             const isGlobalLocked = document.getElementById('btn-save').classList.contains('hidden');
 
             currentItems.forEach((item, index) => {
@@ -685,7 +726,7 @@
 
         async function submitBill(customStatus = null) {
             const invNum = document.getElementById('bill-inv-number').value;
-            // Validasi: Invoice Wajib isi kecuali user mau me-reject (bisa opsional tergantung kebijakan, disini diwajibkan saja agar aman)
+            // Validasi: Invoice Wajib isi kecuali direject
             if(!invNum) { showNotification("Invoice Number wajib diisi!"); return; }
 
             const activeItems = currentItems.filter(i => i.checked);
