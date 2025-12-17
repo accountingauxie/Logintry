@@ -250,7 +250,7 @@
 
     <script>
         // PASTE URL DEPLOYMENT ANDA DISINI
-        const API_URL = "https://script.google.com/macros/s/AKfycbyxB3OQKB76eI1AHPZBE7-27DJqMIy9lYzQ7YLODuu-o7m06iC8KaDllZlgHwK1C6Q4/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbwW9rCtV0elYmCtAzZgSQ_-7e6Z9DgMFO9J-8D8h95VEFfiav8F1XN_e8sFAxvfBXqK/exec"; 
         const TAX_RATE = 0.11;
 
         let allData = [];
@@ -399,7 +399,7 @@
                     else if (po.status === 'Success Imported') statusClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
 
                     tableHTML += `
-                        <tr class="bg-white hover:bg-slate-50 transition cursor-pointer" onclick="openBillModal('${po.id}')">
+                        <tr class="bg-white hover:bg-slate-50 transition cursor-pointer" onclick="openBillModal('${po.id}', '${po.invNumber || ''}')">
                             <td class="px-6 py-4 font-bold text-slate-800">${po.id}</td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-slate-700 truncate max-w-[200px]">${po.vendor}</div>
@@ -424,15 +424,21 @@
                 billedContainer.innerHTML = tableHTML;
             }
         }
-
-        async function openBillModal(idPO) {
-            const poFromList = allData.find(d => d.id === idPO);
-            if (!poFromList) return;
+async function openBillModal(idPO, targetInvNumber = null) {
+            // 1. Cari data PO di list lokal untuk info awal
+            const poFromList = allData.find(d => d.id === idPO && (targetInvNumber ? d.invNumber === targetInvNumber : true));
+            if (!poFromList && !targetInvNumber) {
+                // Fallback jika diklik dari search tapi data belum spesifik
+                const fallback = allData.find(d => d.id === idPO);
+                if(fallback) poFromList = fallback;
+                else return;
+            }
+            
             currentPOId = idPO;
 
-            // Reset UI
-            document.getElementById('bill-po-id').innerText = poFromList.id;
-            document.getElementById('bill-vendor').value = poFromList.vendor;
+            // 2. RESET UI FORM (Bersihkan inputan lama)
+            document.getElementById('bill-po-id').innerText = currentPOId;
+            document.getElementById('bill-vendor').value = poFromList ? poFromList.vendor : "";
             document.getElementById('bill-inv-number').value = '';
             document.getElementById('bill-date').valueAsDate = new Date();
             document.getElementById('bill-due-date').value = '';
@@ -444,6 +450,7 @@
             document.getElementById('banner-container').innerHTML = '';
             document.getElementById('check-force-close').checked = false;
 
+            // Sembunyikan semua tombol dulu
             const btnEdit = document.getElementById('btn-edit');
             const btnXero = document.getElementById('btn-xero');
             const btnSave = document.getElementById('btn-save');
@@ -464,21 +471,37 @@
             document.getElementById('billModal').classList.remove('hidden');
 
             try {
+                // 3. Request ke Backend (Ambil Sisa PO & History)
                 const resRem = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getPoRemaining', idPO: idPO }) });
                 const jsonRem = await resRem.json();
                 const history = jsonRem.history || {};
 
-                let isCreateMode = (poFromList.status === 'Pending' || poFromList.status === 'Partial');
+                // 4. Tentukan Mode: Apakah CREATE BARU atau VIEW HISTORY?
+                // Logika: Jika data dari list memiliki flag isHistory=true, maka ini View Mode.
+                let isCreateMode = true;
+                if (poFromList && poFromList.isHistory === true) {
+                    isCreateMode = false;
+                }
+
                 let existingBillData = null;
 
+                // 5. Jika Mode View History, Ambil Detail Invoice Spesifik
                 if (!isCreateMode) {
-                    const resDetail = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getBillDetail', idPO: idPO }) });
+                    const resDetail = await fetch(API_URL, { 
+                        method: 'POST', 
+                        body: JSON.stringify({ 
+                            action: 'getBillDetail', 
+                            idPO: idPO,
+                            invNumber: targetInvNumber // <--- PENTING: Mengirim No Inv agar backend mengambil data yang tepat
+                        }) 
+                    });
                     const jsonDetail = await resDetail.json();
                     if(jsonDetail.status === 'success') existingBillData = jsonDetail.data;
                 }
 
+                // 6. RENDER DATA KE FORM
                 if (existingBillData && !isCreateMode) {
-                    // MODE VIEW / READ ONLY
+                    // --- MODE VIEW / READ ONLY ---
                     const bill = existingBillData;
                     document.getElementById('bill-inv-number').value = bill.invNumber || '';
                     if(bill.invDate) document.getElementById('bill-date').value = new Date(bill.invDate).toISOString().split('T')[0];
@@ -506,7 +529,9 @@
                         isCustom: (item.spec || "").includes("Ad-hoc") 
                     }));
                     
-                    setFormState(false);
+                    setFormState(false); // Matikan input form (Read Only)
+
+                    // Tampilkan tombol sesuai status
                     if (bill.status === 'Billed') {
                         document.getElementById('banner-container').innerHTML = `<div class="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm font-bold flex items-center gap-3 border border-green-200"><i class="fas fa-check-circle"></i> Ready to Import.</div>`;
                         btnEdit.classList.remove('hidden');
@@ -516,14 +541,26 @@
                     }
 
                 } else {
-                    // MODE CREATE NEW PARTIAL
+                    // --- MODE CREATE NEW PARTIAL ---
+                    // Mengambil data item asli dari list PO (Data_PO)
+                    // Kita perlu ambil ulang item PO asli jika poFromList adalah history item
+                    // Tapi di logika dual source, active item pasti punya item list lengkap.
+                    
+                    let itemsSource = poFromList.items || [];
+                    
+                    // Fallback: Jika poFromList ternyata kosong itemnya (kadang terjadi sinkronisasi), 
+                    // kita pakai data sisa history
+                    if(itemsSource.length === 0) {
+                        // Logic fallback opsional, biasanya itemsSource sudah ada dari handleRequest Active tab
+                    }
+
                     btnSave.classList.remove('hidden');
                     btnAddDb.classList.remove('hidden');
                     btnAddManual.classList.remove('hidden');
                     forceCloseContainer.classList.remove('hidden');
                     btnSave.innerHTML = '<i class="fas fa-check"></i> Approve & Save';
                     
-                    currentItems = poFromList.items.map(item => {
+                    currentItems = itemsSource.map(item => {
                         const billed = history[item.namaItem] || 0;
                         const remaining = item.qty - billed;
                         return {
@@ -538,19 +575,19 @@
                             isCustom: false
                         };
                     });
-                    setFormState(true);
+                    setFormState(true); // Hidupkan input form
                 }
 
                 renderBillItems();
 
             } catch (err) {
                 console.error(err);
-                alert("Error loading data.");
+                showNotification("Error loading data.");
                 closeModal();
             } finally {
                 document.getElementById('modalLoading').classList.add('hidden');
             }
-        }
+}
 
         async function openProductModal() {
             document.getElementById('productModal').classList.remove('hidden');
