@@ -12,7 +12,9 @@
             theme: {
                 extend: {
                     colors: { primary: '#008080', 'primary-hover': '#006666', bglight: '#eef2f6', darktext: '#1e293b' },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    animation: { 'fade-in-up': 'fadeInUp 0.5s ease-out' },
+                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
                 }
             }
         }
@@ -74,8 +76,40 @@
             <p class="text-slate-500 text-sm font-medium">Memuat Data...</p>
         </div>
 
-        <div id="cardContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-    </div>
+        <div class="mb-10 animate-fade-in-up">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-1 h-8 bg-amber-500 rounded-full"></div>
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-file-invoice text-amber-500"></i> 
+                    PO to Create Bill
+                    <span id="count-active" class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full border border-amber-200 ml-2">0</span>
+                </h2>
+            </div>
+            
+            <div id="activeContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-h-[100px]">
+                </div>
+        </div>
+
+        <div class="relative flex items-center py-5">
+            <div class="flex-grow border-t border-slate-300"></div>
+            <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full shadow-sm border border-slate-200">Completed / History</span>
+            <div class="flex-grow border-t border-slate-300"></div>
+        </div>
+
+        <div class="mt-6 mb-20 animate-fade-in-up">
+            <div class="flex items-center gap-3 mb-4 opacity-75 hover:opacity-100 transition-opacity">
+                <div class="w-1 h-8 bg-sky-600 rounded-full"></div>
+                <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
+                    <i class="fas fa-history text-sky-600"></i> 
+                    Billed List
+                    <span id="count-billed" class="bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full border border-slate-300 ml-2">0</span>
+                </h2>
+            </div>
+
+            <div id="billedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                </div>
+        </div>
+        </div>
 
     <div id="billModal" class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-7xl h-[95vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden relative animate-fade-in-up border border-slate-200">
@@ -212,7 +246,7 @@
                 <p class="text-[10px] text-slate-400 mt-1">Menampilkan produk dari vendor: <span id="product-vendor-filter" class="font-bold"></span></p>
             </div>
             <div class="flex-1 overflow-y-auto p-2" id="productListContainer">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -239,7 +273,10 @@
 
         async function fetchData() {
             document.getElementById('loading').style.display = 'flex';
-            document.getElementById('cardContainer').innerHTML = '';
+            // Clear both containers
+            document.getElementById('activeContainer').innerHTML = '';
+            document.getElementById('billedContainer').innerHTML = '';
+
             try {
                 const response = await fetch(`${API_URL}?t=${new Date().getTime()}`);
                 const data = await response.json();
@@ -254,13 +291,23 @@
         window.onload = fetchData;
 
         function renderCards(data) {
-            const container = document.getElementById('cardContainer');
-            container.innerHTML = '';
-            if (data.length === 0) {
-                container.innerHTML = '<div class="col-span-3 text-center text-slate-400 py-10 bg-white rounded-xl border border-dashed border-slate-300">No data found.</div>';
-                return;
-            }
-            data.forEach(po => {
+            const activeContainer = document.getElementById('activeContainer');
+            const billedContainer = document.getElementById('billedContainer');
+            
+            // Reset Container
+            activeContainer.innerHTML = '';
+            billedContainer.innerHTML = '';
+
+            // Pisahkan Data
+            const activeData = data.filter(po => ['Pending', 'Partial'].includes(po.status));
+            const billedData = data.filter(po => !['Pending', 'Partial'].includes(po.status));
+
+            // Update Badge Count
+            document.getElementById('count-active').innerText = activeData.length;
+            document.getElementById('count-billed').innerText = billedData.length;
+
+            // Helper function untuk membuat HTML Card
+            const createCardHTML = (po) => {
                 let statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
                 let btnText = 'View Bill';
                 let btnClass = 'text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200';
@@ -283,7 +330,7 @@
 
                 let invInfo = po.invNumber ? `<div class="mt-3 text-[11px] font-mono bg-slate-50 border border-slate-200 rounded px-2 py-1 inline-flex items-center text-slate-500 w-full"><i class="fas fa-hashtag text-slate-300 mr-2 text-xs"></i>${po.invNumber}</div>` : '';
 
-                const html = `
+                return `
                 <div class="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg transition-all duration-300 flex flex-col justify-between h-full group relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-slate-200 group-hover:bg-primary transition-colors"></div>
                     <div>
@@ -295,11 +342,35 @@
                         <div class="text-xs text-slate-400 mt-4 mb-5 flex items-center pl-2"><i class="far fa-calendar-alt mr-2"></i> ${formatDate(po.tanggalInput)}</div>
                     </div>
                     <button onclick="openBillModal('${po.id}')" class="w-full py-2.5 rounded-lg font-bold text-sm transition-all transform active:scale-95 ${btnClass} flex justify-center items-center gap-2">
-                        ${po.status === 'Pending' || po.status === 'Partial' ? '<i class="fas fa-plus"></i>' : '<i class="fas fa-eye"></i>'} ${btnText}
+                        ${(po.status === 'Pending' || po.status === 'Partial') ? '<i class="fas fa-plus"></i>' : '<i class="fas fa-eye"></i>'} ${btnText}
                     </button>
                 </div>`;
-                container.innerHTML += html;
-            });
+            };
+
+            // 1. RENDER ACTIVE SECTION
+            if (activeData.length === 0) {
+                activeContainer.innerHTML = `
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
+                    <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fas fa-check text-slate-300"></i></div>
+                    <p class="text-slate-400 text-sm">Tidak ada PO Pending. Good job!</p>
+                </div>`;
+            } else {
+                activeData.forEach(po => {
+                    activeContainer.innerHTML += createCardHTML(po);
+                });
+            }
+
+            // 2. RENDER BILLED SECTION
+            if (billedData.length === 0) {
+                billedContainer.innerHTML = `
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-8 opacity-60">
+                    <p class="text-slate-400 text-xs italic">Belum ada riwayat Billed.</p>
+                </div>`;
+            } else {
+                billedData.forEach(po => {
+                    billedContainer.innerHTML += createCardHTML(po);
+                });
+            }
         }
 
         async function openBillModal(idPO) {
@@ -377,7 +448,7 @@
                         maxQty: Number(item.qty),
                         price: Number(item.price),
                         disc: Number(item.disc),
-                        typeProduk: item.typeProduk || "", // LOAD TYPE PRODUK
+                        typeProduk: item.typeProduk || "", 
                         checked: true,
                         alreadyBilled: history[item.namaItem] || 0,
                         isCustom: (item.spec || "").includes("Ad-hoc") 
@@ -410,7 +481,7 @@
                             qty: remaining > 0 ? remaining : 0,
                             maxQty: remaining > 0 ? remaining : 0,
                             price: 0, disc: 0, optionalSpec: '',
-                            typeProduk: item.typeProduk || "", // LOAD TYPE PRODUK
+                            typeProduk: item.typeProduk || "",
                             checked: remaining > 0,
                             isCustom: false
                         };
@@ -535,7 +606,6 @@
             tbody.innerHTML = '';
             
             const thead = document.querySelector('thead');
-            // Menambahkan Header Type
             thead.innerHTML = `<tr>
                 <th class="p-4 w-10 text-center"><i class="fas fa-check-square"></i></th>
                 <th class="p-4 w-16 text-center">Type</th> 
@@ -559,7 +629,6 @@
                     ? `<input type="text" value="${item.namaItem}" class="input-bare font-bold text-slate-700 text-sm" oninput="updateItem(${index}, 'namaItem', this.value)">`
                     : `<div class="font-bold text-slate-700 text-sm">${item.namaItem}</div>`;
                 
-                // Menampilkan Satuan di sini
                 const infoHtml = item.isCustom 
                     ? `<div class="mt-1"><span class="bg-purple-50 text-purple-600 px-1.5 rounded text-[10px] inline-block">Ad-hoc • ${item.satuan}</span></div>`
                     : `<div class="text-[10px] text-slate-400 mt-1 flex gap-2 items-center">
@@ -572,7 +641,6 @@
                     ? `<button onclick="removeCustomItem(${index})" class="text-slate-300 hover:text-red-500 transition px-2"><i class="fas fa-trash"></i></button>` 
                     : ``;
 
-                // Input Type Produk (Readonly untuk item PO, Editable untuk Manual)
                 const typeInput = (!item.isCustom)
                     ? `<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">${item.typeProduk || "-"}</span>`
                     : `<input type="text" value="${item.typeProduk}" ${disabledAttr} oninput="updateItem(${index}, 'typeProduk', this.value)" class="input-bare text-center text-xs font-bold bg-white">`;
