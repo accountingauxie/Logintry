@@ -67,7 +67,7 @@
 
     /* --- LAYOUT PAGE --- */
     .page { 
-        max-width: 96%; 
+        max-width: 98%; /* Sedikit diperlebar agar tabel muat */
         margin: 32px auto; 
         padding: 0 20px 60px; 
     }
@@ -76,7 +76,7 @@
     .dashboard-header { margin-bottom: 25px; }
     .dashboard-title { font-size: 24px; font-weight: 800; color: #1f2933; margin-bottom: 15px; letter-spacing: -0.5px; }
     
-    /* --- TABS STYLE (NEW FEATURE) --- */
+    /* --- TABS STYLE --- */
     .tabs-container {
       display: flex; gap: 20px; margin-bottom: 20px;
       border-bottom: 1px solid #e2e8f0;
@@ -240,7 +240,7 @@
       width: 100%; overflow-x: auto; border-radius: 8px;
       border: 1px solid var(--ux-border-soft); background: #fff;
     }
-    table { width: 100%; border-collapse: collapse; background: white; }
+    table { width: 100%; border-collapse: collapse; background: white; min-width: 1000px; /* Tambahan min-width */ }
     thead { background: #eef2f7; }
     th {
       padding: 10px 8px; font-size: 12px; font-weight: 600; color: #465166;
@@ -393,21 +393,23 @@
           <thead>
             <tr>
               <th class="sticky-col" style="width:28px;"></th>
-              <th>PO Number</th>
+              <th style="min-width:130px;">PO Number</th>
               
-              <th>Tipe Produk</th>
+              <th style="min-width:90px;">Tipe Produk</th>
               
-              <th>KPC</th>
-              <th>Description</th>
-              <th style="width:70px">Ordered</th>
+              <th style="min-width:100px;">KPC</th>
+              <th style="min-width:200px;">Description</th>
+              <th style="width:80px">Ordered</th>
               
               <th class="confidential-col" style="width:100px;">Price (Ori)</th>
               <th class="confidential-col" style="width:90px;">Disc</th>
               <th class="confidential-col" style="width:100px;">Net Price</th>
-              <th style="width:70px">Received</th>
-              <th style="width:70px">Remaining</th>
-              <th style="width:80px">Qty Receipt</th>
-              <th style="width:60px">UoM</th>
+              <th style="width:80px">Received</th>
+              <th style="width:80px">Remaining</th>
+              <th style="width:90px">Qty Receipt</th>
+              
+              <th style="width:80px">UoM</th>
+              
               <th style="width:50px">Split</th>
               <th style="width:30px"></th>
             </tr>
@@ -429,7 +431,7 @@
 </div>
 
 <script>
-  // UPDATE URL KE SCRIPT TERBARU
+  // UPDATE URL KE SCRIPT TERBARU ANDA
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIyzsDC-Y-euzQxfGxBz-yEw3Vcy4Bsff1wG_3sj2sJ_5oRvR4CdJCblsM1owt33hi7A/exec";
 
   let currentINV = "";
@@ -727,7 +729,6 @@
       });
     }
     
-    // Hilangkan border merah saat user mulai mengetik KPC
     const kpcInput = tr.querySelector(".kpc-new");
     if(kpcInput) {
         kpcInput.addEventListener('input', function(){ this.style.border = ""; });
