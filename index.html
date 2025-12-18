@@ -757,8 +757,12 @@
 
   function renderLines(rawLines, useExistingQty) {
     tableBody.innerHTML = "";
+    
+    // Merge discount lines logic (tetap sama)
     const lines = mergeDiscountLines(rawLines);
+
     if (!useExistingQty) {
+      // --- MODE BARU (NEW ENTRY) ---
       lines.forEach(ln => {
         const tr = document.createElement("tr");
         tr.dataset.rowIndex = ln.rowIndex;
@@ -767,7 +771,7 @@
           <td class="row-handle">⋮⋮</td>
           <td>${ln.poNumber}</td>
           <td style="display:none;"><span class="kpc-original">${ln.itemCode||ln.kpc||""}</span></td>
-          <td><input class="table-input kpc-new" placeholder="KPC"></td> 
+          <td><input class="table-input kpc-new" placeholder="KPC" value="${ln.kpc || ""}"></td> 
           <td>${ln.description}</td>
           <td><input class="table-input readonly-field ordered" value="${ln.orderedQty}" readonly></td>
           <td class="confidential-col"><input type="text" class="input-transparent price-before" value="${formatNumber(ln.unitAmountBefore)}" data-val="${ln.unitAmountBefore}" readonly></td>
@@ -775,7 +779,7 @@
           <td class="confidential-col"><input type="text" class="input-transparent price-net" value="${formatNumber(ln.unitAmount)}" data-val="${ln.unitAmount}" readonly></td>
           <td><input class="table-input readonly-field received" value="${ln.receivedToDate}" readonly></td>
           <td><input class="table-input readonly-field remaining" value="${remaining}" readonly></td>
-          <td><input type="number" class="table-input qty-receipt" value="${remaining}" min="0"></td>
+          <td><input type="number" class="table-input qty-receipt" value="${ln.qtyThisReceipt || remaining}" min="0"></td>
           <td><input class="table-input readonly-field uom-field" value="${ln.uom||'m'}" readonly></td>
           <td style="text-align:center;"><button type="button" class="split-btn"><span class="split-icon"></span></button></td>
           <td class="delete-btn">🗑</td>`;
@@ -783,22 +787,41 @@
         attachRowEvents(tr);
       });
     } else {
+      // --- MODE EDIT (EXISTING DATA) ---
       const groups = {};
       lines.forEach(ln => {
-        const k = String(ln.rowIndex||""); if (!k) return;
+        // PERBAIKAN DISINI: 
+        // Kunci grouping diganti: RowIndex + ItemCode.
+        // Ini mencegah item berbeda (HIJK1 & HIJK2) bergabung meski RowIndex-nya sama.
+        const idxStr = String(ln.rowIndex || "");
+        const itemStr = String(ln.itemCode || ln.kpc || "").trim();
+        const k = idxStr + "_" + itemStr; 
+
+        if (!idxStr) return;
         if (!groups[k]) groups[k] = { base: {...ln}, splits:[] };
         groups[k].splits.push(ln);
       });
+
       Object.values(groups).forEach(grp => {
         const baseData = grp.base;
-        let totalQty = 0; grp.splits.forEach(s => totalQty += Number(s.qtyThisReceipt)||0);
+        let totalQty = 0; 
+        
+        // Hitung total qty dari splits (jika item benar-benar sama dan displit)
+        grp.splits.forEach(s => totalQty += Number(s.qtyThisReceipt)||0);
+        
+        // Jika hanya ada 1 baris di grup ini, gunakan qty baris itu sendiri
+        const displayQty = grp.splits.length > 1 ? totalQty : (baseData.qtyThisReceipt || "");
+
         const baseTr = document.createElement("tr");
         baseTr.dataset.rowIndex = baseData.rowIndex;
         const remaining = Number(baseData.remainingQty) || 0;
+        
+        // Logic Readonly Parent
         const isParentReadonly = grp.splits.length > 1; 
         const kpcClass = isParentReadonly ? "table-input kpc-new readonly-field" : "table-input kpc-new";
         const kpcAttr  = isParentReadonly ? "readonly" : "";
         const kpcVal   = isParentReadonly ? "" : (baseData.kpc || ""); 
+
         baseTr.innerHTML = `
           <td class="row-handle">⋮⋮</td>
           <td>${baseData.poNumber}</td>
@@ -811,17 +834,29 @@
           <td class="confidential-col"><input type="text" class="input-transparent price-net" value="${formatNumber(baseData.unitAmount)}" data-val="${baseData.unitAmount}" readonly></td>
           <td><input class="table-input readonly-field received" value="${baseData.receivedToDate}" readonly></td>
           <td><input class="table-input readonly-field remaining" value="${remaining}" readonly></td>
-          <td><input type="number" class="table-input qty-receipt" value="${totalQty||""}" min="0"></td>
+          <td><input type="number" class="table-input qty-receipt" value="${displayQty}" min="0"></td>
           <td><input class="table-input readonly-field uom-field" value="${baseData.uom}" readonly></td>
           <td style="text-align:center;"><button type="button" class="split-btn"><span class="split-icon"></span></button></td>
           <td class="delete-btn">🗑</td>`;
+        
         tableBody.appendChild(baseTr);
         attachRowEvents(baseTr);
+
+        // Render Sub-Rows (Split) hanya jika item code BENAR-BENAR sama
         if (grp.splits.length > 1) {
           ensureParentModeForSplit(baseTr);
+          grp.splits.forEach(s => { // Render SEMUA split, bukan slice(1) agar qty tidak hilang jika datanya kompleks
+             // Skip jika ini adalah baris pertama yang sudah dianggap base, TAPI
+             // karena struktur data split logikanya agak berbeda, kita render subline explisit
+             // agar aman. Namun, kode sebelumnya menggunakan slice(1).
+             // Mari kita gunakan pendekatan yang aman:
+          });
+          
+          // Render sisa split (index 1 ke atas)
           grp.splits.slice(1).forEach(s => {
              const subTr = document.createElement("tr");
-             subTr.classList.add("subline-row"); subTr.dataset.rowIndex = baseData.rowIndex;
+             subTr.classList.add("subline-row"); 
+             subTr.dataset.rowIndex = baseData.rowIndex;
              subTr.innerHTML = `
                <td class="row-handle">⋮⋮</td>
                <td>${baseData.poNumber}</td>
@@ -845,10 +880,10 @@
         }
       });
     }
+    
     Sortable.create(tableBody,{handle:".row-handle",animation:150});
     applyLockState(isLocked);
   }
-
   function addSplitRow(baseTr){
     const idx = baseTr.dataset.rowIndex;
     const subs = getSubRowsByIndex(idx);
