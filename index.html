@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Receiving PO Entry V2 (Filter Added)</title>
+  <title>Receiving PO Entry V2 (Full Layout)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
@@ -62,14 +62,17 @@
       color: #00838f; background-color: #e0f7fa; border-color: #b2ebf2;
     }
 
-    /* --- LAYOUT PAGE --- */
-    .page { max-width: 1000px; margin: 32px auto; padding: 0 20px 60px; }
+    /* --- LAYOUT PAGE (FULL WIDTH UPDATE) --- */
+    .page { 
+        max-width: 96%; /* Diperlebar jadi 96% layar */
+        margin: 32px auto; 
+        padding: 0 20px 60px; 
+    }
 
     /* --- DASHBOARD STYLES --- */
     .dashboard-header { margin-bottom: 25px; }
     .dashboard-title { font-size: 24px; font-weight: 800; color: #1f2933; margin-bottom: 15px; letter-spacing: -0.5px; }
     
-    /* FILTER TABS (NEW) */
     .filter-section { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
     .filter-btn {
       background: white; border: 1px solid #e2e8f0; color: #64748b;
@@ -82,9 +85,7 @@
       box-shadow: 0 2px 5px rgba(0, 119, 228, 0.3);
     }
 
-    .dashboard-search {
-      position: relative; width: 100%;
-    }
+    .dashboard-search { position: relative; width: 100%; }
     .dashboard-search input {
       width: 100%; padding: 14px 20px 14px 45px;
       border-radius: 10px; border: 1px solid #e2e8f0;
@@ -101,62 +102,40 @@
     }
 
     /* CARD LIST STYLE */
-    .cards-list-container {
-      display: flex; flex-direction: column; gap: 16px; margin-top: 25px;
-    }
+    .cards-list-container { display: flex; flex-direction: column; gap: 16px; margin-top: 25px; }
 
     .inv-list-card {
-      background: white;
-      border-radius: 10px;
-      border: 1px solid #eef0f3;
-      border-left: 6px solid var(--ux-yellow-accent); /* Default Pending */
-      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-      cursor: pointer;
+      background: white; border-radius: 10px; border: 1px solid #eef0f3;
+      border-left: 6px solid var(--ux-yellow-accent);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
-      overflow: hidden; 
-      position: relative;
+      overflow: hidden; position: relative;
     }
-    
-    /* Dynamic Border Colors based on Status */
     .inv-list-card.status-pending { border-left-color: var(--ux-yellow-accent); }
     .inv-list-card.status-partial { border-left-color: var(--ux-blue-accent); }
     .inv-list-card.status-completed { border-left-color: var(--ux-green-accent); }
 
     .inv-list-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      border-top-color: #e2e8f0; border-right-color: #e2e8f0; border-bottom-color: #e2e8f0;
+      transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      border-color: #e2e8f0;
     }
 
-    .card-body {
-      padding: 18px 22px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
+    .card-body { padding: 18px 22px; display: flex; justify-content: space-between; align-items: flex-start; }
     .card-info { flex: 1; padding-right: 15px; }
-    
     .card-main-title {
-      font-size: 16px; font-weight: 700; color: #1e2933;
-      margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+      font-size: 16px; font-weight: 700; color: #1e2933; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
     }
     .po-tag { font-weight: 400; color: #64748b; font-size: 14px; }
-
     .card-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
-    .meta-row {
-      display: flex; align-items: center; gap: 8px; 
-      font-size: 13px; color: #556; font-weight: 500;
-    }
+    .meta-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #556; font-weight: 500; }
     .meta-row svg { width: 14px; height: 14px; color: #889; }
-
     .item-preview-section {
       background: #f8fafc; border-radius: 6px; padding: 8px 10px;
       font-size: 12px; color: #475569; border: 1px dashed #cbd5e1;
       line-height: 1.4; margin-top: 8px; display: inline-block; width: 100%;
     }
     .item-preview-label { font-weight: 700; color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-bottom: 2px; display: block;}
-
-    /* Status Badges */
+    
     .status-badge {
       font-size: 11px; font-weight: 700; padding: 5px 12px;
       border-radius: 20px; white-space: nowrap; letter-spacing: 0.3px;
@@ -166,19 +145,13 @@
     .badge-completed { background: #d1fae5; color: #065f46; }
 
     .card-footer-action {
-      background: #f0f7ff; color: var(--ux-blue);
-      font-weight: 600; font-size: 13px;
-      text-align: center; padding: 10px;
-      border-top: 1px solid #e0f0ff;
-      transition: background 0.2s;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
+      background: #f0f7ff; color: var(--ux-blue); font-weight: 600; font-size: 13px;
+      text-align: center; padding: 10px; border-top: 1px solid #e0f0ff;
+      transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .inv-list-card:hover .card-footer-action { background: #e0efff; }
-
     .empty-state {
-      text-align: center; padding: 50px 20px;
-      color: #94a3b8; font-style: italic; background: #fff; border-radius: 12px;
-      border: 1px dashed #cbd5e1;
+      text-align: center; padding: 50px 20px; color: #94a3b8; font-style: italic; background: #fff; border-radius: 12px; border: 1px dashed #cbd5e1;
     }
 
     /* --- FORM STYLES --- */
@@ -198,7 +171,8 @@
     .card-title { font-size: 21px; font-weight: 600; margin-bottom: 20px; color: var(--ux-text-main); }
 
     .row-flex {
-      display: grid; grid-template-columns: 1.1fr 1.5fr 1.3fr 1.7fr;
+      display: grid; 
+      grid-template-columns: 1.1fr 1.5fr 1.5fr 1.5fr; /* Adjusted Grid */
       gap: 20px; align-items: end; margin-bottom: 12px;
     }
     label { font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block; color: #445; }
@@ -207,17 +181,13 @@
       border: 1px solid var(--ux-border) !important; border-radius: 6px !important;
       background: white !important; width: 100%;
     }
-    #selectedInvDisplay {
+    
+    /* READONLY DISPLAY STYLES */
+    #selectedInvDisplay, #poNumberDisplay {
         background-color: #f1f5f9 !important;
         font-weight: 700; color: #334155; cursor: default;
     }
 
-    .choices { margin-bottom: 0 !important; width: 100% !important; }
-    .choices__inner {
-      height: 34px !important; min-height: 34px !important; padding: 4px 8px !important;
-      border: 1px solid var(--ux-border) !important; border-radius: 6px !important;
-      background: white !important; font-size: 13px !important; display: flex !important; align-items: center !important;
-    }
     .row-flex > div { display: flex; flex-direction: column; }
     @media (max-width: 900px) { .row-flex { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 640px) { .row-flex { grid-template-columns: 1fr; } }
@@ -245,13 +215,13 @@
     table { width: 100%; border-collapse: collapse; background: white; }
     thead { background: #eef2f7; }
     th {
-      padding: 8px 8px; font-size: 12px; font-weight: 600; color: #465166;
+      padding: 10px 8px; font-size: 12px; font-weight: 600; color: #465166;
       text-align: left; white-space: nowrap; border-bottom: 1px solid var(--ux-border-soft);
     }
     th.sticky-col { position: sticky; left: 0; background: #eef2f7; z-index: 2; }
     td {
-      padding: 6px 7px; border-bottom: 1px solid #f1f3f6;
-      vertical-align: middle; font-size: 12.5px;
+      padding: 8px 7px; border-bottom: 1px solid #f1f3f6; /* Padding agak dibesarkan utk full width */
+      vertical-align: middle; font-size: 13px;
     }
     tbody tr:nth-child(even) { background: #fafbff; }
     tbody tr:hover { background: #f2f6ff; }
@@ -260,15 +230,15 @@
     .subline-row td:first-child { padding-left: 22px !important; }
     .subline-label { font-size: 11px; color: #6b7280; font-style: italic; margin-right: 4px; }
     .table-input {
-      width: 100%; padding: 5px 6px; font-size: 12.5px;
+      width: 100%; padding: 6px 8px; font-size: 13px;
       border: 1px solid #cfd7e3; border-radius: 6px; background: white;
     }
     .readonly-field { background: #f3f4f6 !important; border-color: #d3d7e3 !important; color: #555 !important; }
     .input-transparent { background: transparent !important; border: none !important; font-weight: 600; width: 100%; text-align: right; }
     .kpc-original { font-weight: 600; color: #273b74; font-size: 12.5px; }
-    .delete-btn { cursor: pointer; color: var(--ux-danger); font-size: 15px; text-align: center; }
+    .delete-btn { cursor: pointer; color: var(--ux-danger); font-size: 16px; text-align: center; padding:0 8px; }
     .split-btn {
-      padding: 3px 8px; border-radius: 14px; border: 1px solid var(--ux-border);
+      padding: 4px 10px; border-radius: 14px; border: 1px solid var(--ux-border);
       background: var(--ux-blue-soft); cursor: pointer; font-size: 11px;
       display: inline-flex; align-items: center; justify-content: center; gap: 4px;
     }
@@ -287,9 +257,9 @@
       margin-top: 6px; resize: vertical;
     }
     .actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-    .secondary-btn { padding: 8px 14px; background: #ecf1f8; border: 1px solid #cfd7e3; border-radius: 6px; cursor: pointer; }
+    .secondary-btn { padding: 9px 18px; background: #ecf1f8; border: 1px solid #cfd7e3; border-radius: 6px; cursor: pointer; font-weight:600; color:#334; }
     .submit-btn {
-      padding: 9px 22px; background: var(--ux-blue); border-radius: 6px;
+      padding: 10px 28px; background: var(--ux-blue); border-radius: 6px;
       border: none; color: white; font-weight: 600; cursor: pointer;
     }
     .submit-btn:disabled { opacity: .5; cursor: not-allowed; }
@@ -303,14 +273,6 @@
       border-top-color: #1a73e8; animation: spin .85s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .sheet-bottom-wrapper { margin-top: 18px; display: flex; gap: 12px; }
-    .sheet-bottom-btn {
-      background: #eef4ff; border: 1px solid #cfe0ff; padding: 7px 14px;
-      border-radius: 6px; font-size: 13px; font-weight: 600; color: #1f5ddb;
-      text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-    }
-    .sheet-bottom-btn:hover { background: #e2ebff; }
-    .sheet-icon { width: 18px; height: 18px; }
   </style>
 </head>
 
@@ -374,8 +336,12 @@
            <input type="text" id="selectedInvDisplay" class="input-box" readonly>
         </div>
 
+        <div>
+            <label>PO Number</label>
+            <input type="text" id="poNumberDisplay" class="input-box" readonly placeholder="-">
+        </div>
+
         <div><label>Receiving ID</label><input type="text" id="receivingId" class="input-box" readonly></div>
-        <div><label>Edit Existing (Optional)</label><select id="editSelect" class="input-box"><option value="">— New Receiving Entry —</option></select></div>
       </div>
 
       <div id="lockWarning" class="lock-warning">⚠ This Receiving Entry is <strong>LOCKED</strong> and cannot be edited.</div>
@@ -418,13 +384,6 @@
       <label style="margin-top:18px;">Additional Notes</label>
       <textarea id="notes"></textarea>
 
-      <div class="sheet-bottom-wrapper">
-        <a href="https://docs.google.com/spreadsheets/d/1waLwJDMdKHd7R2BMMtkDobfcTn3B6YRk0P7304nvH7I/edit?gid=1127389013" target="_blank" class="sheet-bottom-btn">
-          <svg class="sheet-icon" viewBox="0 0 24 24"><path fill="#0F9D58" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path fill="#FFF" d="M7 7h10v2H7zM7 11h10v2H7zM7 15h7v2H7z"/></svg>
-          Open Google Sheet
-        </a>
-      </div>
-
       <div class="actions-row">
         <button class="secondary-btn" type="button" onclick="reloadINV()">Reload INV</button>
         <button id="submitBtn" class="submit-btn" type="button" onclick="submitReceiving()">Submit Receiving</button>
@@ -438,11 +397,10 @@
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwK6zdHelCg07A2WgB8tzMFJtiJpAgLE6ITcZXc4AM1cHIoO6zYmEUb4lJUCQEuFiVNXw/exec";
 
   let currentINV = "";
-  let editChoices = null;
   let isLocked = false;
   let isEditMode = false;
   let allInvoices = []; 
-  let currentStatusFilter = "All"; // Default Filter
+  let currentStatusFilter = "All"; 
 
   const viewDashboard = document.getElementById("view-dashboard");
   const viewForm = document.getElementById("view-form");
@@ -451,8 +409,10 @@
   const tableBody = document.getElementById("tableBody");
   const receivingDate = document.getElementById("receivingDate");
   const receivingId = document.getElementById("receivingId");
+  
+  // Input References
   const selectedInvDisplay = document.getElementById("selectedInvDisplay");
-  const editSelect = document.getElementById("editSelect");
+  const poNumberDisplay = document.getElementById("poNumberDisplay");
   const notes = document.getElementById("notes");
   const submitBtn = document.getElementById("submitBtn");
   const lockWarning = document.getElementById("lockWarning");
@@ -464,11 +424,10 @@
     return Number(num).toLocaleString('id-ID');
   }
 
-  // --- NAVIGATION & FILTER LOGIC ---
+  // --- NAVIGATION ---
   function showDashboard() {
     viewDashboard.classList.remove("hidden");
     viewForm.classList.add("hidden");
-    if(isEditMode && editChoices) editChoices.setChoiceByValue("");
     enterNewMode();
   }
 
@@ -480,16 +439,12 @@
     loadInvDetail(invNumber);
   }
 
-  // Set Filter saat tombol diklik
   function setFilter(status) {
     currentStatusFilter = status;
-    
-    // Update tombol active
     document.querySelectorAll(".filter-btn").forEach(btn => {
       btn.classList.remove("active");
       if(btn.dataset.status === status) btn.classList.add("active");
     });
-
     filterCards();
   }
 
@@ -499,14 +454,12 @@
       const res = await fetch(`${SCRIPT_URL}?action=getinvlist`);
       const list = await res.json();
       allInvoices = list; 
-      // Saat awal load, filter cards
       filterCards();
     } catch (e) {
       invoiceGrid.innerHTML = `<div class="empty-state">Error loading invoices: ${e.message}</div>`;
     }
   }
 
-  // Fungsi Render dengan Logic Status
   function renderCards(listData) {
     invoiceGrid.innerHTML = "";
     if (!listData || listData.length === 0) {
@@ -519,28 +472,35 @@
       const invDate = item.invoiceDate || "-"; 
       const poNum = item.poNumber ? `/ ${item.poNumber}` : ""; 
       const itemsPreview = item.items || "Click view details to see items...";
-      
-      // LOGIC STATUS (Default to Pending if null)
       const rawStatus = item.status || "Pending"; 
       
-      // Mapping Status ke Tampilan
       let badgeClass = "badge-pending";
       let borderClass = "status-pending";
       let statusLabel = "Belum Diterima";
 
       if (rawStatus === "Partial") {
-         badgeClass = "badge-partial"; 
-         borderClass = "status-partial";
-         statusLabel = "Diterima Sebagian";
+         badgeClass = "badge-partial"; borderClass = "status-partial"; statusLabel = "Diterima Sebagian";
       } else if (rawStatus === "Completed") {
-         badgeClass = "badge-completed";
-         borderClass = "status-completed";
-         statusLabel = "Sudah Diterima";
+         badgeClass = "badge-completed"; borderClass = "status-completed"; statusLabel = "Sudah Diterima";
       }
 
       const card = document.createElement("div");
       card.className = `inv-list-card ${borderClass}`;
-      card.onclick = () => showForm(item.invNumber);
+      card.onclick = () => {
+         // Jika status Partial/Completed, langsung load mode Edit
+         if(rawStatus === "Partial" || rawStatus === "Completed") {
+            // Kita butuh receivingId dari item. Jika API list belum return receivingId,
+            // kita harus handle. Asumsi: jika status != pending, API getinvlist return receivingId
+            if(item.receivingId) {
+                loadReceivingEntry(item.receivingId);
+            } else {
+                // Fallback: coba load as new entry dulu (atau alert)
+                showForm(item.invNumber);
+            }
+         } else {
+            showForm(item.invNumber);
+         }
+      };
 
       card.innerHTML = `
         <div class="card-body">
@@ -548,7 +508,6 @@
             <div class="card-main-title">
                ${item.invNumber} <span class="po-tag">${poNum}</span>
             </div>
-            
             <div class="card-meta">
               <div class="meta-row">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -559,16 +518,13 @@
                 <span>${invDate}</span>
               </div>
             </div>
-
             <div class="item-preview-section">
                <span class="item-preview-label">List items yang dibeli:</span>
                ${itemsPreview}
             </div>
           </div>
-
           <div class="status-badge ${badgeClass}">${statusLabel}</div>
         </div>
-
         <div class="card-footer-action">
            View Details 
            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
@@ -578,30 +534,20 @@
     });
   }
 
-  // --- FILTERING LOGIC (Combined Search + Tabs) ---
   function filterCards() {
     const query = document.getElementById("searchInput").value.toLowerCase();
-    
     const filtered = allInvoices.filter(item => {
-      // 1. Text Search Check
       const term = (item.invNumber + " " + (item.supplier||"") + " " + (item.poNumber||"")).toLowerCase();
       const matchText = term.includes(query);
-
-      // 2. Status Filter Check
       let matchStatus = true;
-      const itemStatus = item.status || "Pending"; // Default Pending
-
-      if (currentStatusFilter !== "All") {
-         matchStatus = (itemStatus === currentStatusFilter);
-      }
-
+      const itemStatus = item.status || "Pending"; 
+      if (currentStatusFilter !== "All") { matchStatus = (itemStatus === currentStatusFilter); }
       return matchText && matchStatus;
     });
-
     renderCards(filtered);
   }
 
-  // --- FORM LOGIC (Keeping Existing Logic) ---
+  // --- FORM LOGIC ---
   function mergeDiscountLines(rawLines) {
     const mainItems = []; const discountMap = {}; 
     rawLines.forEach(ln => {
@@ -886,7 +832,7 @@
          hideLoading();
          if(res.status==="success") {
            alert("Saved: " + payload.receivingId);
-           await Promise.all([ loadNextReceivingId(), loadInvListAndRender(), loadEditableReceivingList() ]);
+           await Promise.all([ loadNextReceivingId(), loadInvListAndRender() ]);
            showDashboard(); tableBody.innerHTML="";
            ["summarySupplier","summaryDate","summaryStatus","summaryTotalOrdered","summaryTotalReceived","summaryTotalRemaining"].forEach(id=>document.getElementById(id).textContent="-");
          } else { alert("Error: "+res.message); }
@@ -907,39 +853,44 @@
       receivingId.value = nextId;
     } catch(e) {}
   }
-  async function loadEditableReceivingList() {
-    const res = await fetch(`${SCRIPT_URL}?action=geteditablelist`);
-    const list = await res.json();
-    if (editChoices) editChoices.destroy();
-    editSelect.innerHTML = `<option value="">— New Receiving Entry —</option>`;
-    list.forEach(i => {
-      const op = document.createElement("option"); op.value = i.receivingId; op.textContent = `${i.receivingId} — ${i.invNumber}`; editSelect.appendChild(op);
-    });
-    editChoices = new Choices("#editSelect", { searchEnabled:true, itemSelectText:"", shouldSort:false });
-    editSelect.addEventListener("change", () => {
-      if (!editSelect.value) enterNewMode(); else loadReceivingEntry(editSelect.value);
-    });
-  }
+
   async function loadInvDetail(inv) {
     if(!inv) return; showLoading();
     try {
       const res = await fetch(`${SCRIPT_URL}?action=getinvdetail&invNumber=${encodeURIComponent(inv)}`);
       const data = await res.json();
-      currentINV = inv; renderSummary(data.header); renderLines(data.lines, false); applyLockState(false);
+      currentINV = inv; 
+      renderSummary(data.header); 
+      // UPDATE PO DISPLAY (Jika backend kirim header.poNumber)
+      poNumberDisplay.value = data.header.poNumber || "-"; 
+      
+      renderLines(data.lines, false); applyLockState(false);
     } finally { hideLoading(); }
   }
+
   async function loadReceivingEntry(id) {
-    if(!id) return; viewDashboard.classList.add("hidden"); viewForm.classList.remove("hidden"); showLoading();
+    if(!id) return; 
+    viewDashboard.classList.add("hidden"); 
+    viewForm.classList.remove("hidden"); 
+    showLoading();
     try {
       const res = await fetch(`${SCRIPT_URL}?action=loadreceiving&id=${encodeURIComponent(id)}`);
       const data = await res.json();
       enterEditMode();
-      currentINV = data.invNumber; selectedInvDisplay.value = data.invNumber; receivingId.value = data.receivingId;
-      if (data.receivingDate) receivingDate.value = data.receivingDate; notes.value = data.notes||"";
-      renderSummary(data.header); document.getElementById("summaryStatus").textContent = data.locked ? "LOCKED" : "Open";
+      currentINV = data.invNumber; 
+      selectedInvDisplay.value = data.invNumber; 
+      receivingId.value = data.receivingId;
+      if (data.receivingDate) receivingDate.value = data.receivingDate; 
+      notes.value = data.notes||"";
+      renderSummary(data.header); 
+      // UPDATE PO DISPLAY FOR EXISTING
+      poNumberDisplay.value = data.header.poNumber || "-"; 
+
+      document.getElementById("summaryStatus").textContent = data.locked ? "LOCKED" : "Open";
       renderLines(data.lines, true); applyLockState(data.locked);
     } finally { hideLoading(); }
   }
+
   function renderSummary(h) {
     document.getElementById("summarySupplier").textContent = h.supplier||"-";
     document.getElementById("summaryDate").textContent = h.invoiceDate||"-";
@@ -948,27 +899,33 @@
     document.getElementById("summaryTotalReceived").textContent = h.totalReceived?? "-";
     document.getElementById("summaryTotalRemaining").textContent = h.totalRemaining?? "-";
   }
+
   function applyLockState(locked) {
     isLocked = !!locked; const dis = !!locked;
     document.querySelectorAll(".qty-receipt, .kpc-new").forEach(e=>e.disabled=dis);
     receivingDate.disabled = dis; notes.disabled = dis; submitBtn.disabled = dis;
     lockWarning.style.display = locked ? "block" : "none";
   }
+
   function enterNewMode() {
-    isEditMode = false; currentINV = ""; selectedInvDisplay.value = "";
-    if (editChoices) editChoices.setChoiceByValue("");
+    isEditMode = false; 
+    currentINV = ""; 
+    selectedInvDisplay.value = "";
+    poNumberDisplay.value = "";
+    
     applyLockState(false); loadNextReceivingId();
     tableBody.innerHTML=""; ["summarySupplier","summaryDate","summaryStatus"].forEach(id=>document.getElementById(id).textContent="-");
   }
+
   function reloadINV() {
-    if (isEditMode && editSelect.value) loadReceivingEntry(editSelect.value);
-    else if (currentINV) loadInvDetail(currentINV); else alert("No invoice selected");
+    if (currentINV) loadInvDetail(currentINV); 
+    else alert("No invoice selected");
   }
 
   window.addEventListener("DOMContentLoaded", async () => {
     showLoading();
     const t = new Date(); receivingDate.value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
-    await Promise.all([ loadNextReceivingId(), loadInvListAndRender(), loadEditableReceivingList() ]);
+    await Promise.all([ loadNextReceivingId(), loadInvListAndRender() ]);
     hideLoading();
   });
 </script>
