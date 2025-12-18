@@ -361,7 +361,7 @@
             <tr>
               <th class="sticky-col" style="width:28px;"></th>
               <th>PO Number</th>
-              <th>Item Code</th>
+              <th style="display:none;">Item Code</th>
               <th>KPC</th>
               <th>Description</th>
               <th style="width:70px">Ordered</th>
@@ -692,8 +692,13 @@ function filterCards() {
         const kpcAttr  = isParentReadonly ? "readonly" : "";
         const kpcVal   = isParentReadonly ? "" : (baseData.kpc || ""); 
         baseTr.innerHTML = `
-          <td class="row-handle">⋮⋮</td>
-          <td>${baseData.poNumber}</td>
+<td class="row-handle">⋮⋮</td>
+<td>${baseData.poNumber}</td>
+
+<td style="display:none;"><span class="kpc-original">${baseData.itemCode||""}</span></td>
+
+<td><input class="${kpcClass}" placeholder="KPC" value="${kpcVal}" ${kpcAttr}></td>
+<td>${baseData.description}</td>
           <td><span class="kpc-original">${baseData.itemCode||""}</span></td>
           <td><input class="${kpcClass}" placeholder="KPC" value="${kpcVal}" ${kpcAttr}></td>
           <td>${baseData.description}</td>
@@ -715,8 +720,12 @@ function filterCards() {
              const subTr = document.createElement("tr");
              subTr.classList.add("subline-row"); subTr.dataset.rowIndex = baseData.rowIndex;
              subTr.innerHTML = `
-               <td class="row-handle">⋮⋮</td>
-               <td>${baseData.poNumber}</td>
+             <td class="row-handle">⋮⋮</td>
+<td>${baseData.poNumber}</td>
+
+<td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${s.itemCode||baseData.itemCode}</span></td>
+
+<td><input class="table-input kpc-new" placeholder="KPC" value="${s.kpc||""}"></td>
                <td><span class="subline-label">↳ Split</span><span class="kpc-original">${s.itemCode||baseData.itemCode}</span></td>
                <td><input class="table-input kpc-new" placeholder="KPC" value="${s.kpc||""}"></td>
                <td>${baseData.description}</td>
@@ -764,7 +773,11 @@ function filterCards() {
     subTr.classList.add("subline-row"); subTr.dataset.rowIndex = idx;
     subTr.innerHTML = `
       <td class="row-handle">⋮⋮</td>
-      <td>${po}</td>
+<td>${po}</td>
+
+<td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
+
+<td><input class="table-input kpc-new" placeholder="KPC"></td>
       <td><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
       <td><input class="table-input kpc-new" placeholder="KPC"></td>
       <td>${desc}</td>
