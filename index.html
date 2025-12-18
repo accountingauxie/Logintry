@@ -67,7 +67,7 @@
 
     /* --- LAYOUT PAGE --- */
     .page { 
-        max-width: 98%; /* Sedikit diperlebar agar tabel muat */
+        max-width: 98%; 
         margin: 32px auto; 
         padding: 0 20px 60px; 
     }
@@ -240,7 +240,7 @@
       width: 100%; overflow-x: auto; border-radius: 8px;
       border: 1px solid var(--ux-border-soft); background: #fff;
     }
-    table { width: 100%; border-collapse: collapse; background: white; min-width: 1000px; /* Tambahan min-width */ }
+    table { width: 100%; border-collapse: collapse; background: white; min-width: 1000px; }
     thead { background: #eef2f7; }
     th {
       padding: 10px 8px; font-size: 12px; font-weight: 600; color: #465166;
@@ -250,6 +250,7 @@
     td {
       padding: 8px 7px; border-bottom: 1px solid #f1f3f6;
       vertical-align: middle; font-size: 13px;
+      text-align: left; /* PERBAIKAN: Default Rata Kiri */
     }
     tbody tr:nth-child(even) { background: #fafbff; }
     tbody tr:hover { background: #f2f6ff; }
@@ -260,9 +261,13 @@
     .table-input {
       width: 100%; padding: 6px 8px; font-size: 13px;
       border: 1px solid #cfd7e3; border-radius: 6px; background: white;
+      text-align: left; /* Input Teks Rata Kiri */
     }
+    /* Input Angka Tetap Rata Kanan (Opsional, tapi biasanya angka lebih enak dibaca rata kanan) */
+    input[type="number"], .input-transparent { text-align: right; }
+
     .readonly-field { background: #f3f4f6 !important; border-color: #d3d7e3 !important; color: #555 !important; }
-    .input-transparent { background: transparent !important; border: none !important; font-weight: 600; width: 100%; text-align: right; }
+    .input-transparent { background: transparent !important; border: none !important; font-weight: 600; width: 100%; }
     .kpc-original { font-weight: 600; color: #273b74; font-size: 12.5px; }
     .delete-btn { cursor: pointer; color: var(--ux-danger); font-size: 16px; text-align: center; padding:0 8px; }
     .split-btn {
@@ -399,16 +404,16 @@
               
               <th style="min-width:100px;">KPC</th>
               <th style="min-width:200px;">Description</th>
-              <th style="width:80px">Ordered</th>
+              <th style="width:80px; text-align:right;">Ordered</th>
               
-              <th class="confidential-col" style="width:100px;">Price (Ori)</th>
-              <th class="confidential-col" style="width:90px;">Disc</th>
-              <th class="confidential-col" style="width:100px;">Net Price</th>
-              <th style="width:80px">Received</th>
-              <th style="width:80px">Remaining</th>
-              <th style="width:90px">Qty Receipt</th>
+              <th class="confidential-col" style="width:100px; text-align:right;">Price (Ori)</th>
+              <th class="confidential-col" style="width:90px; text-align:right;">Disc</th>
+              <th class="confidential-col" style="width:100px; text-align:right;">Net Price</th>
+              <th style="width:80px; text-align:right;">Received</th>
+              <th style="width:80px; text-align:right;">Remaining</th>
+              <th style="width:90px; text-align:right;">Qty Receipt</th>
               
-              <th style="width:80px">UoM</th>
+              <th style="width:80px;">UoM</th>
               
               <th style="width:50px">Split</th>
               <th style="width:30px"></th>
@@ -729,6 +734,7 @@
       });
     }
     
+    // Hilangkan border merah saat user mulai mengetik KPC
     const kpcInput = tr.querySelector(".kpc-new");
     if(kpcInput) {
         kpcInput.addEventListener('input', function(){ this.style.border = ""; });
