@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Receiving PO Entry V2 (Card Dashboard)</title>
+  <title>Receiving PO Entry V2 (List View)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
@@ -19,13 +19,14 @@
       --ux-text-main: #1f2933;
       --ux-text-sub: #55627a;
       --ux-danger: #d33;
+      --ux-yellow-accent: #fbbf24; /* Warna Garis Kuning */
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0; padding: 0;
       background: var(--ux-bg);
-      font-family: "Segoe UI", Roboto, sans-serif;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       font-size: 13px; color: #333;
     }
 
@@ -58,60 +59,121 @@
     .nav-item.highlight {
       color: #00838f; background-color: #e0f7fa; border-color: #b2ebf2;
     }
-    .nav-item.highlight:hover { background-color: #b2ebf2; }
 
     /* --- LAYOUT PAGE --- */
-    .page { max-width: 1400px; margin: 32px auto; padding: 0 20px 40px; }
+    .page { max-width: 1000px; margin: 32px auto; padding: 0 20px 60px; }
 
-    /* --- DASHBOARD STYLES (NEW) --- */
+    /* --- DASHBOARD STYLES (LIST VIEW) --- */
     .dashboard-header { margin-bottom: 25px; }
-    .dashboard-title { font-size: 22px; font-weight: 700; color: #1f2933; margin-bottom: 15px; }
+    .dashboard-title { font-size: 24px; font-weight: 800; color: #1f2933; margin-bottom: 15px; letter-spacing: -0.5px; }
     
     .dashboard-search {
-      position: relative; max-width: 600px;
+      position: relative; width: 100%;
     }
     .dashboard-search input {
-      width: 100%; padding: 12px 20px 12px 45px;
-      border-radius: 8px; border: 1px solid #e2e8f0;
+      width: 100%; padding: 14px 20px 14px 45px;
+      border-radius: 10px; border: 1px solid #e2e8f0;
       background: white; font-size: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: all 0.2s;
     }
     .dashboard-search input:focus {
       outline: none; border-color: var(--ux-blue);
       box-shadow: 0 0 0 3px var(--ux-blue-soft);
     }
     .search-icon-abs {
-      position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
       color: #94a3b8;
     }
 
-    .cards-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px; margin-top: 20px;
-    }
-    .inv-card {
-      background: white; border-radius: 10px; padding: 20px;
-      border: 1px solid #eaeaea; border-left: 5px solid #fbbf24; /* Yellow Line */
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .inv-card:hover {
-      transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-    .inv-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
-    .inv-number-card { font-size: 16px; font-weight: 700; color: #1e293b; }
-    .status-badge {
-      background: #fffbeb; color: #b45309; font-size: 11px; font-weight: 600;
-      padding: 4px 10px; border-radius: 20px;
-    }
-    .inv-details { display: flex; flex-direction: column; gap: 6px; }
-    .inv-row-card { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b; }
-    .empty-state {
-      grid-column: 1 / -1; text-align: center; padding: 40px;
-      color: #94a3b8; font-style: italic; background: #fff; border-radius: 8px;
+    /* Container List */
+    .cards-list-container {
+      display: flex; flex-direction: column; gap: 16px; margin-top: 25px;
     }
 
-    /* --- FORM STYLES --- */
+    /* CARD LIST STYLE (NEW DESIGN) */
+    .inv-list-card {
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #eef0f3;
+      border-left: 6px solid var(--ux-yellow-accent); /* Garis Kuning Kiri */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      overflow: hidden; /* Biar footer tidak keluar border radius */
+      position: relative;
+    }
+    .inv-list-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      border-color: #e2e8f0;
+    }
+
+    /* Card Body: Info & Status */
+    .card-body {
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-info { flex: 1; padding-right: 15px; }
+    
+    /* Header Card: INV / PO */
+    .card-main-title {
+      font-size: 16px; font-weight: 700; color: #1e2933;
+      margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .po-tag {
+        font-weight: 400; color: #64748b; font-size: 14px;
+    }
+
+    /* Meta Data: Vendor & Date */
+    .card-meta {
+      display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px;
+    }
+    .meta-row {
+      display: flex; align-items: center; gap: 8px; 
+      font-size: 13px; color: #556; font-weight: 500;
+    }
+    .meta-row svg { width: 14px; height: 14px; color: #889; }
+
+    /* Item Summary Preview */
+    .item-preview-section {
+      background: #f8fafc; border-radius: 6px; padding: 8px 10px;
+      font-size: 12px; color: #475569; border: 1px dashed #cbd5e1;
+      line-height: 1.4; margin-top: 8px; display: inline-block; width: 100%;
+    }
+    .item-preview-label { font-weight: 700; color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-bottom: 2px; display: block;}
+
+    /* Status Badge (Top Right) */
+    .status-badge {
+      background: #fef3c7; color: #b45309; 
+      font-size: 11px; font-weight: 700; padding: 5px 12px;
+      border-radius: 20px; white-space: nowrap; letter-spacing: 0.3px;
+    }
+
+    /* Card Footer: View Details */
+    .card-footer-action {
+      background: #f0f7ff; 
+      color: var(--ux-blue);
+      font-weight: 600; font-size: 13px;
+      text-align: center; padding: 10px;
+      border-top: 1px solid #e0f0ff;
+      transition: background 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .inv-list-card:hover .card-footer-action {
+      background: #e0efff;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center; padding: 50px 20px;
+      color: #94a3b8; font-style: italic; background: #fff; border-radius: 12px;
+      border: 1px dashed #cbd5e1;
+    }
+
+    /* --- FORM STYLES (SAME AS BEFORE) --- */
     .back-btn {
       display: inline-flex; align-items: center; gap: 6px;
       background: white; border: 1px solid #d1d5db; color: #374151;
@@ -137,7 +199,6 @@
       border: 1px solid var(--ux-border) !important; border-radius: 6px !important;
       background: white !important; width: 100%;
     }
-    /* Style khusus untuk Input Invoice yg Readonly di Form */
     #selectedInvDisplay {
         background-color: #f1f5f9 !important;
         font-weight: 700; color: #334155; cursor: default;
@@ -153,7 +214,7 @@
     @media (max-width: 900px) { .row-flex { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 640px) { .row-flex { grid-template-columns: 1fr; } }
 
-    /* SUMMARY */
+    /* TABLE STYLES */
     .summary-grid {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
       background: #f7f8ff; border: 1px solid #dbe2ff;
@@ -162,15 +223,13 @@
     .summary-item { min-width: 0; }
     .summary-label { font-size: 11px; font-weight: 600; color: var(--ux-text-sub); text-transform: uppercase; margin-bottom: 2px; }
     .summary-value { font-size: 13px; font-weight: 500; color: var(--ux-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* LOCK WARNING */
+    
     .lock-warning {
       display: none; margin-bottom: 10px; padding: 9px 11px;
       border-radius: 6px; border: 1px solid #f6c86a; background: #fff7e0;
       color: #8a5a19; font-size: 12.5px;
     }
 
-    /* TABLE */
     .table-wrapper {
       width: 100%; overflow-x: auto; border-radius: 8px;
       border: 1px solid var(--ux-border-soft); background: #fff;
@@ -188,28 +247,18 @@
     }
     tbody tr:nth-child(even) { background: #fafbff; }
     tbody tr:hover { background: #f2f6ff; }
-
     .row-handle { cursor: grab; color: #b4bac7; text-align: center; font-size: 16px; width: 26px; }
-    
     .subline-row td { background: #f7faff; border-top: 1px dashed #d6e3ff; padding-left: 10px; }
     .subline-row td:first-child { padding-left: 22px !important; }
     .subline-label { font-size: 11px; color: #6b7280; font-style: italic; margin-right: 4px; }
-
     .table-input {
       width: 100%; padding: 5px 6px; font-size: 12.5px;
       border: 1px solid #cfd7e3; border-radius: 6px; background: white;
     }
-    .readonly-field {
-      background: #f3f4f6 !important; border-color: #d3d7e3 !important; color: #555 !important;
-    }
-    .input-transparent {
-      background: transparent !important; border: none !important; 
-      font-weight: 600; width: 100%; text-align: right;
-    }
-
+    .readonly-field { background: #f3f4f6 !important; border-color: #d3d7e3 !important; color: #555 !important; }
+    .input-transparent { background: transparent !important; border: none !important; font-weight: 600; width: 100%; text-align: right; }
     .kpc-original { font-weight: 600; color: #273b74; font-size: 12.5px; }
     .delete-btn { cursor: pointer; color: var(--ux-danger); font-size: 15px; text-align: center; }
-    
     .split-btn {
       padding: 3px 8px; border-radius: 14px; border: 1px solid var(--ux-border);
       background: var(--ux-blue-soft); cursor: pointer; font-size: 11px;
@@ -224,13 +273,11 @@
     }
     .split-btn span.split-icon::before { top: 1px; }
     .split-btn span.split-icon::after { bottom: 1px; }
-
     textarea {
       width: 100%; height: 110px; padding: 9px 10px; font-size: 13px;
       background: #f9fafb; border: 1px solid #ced4e1; border-radius: 8px;
       margin-top: 6px; resize: vertical;
     }
-
     .actions-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
     .secondary-btn { padding: 8px 14px; background: #ecf1f8; border: 1px solid #cfd7e3; border-radius: 6px; cursor: pointer; }
     .submit-btn {
@@ -238,7 +285,6 @@
       border: none; color: white; font-weight: 600; cursor: pointer;
     }
     .submit-btn:disabled { opacity: .5; cursor: not-allowed; }
-
     #loadingOverlay {
       position: fixed; inset: 0; background: rgba(255,255,255,.7);
       backdrop-filter: blur(2px); z-index: 9999; display: none;
@@ -249,7 +295,6 @@
       border-top-color: #1a73e8; animation: spin .85s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .sheet-bottom-wrapper { margin-top: 18px; display: flex; gap: 12px; }
     .sheet-bottom-btn {
       background: #eef4ff; border: 1px solid #cfe0ff; padding: 7px 14px;
@@ -266,15 +311,13 @@
 
 <div class="top-bar">
   <div class="logo-section">
-    AUXILIUM <span style="font-weight:300;color:#909090; font-size:13px; margin-left:6px;">Accounting Management Service</span>
+    AUXILIUM <span style="font-weight:300;color:#909090; font-size:13px; margin-left:6px;">Accounting Management</span>
   </div>
   <nav class="nav-menu">
     <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/index.html" class="nav-item">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
       Home Receiving
     </a>
     <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="nav-item highlight">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
       Import Xero PO
     </a>
   </nav>
@@ -284,16 +327,16 @@
   
   <div id="view-dashboard">
     <div class="dashboard-header">
-      <div class="dashboard-title">Approval Dashboard</div>
+      <div class="dashboard-title">Penerimaan PO</div>
       <div class="dashboard-search">
         <span class="search-icon-abs">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </span>
-        <input type="text" id="searchInput" placeholder="Search Customer, Invoice..." onkeyup="filterCards()">
+        <input type="text" id="searchInput" placeholder="Search Customer, Invoice, PO..." onkeyup="filterCards()">
       </div>
     </div>
     
-    <div id="invoiceGrid" class="cards-grid">
+    <div id="invoiceGrid" class="cards-list-container">
       <div class="empty-state">Loading Invoices...</div>
     </div>
   </div>
@@ -301,7 +344,7 @@
   <div id="view-form" class="hidden">
     <button onclick="showDashboard()" class="back-btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-      Back to Dashboard
+      Back to List
     </button>
 
     <div class="card">
@@ -341,9 +384,9 @@
               <th>Description</th>
               <th style="width:70px">Ordered</th>
               
-              <th class="confidential-col" style="width:100px; background:#fffbeb; color:#92400e; text-align:right;">Price (Ori)</th>
-              <th class="confidential-col" style="width:90px; background:#fef2f2; color:#b91c1c; text-align:right;">Disc</th>
-              <th class="confidential-col" style="width:100px; background:#f0fdf4; color:#15803d; text-align:right;">Net Price</th>
+              <th class="confidential-col" style="width:100px;">Price (Ori)</th>
+              <th class="confidential-col" style="width:90px;">Disc</th>
+              <th class="confidential-col" style="width:100px;">Net Price</th>
               <th style="width:70px">Received</th>
               <th style="width:70px">Remaining</th>
               <th style="width:80px">Qty Receipt</th>
@@ -379,29 +422,25 @@
   // UPDATE URL INI SESUAI SCRIPT ANDA
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwK6zdHelCg07A2WgB8tzMFJtiJpAgLE6ITcZXc4AM1cHIoO6zYmEUb4lJUCQEuFiVNXw/exec";
 
-  // --- GLOBAL STATE ---
   let currentINV = "";
   let editChoices = null;
   let isLocked = false;
   let isEditMode = false;
-  let allInvoices = []; // Simpan data invoice untuk search
+  let allInvoices = []; 
 
-  // --- ELEMENTS ---
   const viewDashboard = document.getElementById("view-dashboard");
   const viewForm = document.getElementById("view-form");
   const invoiceGrid = document.getElementById("invoiceGrid");
-
   const loadingOverlay = document.getElementById("loadingOverlay");
   const tableBody = document.getElementById("tableBody");
   const receivingDate = document.getElementById("receivingDate");
   const receivingId = document.getElementById("receivingId");
-  const selectedInvDisplay = document.getElementById("selectedInvDisplay"); // Input readonly
+  const selectedInvDisplay = document.getElementById("selectedInvDisplay");
   const editSelect = document.getElementById("editSelect");
   const notes = document.getElementById("notes");
   const submitBtn = document.getElementById("submitBtn");
   const lockWarning = document.getElementById("lockWarning");
   
-  // --- UTILS ---
   function showLoading(){ loadingOverlay.style.display="flex"; }
   function hideLoading(){ loadingOverlay.style.display="none"; }
   function formatNumber(num) {
@@ -413,26 +452,19 @@
   function showDashboard() {
     viewDashboard.classList.remove("hidden");
     viewForm.classList.add("hidden");
-    // Reset form state slightly
-    if(isEditMode) {
-      // Jika sebelumnya edit mode, reset dropdown
-      if(editChoices) editChoices.setChoiceByValue("");
-    }
+    if(isEditMode && editChoices) editChoices.setChoiceByValue("");
     enterNewMode();
   }
 
   function showForm(invNumber) {
     viewDashboard.classList.add("hidden");
     viewForm.classList.remove("hidden");
-    
     currentINV = invNumber;
     selectedInvDisplay.value = invNumber;
-    
-    // Trigger load data
     loadInvDetail(invNumber);
   }
 
-  // --- CARD & DASHBOARD LOGIC ---
+  // --- CARD LOGIC (LIST VIEW) ---
   async function loadInvListAndRender() {
     try {
       const res = await fetch(`${SCRIPT_URL}?action=getinvlist`);
@@ -446,35 +478,58 @@
 
   function renderCards(listData) {
     invoiceGrid.innerHTML = "";
-    if (listData.length === 0) {
+    if (!listData || listData.length === 0) {
       invoiceGrid.innerHTML = `<div class="empty-state">No Pending Invoices found.</div>`;
       return;
     }
 
     listData.forEach(item => {
-      // Pastikan property ini ada dari script.gs Anda. 
-      // Jika tidak, pakai fallback
+      // Data Parsing
       const supplierName = item.supplier || "Supplier Data N/A";
       const invDate = item.invoiceDate || "-"; 
+      
+      // CATATAN PENTING:
+      // Agar 'poNumber' dan 'items' muncul, Anda harus mengupdate Google Script
+      // di fungsi 'getInvList' agar return object-nya mengandung 'poNumber' dan 'items'
+      // Contoh: { invNumber: '...', supplier: '...', items: 'Item A, Item B', poNumber: 'PO-001' }
+      
+      const poNum = item.poNumber ? `/ ${item.poNumber}` : ""; // Jika ada PO number dari server
+      const itemsPreview = item.items || "Click view details to see items...";
 
       const card = document.createElement("div");
-      card.className = "inv-card";
+      card.className = "inv-list-card";
       card.onclick = () => showForm(item.invNumber);
 
       card.innerHTML = `
-        <div class="inv-card-header">
-          <div class="inv-number-card">${item.invNumber}</div>
+        <div class="card-body">
+          <div class="card-info">
+            <div class="card-main-title">
+               ${item.invNumber} <span class="po-tag">${poNum}</span>
+            </div>
+            
+            <div class="card-meta">
+              <div class="meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>${supplierName}</span>
+              </div>
+              <div class="meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>${invDate}</span>
+              </div>
+            </div>
+
+            <div class="item-preview-section">
+               <span class="item-preview-label">List items yang dibeli:</span>
+               ${itemsPreview}
+            </div>
+          </div>
+
           <div class="status-badge">Pending</div>
         </div>
-        <div class="inv-details">
-          <div class="inv-row-card">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span style="font-weight:600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${supplierName}</span>
-          </div>
-          <div class="inv-row-card">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span>${invDate}</span>
-          </div>
+
+        <div class="card-footer-action">
+           View Details 
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </div>
       `;
       invoiceGrid.appendChild(card);
@@ -484,46 +539,35 @@
   function filterCards() {
     const query = document.getElementById("searchInput").value.toLowerCase();
     const filtered = allInvoices.filter(item => {
-      const term = (item.invNumber + " " + (item.supplier||"")).toLowerCase();
+      // Cari di Inv, Supplier, atau PO (jika ada)
+      const term = (item.invNumber + " " + (item.supplier||"") + " " + (item.poNumber||"")).toLowerCase();
       return term.includes(query);
     });
     renderCards(filtered);
   }
 
-  // --- MERGE LOGIC ---
+  // --- LOGIC FORM (SAMA SEPERTI SEBELUMNYA) ---
   function mergeDiscountLines(rawLines) {
-    const mainItems = [];
-    const discountMap = {}; 
+    const mainItems = []; const discountMap = {}; 
     rawLines.forEach(ln => {
       const desc = (ln.description || "").trim();
       if (desc.toLowerCase().startsWith("discount -")) {
         const parentName = desc.replace(/^discount\s*-\s*/i, "").trim(); 
         discountMap[parentName] = Math.abs(Number(ln.unitAmount) || 0);
-      } else {
-        mainItems.push(ln);
-      }
+      } else { mainItems.push(ln); }
     });
     return mainItems.map(item => {
       const desc = (item.description || "").trim();
       const mapVal = discountMap[desc];
       const serverVal = Number(item.discount) || 0;
       const finalDisc = (mapVal !== undefined) ? mapVal : serverVal;
-
       let priceBefore = item.unitAmountBefore !== undefined ? item.unitAmountBefore : item.unitAmount;
-      if (!priceBefore && item.unitAmount) {
-         priceBefore = Number(item.unitAmount) + finalDisc;
-      }
+      if (!priceBefore && item.unitAmount) { priceBefore = Number(item.unitAmount) + finalDisc; }
       const priceNet = priceBefore - finalDisc;
-      return {
-        ...item,
-        unitAmountBefore: priceBefore,
-        discount: finalDisc,
-        unitAmount: priceNet
-      };
+      return { ...item, unitAmountBefore: priceBefore, discount: finalDisc, unitAmount: priceNet };
     });
   }
 
-  // --- ROW HELPERS ---
   function getAllRows() { return [...document.querySelectorAll("#tableBody tr")]; }
   function getBaseRowByIndex(idx) { return getAllRows().find(r => r.dataset.rowIndex === String(idx) && !r.classList.contains("subline-row")); }
   function getSubRowsByIndex(idx) { return getAllRows().filter(r => r.dataset.rowIndex === String(idx) && r.classList.contains("subline-row")); }
@@ -542,15 +586,8 @@
     const qtyInput = baseTr.querySelector(".qty-receipt");
     const kpcInput = baseTr.querySelector(".kpc-new");
     baseTr.dataset.hasSplit = "1";
-    if (qtyInput) { 
-        qtyInput.readOnly = true; 
-        qtyInput.classList.add("readonly-field"); 
-    }
-    if (kpcInput) { 
-        kpcInput.value = ""; 
-        kpcInput.readOnly = true; 
-        kpcInput.classList.add("readonly-field");
-    }
+    if (qtyInput) { qtyInput.readOnly = true; qtyInput.classList.add("readonly-field"); }
+    if (kpcInput) { kpcInput.value = ""; kpcInput.readOnly = true; kpcInput.classList.add("readonly-field"); }
   }
 
   function attachRowEvents(tr){
@@ -560,8 +597,7 @@
         const idx = tr.dataset.rowIndex;
         const rem = Number(tr.querySelector(".remaining").value) || 0;
         let val = Number(e.target.value || 0);
-        if (val < 0) val = 0;
-        if (val > rem) val = rem;
+        if (val < 0) val = 0; if (val > rem) val = rem;
         e.target.value = val || "";
         if (tr.classList.contains("subline-row")) recalcParentTotal(idx);
       });
@@ -595,67 +631,50 @@
     }
   }
 
-  // --- RENDER FORM TABLE ---
   function renderLines(rawLines, useExistingQty) {
     tableBody.innerHTML = "";
     const lines = mergeDiscountLines(rawLines);
-
     if (!useExistingQty) {
-      // --- NEW MODE ---
       lines.forEach(ln => {
         const tr = document.createElement("tr");
         tr.dataset.rowIndex = ln.rowIndex;
         const remaining = Number(ln.remainingQty) || 0;
-        const defaultQty = remaining;
-        const itemCode = ln.itemCode || ln.kpc || "";
-        
         tr.innerHTML = `
           <td class="row-handle">⋮⋮</td>
           <td>${ln.poNumber}</td>
-          <td><span class="kpc-original">${itemCode}</span></td>
+          <td><span class="kpc-original">${ln.itemCode||ln.kpc||""}</span></td>
           <td><input class="table-input kpc-new" placeholder="KPC"></td> 
           <td>${ln.description}</td>
           <td><input class="table-input readonly-field ordered" value="${ln.orderedQty}" readonly></td>
-          
-          <td class="confidential-col" style="background:#fffbeb;"><input type="text" class="input-transparent price-before" value="${formatNumber(ln.unitAmountBefore)}" data-val="${ln.unitAmountBefore}" readonly></td>
-          <td class="confidential-col" style="background:#fef2f2;"><input type="text" class="input-transparent discount-val" value="${formatNumber(ln.discount)}" data-val="${ln.discount}" readonly></td>
-          <td class="confidential-col" style="background:#f0fdf4;"><input type="text" class="input-transparent price-net" value="${formatNumber(ln.unitAmount)}" data-val="${ln.unitAmount}" readonly></td>
-          
+          <td class="confidential-col"><input type="text" class="input-transparent price-before" value="${formatNumber(ln.unitAmountBefore)}" data-val="${ln.unitAmountBefore}" readonly></td>
+          <td class="confidential-col"><input type="text" class="input-transparent discount-val" value="${formatNumber(ln.discount)}" data-val="${ln.discount}" readonly></td>
+          <td class="confidential-col"><input type="text" class="input-transparent price-net" value="${formatNumber(ln.unitAmount)}" data-val="${ln.unitAmount}" readonly></td>
           <td><input class="table-input readonly-field received" value="${ln.receivedToDate}" readonly></td>
           <td><input class="table-input readonly-field remaining" value="${remaining}" readonly></td>
-          <td><input type="number" class="table-input qty-receipt" value="${defaultQty}" min="0"></td>
+          <td><input type="number" class="table-input qty-receipt" value="${remaining}" min="0"></td>
           <td><input class="table-input readonly-field uom-field" value="${ln.uom||'m'}" readonly></td>
           <td style="text-align:center;"><button type="button" class="split-btn"><span class="split-icon"></span></button></td>
-          <td class="delete-btn">🗑</td>
-        `;
+          <td class="delete-btn">🗑</td>`;
         tableBody.appendChild(tr);
         attachRowEvents(tr);
       });
     } else {
-      // --- EDIT MODE ---
       const groups = {};
       lines.forEach(ln => {
-        const k = String(ln.rowIndex||"");
-        if (!k) return;
+        const k = String(ln.rowIndex||""); if (!k) return;
         if (!groups[k]) groups[k] = { base: {...ln}, splits:[] };
         groups[k].splits.push(ln);
       });
-
       Object.values(groups).forEach(grp => {
         const baseData = grp.base;
-        let totalQty = 0;
-        grp.splits.forEach(s => totalQty += Number(s.qtyThisReceipt)||0);
-        baseData.qtyThisReceipt = totalQty;
-
+        let totalQty = 0; grp.splits.forEach(s => totalQty += Number(s.qtyThisReceipt)||0);
         const baseTr = document.createElement("tr");
         baseTr.dataset.rowIndex = baseData.rowIndex;
         const remaining = Number(baseData.remainingQty) || 0;
-        
         const isParentReadonly = grp.splits.length > 1; 
         const kpcClass = isParentReadonly ? "table-input kpc-new readonly-field" : "table-input kpc-new";
         const kpcAttr  = isParentReadonly ? "readonly" : "";
         const kpcVal   = isParentReadonly ? "" : (baseData.kpc || ""); 
-
         baseTr.innerHTML = `
           <td class="row-handle">⋮⋮</td>
           <td>${baseData.poNumber}</td>
@@ -663,29 +682,22 @@
           <td><input class="${kpcClass}" placeholder="KPC" value="${kpcVal}" ${kpcAttr}></td>
           <td>${baseData.description}</td>
           <td><input class="table-input readonly-field ordered" value="${baseData.orderedQty}" readonly></td>
-          
-          <td class="confidential-col" style="background:#fffbeb;"><input type="text" class="input-transparent price-before" value="${formatNumber(baseData.unitAmountBefore)}" data-val="${baseData.unitAmountBefore}" readonly></td>
-          <td class="confidential-col" style="background:#fef2f2;"><input type="text" class="input-transparent discount-val" value="${formatNumber(baseData.discount)}" data-val="${baseData.discount}" readonly></td>
-          <td class="confidential-col" style="background:#f0fdf4;"><input type="text" class="input-transparent price-net" value="${formatNumber(baseData.unitAmount)}" data-val="${baseData.unitAmount}" readonly></td>
-
+          <td class="confidential-col"><input type="text" class="input-transparent price-before" value="${formatNumber(baseData.unitAmountBefore)}" data-val="${baseData.unitAmountBefore}" readonly></td>
+          <td class="confidential-col"><input type="text" class="input-transparent discount-val" value="${formatNumber(baseData.discount)}" data-val="${baseData.discount}" readonly></td>
+          <td class="confidential-col"><input type="text" class="input-transparent price-net" value="${formatNumber(baseData.unitAmount)}" data-val="${baseData.unitAmount}" readonly></td>
           <td><input class="table-input readonly-field received" value="${baseData.receivedToDate}" readonly></td>
           <td><input class="table-input readonly-field remaining" value="${remaining}" readonly></td>
           <td><input type="number" class="table-input qty-receipt" value="${totalQty||""}" min="0"></td>
           <td><input class="table-input readonly-field uom-field" value="${baseData.uom}" readonly></td>
           <td style="text-align:center;"><button type="button" class="split-btn"><span class="split-icon"></span></button></td>
-          <td class="delete-btn">🗑</td>
-        `;
+          <td class="delete-btn">🗑</td>`;
         tableBody.appendChild(baseTr);
         attachRowEvents(baseTr);
-
         if (grp.splits.length > 1) {
           ensureParentModeForSplit(baseTr);
-          // Sub lines
-          const subLines = grp.splits.slice(1);
-          subLines.forEach(s => {
+          grp.splits.slice(1).forEach(s => {
              const subTr = document.createElement("tr");
-             subTr.classList.add("subline-row");
-             subTr.dataset.rowIndex = baseData.rowIndex;
+             subTr.classList.add("subline-row"); subTr.dataset.rowIndex = baseData.rowIndex;
              subTr.innerHTML = `
                <td class="row-handle">⋮⋮</td>
                <td>${baseData.poNumber}</td>
@@ -693,18 +705,15 @@
                <td><input class="table-input kpc-new" placeholder="KPC" value="${s.kpc||""}"></td>
                <td>${baseData.description}</td>
                <td><input class="table-input readonly-field ordered" value="${baseData.orderedQty}" readonly></td>
-               
-               <td class="confidential-col" style="background:#fffbeb;"><input type="text" class="input-transparent" value="${formatNumber(baseData.unitAmountBefore)}" readonly></td>
-               <td class="confidential-col" style="background:#fef2f2;"><input type="text" class="input-transparent" value="${formatNumber(baseData.discount)}" readonly></td>
-               <td class="confidential-col" style="background:#f0fdf4;"><input type="text" class="input-transparent" value="${formatNumber(baseData.unitAmount)}" readonly></td>
-
+               <td class="confidential-col"><input type="text" class="input-transparent" value="${formatNumber(baseData.unitAmountBefore)}" readonly></td>
+               <td class="confidential-col"><input type="text" class="input-transparent" value="${formatNumber(baseData.discount)}" readonly></td>
+               <td class="confidential-col"><input type="text" class="input-transparent" value="${formatNumber(baseData.unitAmount)}" readonly></td>
                <td><input class="table-input readonly-field received" value="${baseData.receivedToDate}" readonly></td>
                <td><input class="table-input readonly-field remaining" value="${Number(s.remainingQty)||remaining}" readonly></td>
                <td><input type="number" class="table-input qty-receipt" value="${s.qtyThisReceipt||""}" min="0"></td>
                <td><input class="table-input readonly-field uom-field" value="${baseData.uom}" readonly></td>
                <td style="text-align:center;"><button type="button" class="split-btn"><span class="split-icon"></span></button></td>
-               <td class="delete-btn">🗑</td>
-             `;
+               <td class="delete-btn">🗑</td>`;
              tableBody.appendChild(subTr);
              attachRowEvents(subTr);
           });
@@ -719,8 +728,6 @@
   function addSplitRow(baseTr){
     const idx = baseTr.dataset.rowIndex;
     const subs = getSubRowsByIndex(idx);
-    
-    // Grab data
     const po = baseTr.children[1].textContent;
     const ic = baseTr.querySelector(".kpc-original").textContent;
     const desc = baseTr.children[4].textContent;
@@ -728,99 +735,71 @@
     const rec = baseTr.querySelector(".received").value;
     const rem = baseTr.querySelector(".remaining").value;
     const uom = baseTr.querySelector(".uom-field").value;
-    
     const pBefore = baseTr.querySelector(".price-before").dataset.val;
     const pDisc   = baseTr.querySelector(".discount-val").dataset.val;
     const pNet    = baseTr.querySelector(".price-net").dataset.val;
-
-    let initKpc="", initQty="";
+    let initQty="";
     if (subs.length === 0) {
        const q = baseTr.querySelector(".qty-receipt");
        initQty = q ? q.value : "";
        ensureParentModeForSplit(baseTr);
     }
-
     const subTr = document.createElement("tr");
-    subTr.classList.add("subline-row");
-    subTr.dataset.rowIndex = idx;
-    
+    subTr.classList.add("subline-row"); subTr.dataset.rowIndex = idx;
     subTr.innerHTML = `
       <td class="row-handle">⋮⋮</td>
       <td>${po}</td>
       <td><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
-      <td><input class="table-input kpc-new" placeholder="KPC" value="${initKpc}"></td>
+      <td><input class="table-input kpc-new" placeholder="KPC"></td>
       <td>${desc}</td>
       <td><input class="table-input readonly-field ordered" value="${ord}" readonly></td>
-      
-      <td class="confidential-col" style="background:#fffbeb;"><input type="text" class="input-transparent" value="${formatNumber(pBefore)}" readonly></td>
-      <td class="confidential-col" style="background:#fef2f2;"><input type="text" class="input-transparent" value="${formatNumber(pDisc)}" readonly></td>
-      <td class="confidential-col" style="background:#f0fdf4;"><input type="text" class="input-transparent" value="${formatNumber(pNet)}" readonly></td>
-
+      <td class="confidential-col"><input type="text" class="input-transparent" value="${formatNumber(pBefore)}" readonly></td>
+      <td class="confidential-col"><input type="text" class="input-transparent" value="${formatNumber(pDisc)}" readonly></td>
+      <td class="confidential-col"><input type="text" class="input-transparent" value="${formatNumber(pNet)}" readonly></td>
       <td><input class="table-input readonly-field received" value="${rec}" readonly></td>
       <td><input class="table-input readonly-field remaining" value="${rem}" readonly></td>
       <td><input type="number" class="table-input qty-receipt" value="${initQty}" min="0"></td>
       <td><input class="table-input readonly-field uom-field" value="${uom}" readonly></td>
       <td style="text-align:center;"><button type="button" class="split-btn"><span class="split-icon"></span></button></td>
-      <td class="delete-btn">🗑</td>
-    `;
-    
+      <td class="delete-btn">🗑</td>`;
     if (subs.length === 0) tableBody.insertBefore(subTr, baseTr.nextSibling);
     else tableBody.insertBefore(subTr, subs[subs.length-1].nextSibling);
-    
     attachRowEvents(subTr);
     recalcParentTotal(idx);
   }
 
-  // --- SUBMIT ---
   function validateForm() {
     if (isLocked) return "Locked.";
     if (!receivingDate.value) return "Date required.";
     if (!isEditMode && !currentINV) return "Inv required.";
     const rows = [...document.querySelectorAll("#tableBody tr")];
     if (rows.length === 0) return "No lines.";
-
     const grp = {};
     for (let r of rows) {
-      const idx = r.dataset.rowIndex;
-      if (!idx) continue;
+      const idx = r.dataset.rowIndex; if (!idx) continue;
       if (!grp[idx]) grp[idx] = { rem: Number(r.querySelector(".remaining").value)||0, tot:0 };
       const q = Number(r.querySelector(".qty-receipt").value)||0;
       const k = r.querySelector(".kpc-new").value.trim();
-      
       const isParent = !r.classList.contains("subline-row");
-      const hasSplit = r.dataset.hasSplit === "1";
-      
-      // if (isParent && !hasSplit && q > 0 && !k) return "Missing KPC on line item";
       if (!isParent && q > 0 && !k) return "Missing KPC for split line";
-      
       if (r.classList.contains("subline-row") || !r.dataset.hasSplit) grp[idx].tot += q;
     }
-    for (let idx in grp) {
-      if (grp[idx].tot > grp[idx].rem) return `Total Qty > Remaining for one item.`;
-    }
+    for (let idx in grp) { if (grp[idx].tot > grp[idx].rem) return `Total Qty > Remaining for one item.`; }
     return null;
   }
 
   function submitReceiving() {
-    const err = validateForm();
-    if(err) return alert(err);
+    const err = validateForm(); if(err) return alert(err);
     showLoading();
-
     const groupMap = {};
     document.querySelectorAll("#tableBody tr").forEach(r => {
-      const idx = r.dataset.rowIndex;
-      if (!idx) return;
+      const idx = r.dataset.rowIndex; if (!idx) return;
       if (!groupMap[idx]) groupMap[idx] = { base: null, subs: [] };
-      if (r.classList.contains("subline-row")) groupMap[idx].subs.push(r);
-      else groupMap[idx].base = r;
+      if (r.classList.contains("subline-row")) groupMap[idx].subs.push(r); else groupMap[idx].base = r;
     });
-
     const lines = [];
     Object.keys(groupMap).forEach(idx => {
-      const g = groupMap[idx];
-      const base = g.base;
-      if (!base) return;
-
+      const g = groupMap[idx]; const base = g.base; if (!base) return;
       const poNumber = base.children[1].textContent.trim();
       const itemCode = base.querySelector(".kpc-original").textContent.trim();
       const description = base.children[4].textContent.trim();
@@ -828,62 +807,39 @@
       const receivedToDate = base.querySelector(".received").value;
       const remainingQty = base.querySelector(".remaining").value;
       const uom = base.querySelector(".uom-field").value;
-      
       const unitAmountBefore = base.querySelector(".price-before").dataset.val;
       const discount = base.querySelector(".discount-val").dataset.val;
       const unitAmountNet = base.querySelector(".price-net").dataset.val;
-
-      const common = {
-        rowIndex: idx, poNumber, itemCode, description, orderedQty, receivedToDate, remainingQty, uom,
-        unitAmountBefore, discount, unitAmount: unitAmountNet
-      };
-
+      const common = { rowIndex: idx, poNumber, itemCode, description, orderedQty, receivedToDate, remainingQty, uom, unitAmountBefore, discount, unitAmount: unitAmountNet };
       if (g.subs.length === 0) {
-        const k = base.querySelector(".kpc-new").value.trim();
-        const q = base.querySelector(".qty-receipt").value;
+        const k = base.querySelector(".kpc-new").value.trim(); const q = base.querySelector(".qty-receipt").value;
         if (Number(q) > 0) lines.push({ ...common, kpc: k, qtyThisReceipt: q });
       } else {
         g.subs.forEach(sr => {
-           const k = sr.querySelector(".kpc-new").value.trim();
-           const q = sr.querySelector(".qty-receipt").value;
-           const rem = sr.querySelector(".remaining").value;
+           const k = sr.querySelector(".kpc-new").value.trim(); const q = sr.querySelector(".qty-receipt").value; const rem = sr.querySelector(".remaining").value;
            if (Number(q) > 0) lines.push({ ...common, kpc: k, qtyThisReceipt: q, remainingQty: rem });
         });
       }
     });
-
     const payload = {
-      receivingId: receivingId.value,
-      receivingDate: receivingDate.value,
-      invNumber: currentINV || "",
-      header: { 
-        supplier: document.getElementById("summarySupplier").textContent,
-        invoiceDate: document.getElementById("summaryDate").textContent 
-      },
-      notes: notes.value,
-      lines: lines
+      receivingId: receivingId.value, receivingDate: receivingDate.value, invNumber: currentINV || "",
+      header: { supplier: document.getElementById("summarySupplier").textContent, invoiceDate: document.getElementById("summaryDate").textContent },
+      notes: notes.value, lines: lines
     };
-
     fetch(SCRIPT_URL, { method:"POST", body:JSON.stringify(payload) })
       .then(r=>r.json())
       .then(async res=>{
          hideLoading();
          if(res.status==="success") {
            alert("Saved: " + payload.receivingId);
-           
-           // REFRESH DATA
            await Promise.all([ loadNextReceivingId(), loadInvListAndRender(), loadEditableReceivingList() ]);
-           
-           // BACK TO DASHBOARD & RESET
-           showDashboard();
-           tableBody.innerHTML="";
+           showDashboard(); tableBody.innerHTML="";
            ["summarySupplier","summaryDate","summaryStatus","summaryTotalOrdered","summaryTotalReceived","summaryTotalRemaining"].forEach(id=>document.getElementById(id).textContent="-");
          } else { alert("Error: "+res.message); }
       })
       .catch(e=>{ hideLoading(); alert("Fail: "+e); });
   }
 
-  // --- INIT & LOADER ---
   async function loadNextReceivingId() {
     try {
       const res = await fetch(`${SCRIPT_URL}?action=getlastreceivingid`);
@@ -892,74 +848,44 @@
       const prefix = `RCV${String(now.getFullYear()).slice(2)}${String(now.getMonth()+1).padStart(2,"0")}`;
       let nextId = prefix + "0000001";
       if (data.lastId && data.lastId.startsWith(prefix)) {
-        const seq = parseInt(data.lastId.substring(7)) + 1;
-        nextId = prefix + String(seq).padStart(7,"0");
+        const seq = parseInt(data.lastId.substring(7)) + 1; nextId = prefix + String(seq).padStart(7,"0");
       }
       receivingId.value = nextId;
     } catch(e) {}
   }
-
   async function loadEditableReceivingList() {
     const res = await fetch(`${SCRIPT_URL}?action=geteditablelist`);
     const list = await res.json();
     if (editChoices) editChoices.destroy();
     editSelect.innerHTML = `<option value="">— New Receiving Entry —</option>`;
     list.forEach(i => {
-      const op = document.createElement("option");
-      op.value = i.receivingId;
-      op.textContent = `${i.receivingId} — ${i.invNumber}`;
-      editSelect.appendChild(op);
+      const op = document.createElement("option"); op.value = i.receivingId; op.textContent = `${i.receivingId} — ${i.invNumber}`; editSelect.appendChild(op);
     });
     editChoices = new Choices("#editSelect", { searchEnabled:true, itemSelectText:"", shouldSort:false });
     editSelect.addEventListener("change", () => {
-      if (!editSelect.value) {
-         // Stay or Reset
-         enterNewMode();
-      } else {
-         // Force view to form
-         loadReceivingEntry(editSelect.value);
-      }
+      if (!editSelect.value) enterNewMode(); else loadReceivingEntry(editSelect.value);
     });
   }
-
   async function loadInvDetail(inv) {
-    if(!inv) return;
-    showLoading();
+    if(!inv) return; showLoading();
     try {
       const res = await fetch(`${SCRIPT_URL}?action=getinvdetail&invNumber=${encodeURIComponent(inv)}`);
       const data = await res.json();
-      currentINV = inv;
-      renderSummary(data.header);
-      renderLines(data.lines, false);
-      applyLockState(false);
+      currentINV = inv; renderSummary(data.header); renderLines(data.lines, false); applyLockState(false);
     } finally { hideLoading(); }
   }
-
   async function loadReceivingEntry(id) {
-    if(!id) return;
-    
-    // Switch View
-    viewDashboard.classList.add("hidden");
-    viewForm.classList.remove("hidden");
-    showLoading();
-
+    if(!id) return; viewDashboard.classList.add("hidden"); viewForm.classList.remove("hidden"); showLoading();
     try {
       const res = await fetch(`${SCRIPT_URL}?action=loadreceiving&id=${encodeURIComponent(id)}`);
       const data = await res.json();
       enterEditMode();
-      currentINV = data.invNumber;
-      selectedInvDisplay.value = data.invNumber; // Update Display
-      receivingId.value = data.receivingId;
-      if (data.receivingDate) receivingDate.value = data.receivingDate;
-      notes.value = data.notes||"";
-      renderSummary(data.header);
-      document.getElementById("summaryStatus").textContent = data.locked ? "LOCKED" : "Open";
-      
-      renderLines(data.lines, true);
-      applyLockState(data.locked);
+      currentINV = data.invNumber; selectedInvDisplay.value = data.invNumber; receivingId.value = data.receivingId;
+      if (data.receivingDate) receivingDate.value = data.receivingDate; notes.value = data.notes||"";
+      renderSummary(data.header); document.getElementById("summaryStatus").textContent = data.locked ? "LOCKED" : "Open";
+      renderLines(data.lines, true); applyLockState(data.locked);
     } finally { hideLoading(); }
   }
-
   function renderSummary(h) {
     document.getElementById("summarySupplier").textContent = h.supplier||"-";
     document.getElementById("summaryDate").textContent = h.invoiceDate||"-";
@@ -968,39 +894,26 @@
     document.getElementById("summaryTotalReceived").textContent = h.totalReceived?? "-";
     document.getElementById("summaryTotalRemaining").textContent = h.totalRemaining?? "-";
   }
-
   function applyLockState(locked) {
-    isLocked = !!locked;
-    const dis = !!locked;
+    isLocked = !!locked; const dis = !!locked;
     document.querySelectorAll(".qty-receipt, .kpc-new").forEach(e=>e.disabled=dis);
     receivingDate.disabled = dis; notes.disabled = dis; submitBtn.disabled = dis;
     lockWarning.style.display = locked ? "block" : "none";
   }
-
   function enterNewMode() {
-    isEditMode = false;
-    currentINV = "";
-    selectedInvDisplay.value = "";
+    isEditMode = false; currentINV = ""; selectedInvDisplay.value = "";
     if (editChoices) editChoices.setChoiceByValue("");
-    applyLockState(false);
-    loadNextReceivingId();
-    // Clear tables & Summary
-    tableBody.innerHTML="";
-    ["summarySupplier","summaryDate","summaryStatus"].forEach(id=>document.getElementById(id).textContent="-");
+    applyLockState(false); loadNextReceivingId();
+    tableBody.innerHTML=""; ["summarySupplier","summaryDate","summaryStatus"].forEach(id=>document.getElementById(id).textContent="-");
   }
-
   function reloadINV() {
     if (isEditMode && editSelect.value) loadReceivingEntry(editSelect.value);
-    else if (currentINV) loadInvDetail(currentINV);
-    else alert("No invoice selected");
+    else if (currentINV) loadInvDetail(currentINV); else alert("No invoice selected");
   }
 
   window.addEventListener("DOMContentLoaded", async () => {
     showLoading();
-    const t = new Date();
-    receivingDate.value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
-    
-    // Load Dashboard Cards & ID
+    const t = new Date(); receivingDate.value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
     await Promise.all([ loadNextReceivingId(), loadInvListAndRender(), loadEditableReceivingList() ]);
     hideLoading();
   });
