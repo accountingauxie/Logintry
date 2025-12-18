@@ -394,7 +394,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwK6zdHelCg07A2WgB8tzMFJtiJpAgLE6ITcZXc4AM1cHIoO6zYmEUb4lJUCQEuFiVNXw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHqRczvVqsFOzwzcc1e8ej5ILjEszF0htUm2kPEy56tsmRknSaT3vM6uecw9XgV9wt/exec";
 
   let currentINV = "";
   let isLocked = false;
@@ -460,7 +460,7 @@
     }
   }
 
-  function renderCards(listData) {
+function renderCards(listData) {
     invoiceGrid.innerHTML = "";
     if (!listData || listData.length === 0) {
       invoiceGrid.innerHTML = `<div class="empty-state">No Invoices found matching filter.</div>`;
@@ -470,7 +470,8 @@
     listData.forEach(item => {
       const supplierName = item.supplier || "Supplier Data N/A";
       const invDate = item.invoiceDate || "-"; 
-      const poNum = item.poNumber ? `/ ${item.poNumber}` : ""; 
+      // const poNum sudah tidak wajib ditampilkan di header jika fokus Inv, tapi bisa dibiarkan
+      // itemsPreview sekarang sudah string gabungan dari Apps Script
       const itemsPreview = item.items || "Click view details to see items...";
       const rawStatus = item.status || "Pending"; 
       
@@ -478,35 +479,32 @@
       let borderClass = "status-pending";
       let statusLabel = "Belum Diterima";
 
+      // LOGIKA TAMPILAN STATUS BARU
       if (rawStatus === "Partial") {
-         badgeClass = "badge-partial"; borderClass = "status-partial"; statusLabel = "Diterima Sebagian";
+          badgeClass = "badge-partial"; 
+          borderClass = "status-partial"; 
+          statusLabel = "Sebagian Diterima";
       } else if (rawStatus === "Completed") {
-         badgeClass = "badge-completed"; borderClass = "status-completed"; statusLabel = "Sudah Diterima";
+          badgeClass = "badge-completed"; 
+          borderClass = "status-completed"; 
+          statusLabel = "Sudah Diterima";
       }
 
       const card = document.createElement("div");
       card.className = `inv-list-card ${borderClass}`;
+      
+      // Event Click Card
       card.onclick = () => {
-         // Jika status Partial/Completed, langsung load mode Edit
-         if(rawStatus === "Partial" || rawStatus === "Completed") {
-            // Kita butuh receivingId dari item. Jika API list belum return receivingId,
-            // kita harus handle. Asumsi: jika status != pending, API getinvlist return receivingId
-            if(item.receivingId) {
-                loadReceivingEntry(item.receivingId);
-            } else {
-                // Fallback: coba load as new entry dulu (atau alert)
-                showForm(item.invNumber);
-            }
-         } else {
-            showForm(item.invNumber);
-         }
+         // Jika status selain pending, idealnya cek receivingId jika ada fitur edit
+         // Untuk sekarang arahkan ke showForm dulu
+         showForm(item.invNumber);
       };
 
       card.innerHTML = `
         <div class="card-body">
           <div class="card-info">
             <div class="card-main-title">
-               ${item.invNumber} <span class="po-tag">${poNum}</span>
+               ${item.invNumber}
             </div>
             <div class="card-meta">
               <div class="meta-row">
@@ -519,7 +517,7 @@
               </div>
             </div>
             <div class="item-preview-section">
-               <span class="item-preview-label">List items yang dibeli:</span>
+               <span class="item-preview-label">LIST ITEMS:</span>
                ${itemsPreview}
             </div>
           </div>
@@ -534,16 +532,34 @@
     });
   }
 
-  function filterCards() {
+function filterCards() {
     const query = document.getElementById("searchInput").value.toLowerCase();
+    
     const filtered = allInvoices.filter(item => {
-      const term = (item.invNumber + " " + (item.supplier||"") + " " + (item.poNumber||"")).toLowerCase();
+      // Search text logic
+      const term = (item.invNumber + " " + (item.supplier||"") + " " + (item.items||"")).toLowerCase();
       const matchText = term.includes(query);
+      
       let matchStatus = true;
-      const itemStatus = item.status || "Pending"; 
-      if (currentStatusFilter !== "All") { matchStatus = (itemStatus === currentStatusFilter); }
+      const itemStatus = item.status || "Pending"; // Pending, Partial, Completed
+
+      // Filter Logic berdasarkan Tab yang dipilih
+      if (currentStatusFilter === "All") {
+          matchStatus = true;
+      } else if (currentStatusFilter === "Pending") {
+          // Tombol "Belum Diterima" menampilkan status Pending
+          matchStatus = (itemStatus === "Pending");
+      } else if (currentStatusFilter === "Partial") {
+          // Tombol "Diterima Sebagian"
+          matchStatus = (itemStatus === "Partial");
+      } else if (currentStatusFilter === "Completed") {
+          // Tombol "Sudah Diterima"
+          matchStatus = (itemStatus === "Completed");
+      }
+
       return matchText && matchStatus;
     });
+    
     renderCards(filtered);
   }
 
