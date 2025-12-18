@@ -394,7 +394,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTAKfTGlLr-ERcaU1cf8ATxk2FhEtu8XsDGC4yZMeKOm01kfO-YsKMNJwrTN4xXZPdUA/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyt_n4jV0hHRPgZLUD6JlUVcB6KsZpNCmDIAdEAoRpZaHgqGnyxw7SkUBIC6zUNLMQidA/exec";
 
   let currentINV = "";
   let isLocked = false;
@@ -471,13 +471,13 @@ function renderCards(listData) {
       const supplierName = item.supplier || "Supplier Data N/A";
       const invDate = item.invoiceDate || "-"; 
       
-      // Tampilkan PO Number jika ada
-      const poDisplay = item.poNumber ? `<span class="po-tag">/ ${item.poNumber}</span>` : "";
+      // --- UPDATE LOGIC TAMPILAN PO ---
+      // Menampilkan PO dengan warna abu-abu di sebelah Invoice
+      const poDisplay = item.poNumber ? `<span style="color:#64748b; font-weight:400; margin-left:6px; font-size:14px;">/ ${item.poNumber}</span>` : "";
 
       const itemsPreview = item.items || "Click view details to see items...";
       const rawStatus = item.status || "Pending"; 
       
-      // LOGIKA TAMPILAN BADGE & WARNA KARTU
       let badgeClass = "badge-pending";
       let borderClass = "status-pending";
       let statusLabel = "Belum Diterima";
@@ -499,6 +499,7 @@ function renderCards(listData) {
          showForm(item.invNumber);
       };
 
+      // --- PERHATIKAN BAGIAN ${poDisplay} DI BAWAH ---
       card.innerHTML = `
         <div class="card-body">
           <div class="card-info">
@@ -529,7 +530,7 @@ function renderCards(listData) {
       `;
       invoiceGrid.appendChild(card);
     });
-  }
+}
 function filterCards() {
     const query = document.getElementById("searchInput").value.toLowerCase();
     
