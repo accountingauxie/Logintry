@@ -429,7 +429,8 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz733d0ZokHYGwk7z-OofWnPvahaQ48sZb3lHc4xpg3pmnD91QABluv3DqrmX5fMti2xg/exec";
+  // UPDATE URL KE SCRIPT TERBARU
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvQEBvZNukJy_foDNz3cLgNFmzPAWQd4KF0nc8FkL5Sx-aFQjmVxTnstVhDki5JT__0Q/exec";
 
   let currentINV = "";
   let isLocked = false;
@@ -469,7 +470,6 @@
   function showDashboard() {
     viewDashboard.classList.remove("hidden");
     viewForm.classList.add("hidden");
-    // Saat kembali ke dashboard, tetap di tab terakhir, refresh view
     switchTab(currentTab);
     enterNewMode();
   }
@@ -755,10 +755,11 @@
     }
   }
 
+  // --- RENDER LINES (FIXED FOR SPLIT ITEMS & GROUPING) ---
   function renderLines(rawLines, useExistingQty) {
     tableBody.innerHTML = "";
     
-    // Merge discount lines logic (tetap sama)
+    // Merge discount lines logic
     const lines = mergeDiscountLines(rawLines);
 
     if (!useExistingQty) {
@@ -790,9 +791,8 @@
       // --- MODE EDIT (EXISTING DATA) ---
       const groups = {};
       lines.forEach(ln => {
-        // PERBAIKAN DISINI: 
-        // Kunci grouping diganti: RowIndex + ItemCode.
-        // Ini mencegah item berbeda (HIJK1 & HIJK2) bergabung meski RowIndex-nya sama.
+        // PERBAIKAN: Kunci grouping diganti: RowIndex + ItemCode.
+        // Mencegah item berbeda (HIJK1 & HIJK2) bergabung jika RowIndex sama.
         const idxStr = String(ln.rowIndex || "");
         const itemStr = String(ln.itemCode || ln.kpc || "").trim();
         const k = idxStr + "_" + itemStr; 
@@ -806,17 +806,15 @@
         const baseData = grp.base;
         let totalQty = 0; 
         
-        // Hitung total qty dari splits (jika item benar-benar sama dan displit)
+        // Hitung total qty dari splits (jika item benar-benar sama dan displit lagi)
         grp.splits.forEach(s => totalQty += Number(s.qtyThisReceipt)||0);
         
-        // Jika hanya ada 1 baris di grup ini, gunakan qty baris itu sendiri
         const displayQty = grp.splits.length > 1 ? totalQty : (baseData.qtyThisReceipt || "");
 
         const baseTr = document.createElement("tr");
         baseTr.dataset.rowIndex = baseData.rowIndex;
         const remaining = Number(baseData.remainingQty) || 0;
         
-        // Logic Readonly Parent
         const isParentReadonly = grp.splits.length > 1; 
         const kpcClass = isParentReadonly ? "table-input kpc-new readonly-field" : "table-input kpc-new";
         const kpcAttr  = isParentReadonly ? "readonly" : "";
@@ -842,16 +840,9 @@
         tableBody.appendChild(baseTr);
         attachRowEvents(baseTr);
 
-        // Render Sub-Rows (Split) hanya jika item code BENAR-BENAR sama
+        // Render Sub-Rows (Split)
         if (grp.splits.length > 1) {
           ensureParentModeForSplit(baseTr);
-          grp.splits.forEach(s => { // Render SEMUA split, bukan slice(1) agar qty tidak hilang jika datanya kompleks
-             // Skip jika ini adalah baris pertama yang sudah dianggap base, TAPI
-             // karena struktur data split logikanya agak berbeda, kita render subline explisit
-             // agar aman. Namun, kode sebelumnya menggunakan slice(1).
-             // Mari kita gunakan pendekatan yang aman:
-          });
-          
           // Render sisa split (index 1 ke atas)
           grp.splits.slice(1).forEach(s => {
              const subTr = document.createElement("tr");
@@ -884,6 +875,7 @@
     Sortable.create(tableBody,{handle:".row-handle",animation:150});
     applyLockState(isLocked);
   }
+
   function addSplitRow(baseTr){
     const idx = baseTr.dataset.rowIndex;
     const subs = getSubRowsByIndex(idx);
@@ -991,7 +983,6 @@
          hideLoading();
          if(res.status==="success") {
            alert("Saved: " + payload.receivingId);
-           // Reset History agar data terbaru muncul saat tab dibuka lagi
            allHistory = [];
            await Promise.all([ loadNextReceivingId(), loadInvListAndRender() ]);
            showDashboard(); 
@@ -1014,16 +1005,29 @@
     } catch(e) {}
   }
 
+  // UPDATE: LOGIKA REVERSAL PADA RELOAD INV
   async function loadInvDetail(inv) {
-    if(!inv) return; showLoading();
+    if(!inv) return; 
+    showLoading();
     try {
-      const res = await fetch(`${SCRIPT_URL}?action=getinvdetail&invNumber=${encodeURIComponent(inv)}`);
+      let url = `${SCRIPT_URL}?action=getinvdetail&invNumber=${encodeURIComponent(inv)}`;
+      // Jika Edit Mode aktif, kirim excludeId agar stok di-reverse oleh backend
+      if (isEditMode && receivingId.value) {
+         url += `&excludeId=${encodeURIComponent(receivingId.value)}`;
+      }
+      const res = await fetch(url);
       const data = await res.json();
+      
       currentINV = inv; 
       renderSummary(data.header); 
       poNumberDisplay.value = data.header.poNumber || "-"; 
-      renderLines(data.lines, false); applyLockState(false);
-    } finally { hideLoading(); }
+      renderLines(data.lines, false); 
+      applyLockState(isLocked); 
+    } catch (e) {
+       alert("Error loading details: " + e.message);
+    } finally { 
+       hideLoading(); 
+    }
   }
 
   async function loadReceivingEntry(id) {
@@ -1043,7 +1047,8 @@
       renderSummary(data.header); 
       poNumberDisplay.value = data.header.poNumber || "-"; 
       document.getElementById("summaryStatus").textContent = data.locked ? "LOCKED" : "Open";
-      renderLines(data.lines, true); applyLockState(data.locked);
+      renderLines(data.lines, true); 
+      applyLockState(data.locked);
     } finally { hideLoading(); }
   }
 
