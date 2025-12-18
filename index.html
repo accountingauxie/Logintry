@@ -361,7 +361,9 @@
             <tr>
               <th class="sticky-col" style="width:28px;"></th>
               <th>PO Number</th>
+              
               <th style="display:none;">Item Code</th>
+              
               <th>KPC</th>
               <th>Description</th>
               <th style="width:70px">Ordered</th>
@@ -472,7 +474,6 @@ function renderCards(listData) {
       const invDate = item.invoiceDate || "-"; 
       
       // --- UPDATE LOGIC TAMPILAN PO ---
-      // Menampilkan PO dengan warna abu-abu di sebelah Invoice
       const poDisplay = item.poNumber ? `<span style="color:#64748b; font-weight:400; margin-left:6px; font-size:14px;">/ ${item.poNumber}</span>` : "";
 
       const itemsPreview = item.items || "Click view details to see items...";
@@ -499,7 +500,6 @@ function renderCards(listData) {
          showForm(item.invNumber);
       };
 
-      // --- PERHATIKAN BAGIAN ${poDisplay} DI BAWAH ---
       card.innerHTML = `
         <div class="card-body">
           <div class="card-info">
@@ -535,25 +535,21 @@ function filterCards() {
     const query = document.getElementById("searchInput").value.toLowerCase();
     
     const filtered = allInvoices.filter(item => {
-      // 1. Text Search: Cari di Inv, PO, Supplier, atau Items
+      // 1. Text Search
       const term = (item.invNumber + " " + (item.poNumber||"") + " " + (item.supplier||"") + " " + (item.items||"")).toLowerCase();
       const matchText = term.includes(query);
       
       // 2. Status Filter
       let matchStatus = true;
-      const itemStatus = item.status || "Pending"; // Nilai dari Backend: Pending, Partial, Completed
+      const itemStatus = item.status || "Pending"; 
 
       if (currentStatusFilter === "All") {
-          // Tampilkan SEMUA
           matchStatus = true;
       } else if (currentStatusFilter === "Pending") {
-          // Tombol "Belum Diterima" -> Backend "Pending"
           matchStatus = (itemStatus === "Pending");
       } else if (currentStatusFilter === "Partial") {
-          // Tombol "Diterima Sebagian" -> Backend "Partial"
           matchStatus = (itemStatus === "Partial");
       } else if (currentStatusFilter === "Completed") {
-          // Tombol "Sudah Diterima" -> Backend "Completed"
           matchStatus = (itemStatus === "Completed");
       }
 
@@ -658,7 +654,9 @@ function filterCards() {
         tr.innerHTML = `
           <td class="row-handle">⋮⋮</td>
           <td>${ln.poNumber}</td>
-          <td><span class="kpc-original">${ln.itemCode||ln.kpc||""}</span></td>
+          
+          <td style="display:none;"><span class="kpc-original">${ln.itemCode||ln.kpc||""}</span></td>
+          
           <td><input class="table-input kpc-new" placeholder="KPC"></td> 
           <td>${ln.description}</td>
           <td><input class="table-input readonly-field ordered" value="${ln.orderedQty}" readonly></td>
@@ -692,14 +690,11 @@ function filterCards() {
         const kpcAttr  = isParentReadonly ? "readonly" : "";
         const kpcVal   = isParentReadonly ? "" : (baseData.kpc || ""); 
         baseTr.innerHTML = `
-<td class="row-handle">⋮⋮</td>
-<td>${baseData.poNumber}</td>
-
-<td style="display:none;"><span class="kpc-original">${baseData.itemCode||""}</span></td>
-
-<td><input class="${kpcClass}" placeholder="KPC" value="${kpcVal}" ${kpcAttr}></td>
-<td>${baseData.description}</td>
-          <td><span class="kpc-original">${baseData.itemCode||""}</span></td>
+          <td class="row-handle">⋮⋮</td>
+          <td>${baseData.poNumber}</td>
+          
+          <td style="display:none;"><span class="kpc-original">${baseData.itemCode||""}</span></td>
+          
           <td><input class="${kpcClass}" placeholder="KPC" value="${kpcVal}" ${kpcAttr}></td>
           <td>${baseData.description}</td>
           <td><input class="table-input readonly-field ordered" value="${baseData.orderedQty}" readonly></td>
@@ -720,13 +715,11 @@ function filterCards() {
              const subTr = document.createElement("tr");
              subTr.classList.add("subline-row"); subTr.dataset.rowIndex = baseData.rowIndex;
              subTr.innerHTML = `
-             <td class="row-handle">⋮⋮</td>
-<td>${baseData.poNumber}</td>
-
-<td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${s.itemCode||baseData.itemCode}</span></td>
-
-<td><input class="table-input kpc-new" placeholder="KPC" value="${s.kpc||""}"></td>
-               <td><span class="subline-label">↳ Split</span><span class="kpc-original">${s.itemCode||baseData.itemCode}</span></td>
+               <td class="row-handle">⋮⋮</td>
+               <td>${baseData.poNumber}</td>
+               
+               <td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${s.itemCode||baseData.itemCode}</span></td>
+               
                <td><input class="table-input kpc-new" placeholder="KPC" value="${s.kpc||""}"></td>
                <td>${baseData.description}</td>
                <td><input class="table-input readonly-field ordered" value="${baseData.orderedQty}" readonly></td>
@@ -754,6 +747,7 @@ function filterCards() {
     const idx = baseTr.dataset.rowIndex;
     const subs = getSubRowsByIndex(idx);
     const po = baseTr.children[1].textContent;
+    // UPDATED: Query selector still works because element is hidden, not removed
     const ic = baseTr.querySelector(".kpc-original").textContent;
     const desc = baseTr.children[4].textContent;
     const ord = baseTr.querySelector(".ordered").value;
@@ -773,12 +767,10 @@ function filterCards() {
     subTr.classList.add("subline-row"); subTr.dataset.rowIndex = idx;
     subTr.innerHTML = `
       <td class="row-handle">⋮⋮</td>
-<td>${po}</td>
-
-<td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
-
-<td><input class="table-input kpc-new" placeholder="KPC"></td>
-      <td><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
+      <td>${po}</td>
+      
+      <td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
+      
       <td><input class="table-input kpc-new" placeholder="KPC"></td>
       <td>${desc}</td>
       <td><input class="table-input readonly-field ordered" value="${ord}" readonly></td>
@@ -830,6 +822,7 @@ function filterCards() {
     Object.keys(groupMap).forEach(idx => {
       const g = groupMap[idx]; const base = g.base; if (!base) return;
       const poNumber = base.children[1].textContent.trim();
+      // UPDATED: Still able to read hidden column
       const itemCode = base.querySelector(".kpc-original").textContent.trim();
       const description = base.children[4].textContent.trim();
       const orderedQty = base.querySelector(".ordered").value;
