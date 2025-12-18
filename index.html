@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Receiving PO Entry V2 (Full Layout)</title>
+  <title>Receiving PO Entry V2 (Tabs Edition)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
@@ -22,6 +22,9 @@
       --ux-yellow-accent: #fbbf24;
       --ux-green-accent: #10b981;
       --ux-blue-accent: #3b82f6;
+      --ux-purple-accent: #8b5cf6;
+      --ux-purple-soft: #f3e8ff;
+      --ux-purple-text: #6b21a8;
     }
 
     * { box-sizing: border-box; }
@@ -62,9 +65,9 @@
       color: #00838f; background-color: #e0f7fa; border-color: #b2ebf2;
     }
 
-    /* --- LAYOUT PAGE (FULL WIDTH UPDATE) --- */
+    /* --- LAYOUT PAGE --- */
     .page { 
-        max-width: 96%; /* Diperlebar jadi 96% layar */
+        max-width: 96%; 
         margin: 32px auto; 
         padding: 0 20px 60px; 
     }
@@ -73,6 +76,26 @@
     .dashboard-header { margin-bottom: 25px; }
     .dashboard-title { font-size: 24px; font-weight: 800; color: #1f2933; margin-bottom: 15px; letter-spacing: -0.5px; }
     
+    /* --- TABS STYLE (NEW FEATURE) --- */
+    .tabs-container {
+      display: flex; gap: 20px; margin-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .tab-btn {
+      background: transparent; border: none;
+      font-size: 14px; font-weight: 600; color: #64748b;
+      padding: 10px 4px; cursor: pointer; position: relative;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--ux-blue); }
+    .tab-btn.active { color: var(--ux-blue); }
+    .tab-btn.active::after {
+      content: ""; position: absolute; bottom: -1px; left: 0;
+      width: 100%; height: 3px; background: var(--ux-blue);
+      border-radius: 3px 3px 0 0;
+    }
+
+    /* --- FILTERS & SEARCH --- */
     .filter-section { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
     .filter-btn {
       background: white; border: 1px solid #e2e8f0; color: #64748b;
@@ -101,7 +124,7 @@
       color: #94a3b8;
     }
 
-    /* CARD LIST STYLE */
+    /* --- CARD LIST STYLE --- */
     .cards-list-container { display: flex; flex-direction: column; gap: 16px; margin-top: 25px; }
 
     .inv-list-card {
@@ -115,6 +138,12 @@
     .inv-list-card.status-partial { border-left-color: var(--ux-blue-accent); }
     .inv-list-card.status-completed { border-left-color: var(--ux-green-accent); }
 
+    /* HISTORY CARD SPECIFIC */
+    .inv-list-card.history-card { border-left-color: var(--ux-purple-accent) !important; }
+    .history-card .status-badge { background: var(--ux-purple-soft) !important; color: var(--ux-purple-text) !important; }
+    .history-card .card-main-title { color: #4c1d95 !important; }
+    .history-card .card-footer-action { color: var(--ux-purple-text) !important; }
+
     .inv-list-card:hover {
       transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08);
       border-color: #e2e8f0;
@@ -125,10 +154,10 @@
     .card-main-title {
       font-size: 16px; font-weight: 700; color: #1e2933; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
     }
-    .po-tag { font-weight: 400; color: #64748b; font-size: 14px; }
     .card-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
     .meta-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #556; font-weight: 500; }
     .meta-row svg { width: 14px; height: 14px; color: #889; }
+    
     .item-preview-section {
       background: #f8fafc; border-radius: 6px; padding: 8px 10px;
       font-size: 12px; color: #475569; border: 1px dashed #cbd5e1;
@@ -172,7 +201,7 @@
 
     .row-flex {
       display: grid; 
-      grid-template-columns: 1.1fr 1.5fr 1.5fr 1.5fr; /* Adjusted Grid */
+      grid-template-columns: 1.1fr 1.5fr 1.5fr 1.5fr; 
       gap: 20px; align-items: end; margin-bottom: 12px;
     }
     label { font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block; color: #445; }
@@ -182,7 +211,6 @@
       background: white !important; width: 100%;
     }
     
-    /* READONLY DISPLAY STYLES */
     #selectedInvDisplay, #poNumberDisplay {
         background-color: #f1f5f9 !important;
         font-weight: 700; color: #334155; cursor: default;
@@ -220,7 +248,7 @@
     }
     th.sticky-col { position: sticky; left: 0; background: #eef2f7; z-index: 2; }
     td {
-      padding: 8px 7px; border-bottom: 1px solid #f1f3f6; /* Padding agak dibesarkan utk full width */
+      padding: 8px 7px; border-bottom: 1px solid #f1f3f6;
       vertical-align: middle; font-size: 13px;
     }
     tbody tr:nth-child(even) { background: #fafbff; }
@@ -299,7 +327,12 @@
     <div class="dashboard-header">
       <div class="dashboard-title">Penerimaan PO</div>
       
-      <div class="filter-section">
+      <div class="tabs-container">
+        <button class="tab-btn active" id="tabNew" onclick="switchTab('new')">New Entry (Invoice List)</button>
+        <button class="tab-btn" id="tabEdit" onclick="switchTab('edit')">Edit Existing (History)</button>
+      </div>
+
+      <div class="filter-section" id="filterSection">
         <button class="filter-btn active" data-status="All" onclick="setFilter('All')">All</button>
         <button class="filter-btn" data-status="Pending" onclick="setFilter('Pending')">Belum Diterima</button>
         <button class="filter-btn" data-status="Partial" onclick="setFilter('Partial')">Diterima Sebagian</button>
@@ -401,8 +434,14 @@
   let currentINV = "";
   let isLocked = false;
   let isEditMode = false;
+  
+  // DATA STATES
   let allInvoices = []; 
+  let allHistory = []; 
+  
+  // UI STATES
   let currentStatusFilter = "All"; 
+  let currentTab = "new"; // 'new' or 'edit'
 
   const viewDashboard = document.getElementById("view-dashboard");
   const viewForm = document.getElementById("view-form");
@@ -426,10 +465,12 @@
     return Number(num).toLocaleString('id-ID');
   }
 
-  // --- NAVIGATION ---
+  // --- NAVIGATION & TABS ---
   function showDashboard() {
     viewDashboard.classList.remove("hidden");
     viewForm.classList.add("hidden");
+    // Saat kembali ke dashboard, tetap di tab terakhir, refresh view
+    switchTab(currentTab);
     enterNewMode();
   }
 
@@ -441,6 +482,30 @@
     loadInvDetail(invNumber);
   }
 
+  function switchTab(mode) {
+    currentTab = mode;
+    document.getElementById("tabNew").classList.toggle("active", mode === 'new');
+    document.getElementById("tabEdit").classList.toggle("active", mode === 'edit');
+    
+    const filterSec = document.getElementById("filterSection");
+    const searchInp = document.getElementById("searchInput");
+
+    if(mode === 'new') {
+      filterSec.style.display = "flex";
+      searchInp.placeholder = "Search Customer, Invoice, PO...";
+      searchInp.value = "";
+      renderCards(allInvoices);
+    } else {
+      filterSec.style.display = "none";
+      searchInp.placeholder = "Search Receiving ID, Inv, Date...";
+      searchInp.value = "";
+      
+      if(allHistory.length === 0) loadHistoryList();
+      else renderHistoryCards(allHistory);
+    }
+  }
+
+  // --- FILTERING ---
   function setFilter(status) {
     currentStatusFilter = status;
     document.querySelectorAll(".filter-btn").forEach(btn => {
@@ -450,19 +515,47 @@
     filterCards();
   }
 
-  // --- CARD RENDERER ---
+  function filterCards() {
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    
+    if (currentTab === 'new') {
+        // FILTER INVOICE
+        const filtered = allInvoices.filter(item => {
+            const term = (item.invNumber + " " + (item.poNumber||"") + " " + (item.supplier||"") + " " + (item.items||"")).toLowerCase();
+            const matchText = term.includes(query);
+            
+            let matchStatus = true;
+            const itemStatus = item.status || "Pending"; 
+            if (currentStatusFilter === "Pending") matchStatus = (itemStatus === "Pending");
+            else if (currentStatusFilter === "Partial") matchStatus = (itemStatus === "Partial");
+            else if (currentStatusFilter === "Completed") matchStatus = (itemStatus === "Completed");
+            
+            return matchText && matchStatus;
+        });
+        renderCards(filtered);
+    } else {
+        // FILTER HISTORY
+        const filtered = allHistory.filter(item => {
+            const term = (item.receivingId + " " + (item.invNumber||"") + " " + (item.date||"")).toLowerCase();
+            return term.includes(query);
+        });
+        renderHistoryCards(filtered);
+    }
+  }
+
+  // --- DATA FETCHING & RENDERING (NEW ENTRY) ---
   async function loadInvListAndRender() {
     try {
       const res = await fetch(`${SCRIPT_URL}?action=getinvlist`);
       const list = await res.json();
       allInvoices = list; 
-      filterCards();
+      if(currentTab === 'new') renderCards(allInvoices);
     } catch (e) {
-      invoiceGrid.innerHTML = `<div class="empty-state">Error loading invoices: ${e.message}</div>`;
+      if(currentTab === 'new') invoiceGrid.innerHTML = `<div class="empty-state">Error loading invoices: ${e.message}</div>`;
     }
   }
 
-function renderCards(listData) {
+  function renderCards(listData) {
     invoiceGrid.innerHTML = "";
     if (!listData || listData.length === 0) {
       invoiceGrid.innerHTML = `<div class="empty-state">No Invoices found matching filter.</div>`;
@@ -472,10 +565,7 @@ function renderCards(listData) {
     listData.forEach(item => {
       const supplierName = item.supplier || "Supplier Data N/A";
       const invDate = item.invoiceDate || "-"; 
-      
-      // --- UPDATE LOGIC TAMPILAN PO ---
       const poDisplay = item.poNumber ? `<span style="color:#64748b; font-weight:400; margin-left:6px; font-size:14px;">/ ${item.poNumber}</span>` : "";
-
       const itemsPreview = item.items || "Click view details to see items...";
       const rawStatus = item.status || "Pending"; 
       
@@ -496,9 +586,7 @@ function renderCards(listData) {
       const card = document.createElement("div");
       card.className = `inv-list-card ${borderClass}`;
       
-      card.onclick = () => {
-         showForm(item.invNumber);
-      };
+      card.onclick = () => { showForm(item.invNumber); };
 
       card.innerHTML = `
         <div class="card-body">
@@ -530,34 +618,58 @@ function renderCards(listData) {
       `;
       invoiceGrid.appendChild(card);
     });
-}
-function filterCards() {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    
-    const filtered = allInvoices.filter(item => {
-      // 1. Text Search
-      const term = (item.invNumber + " " + (item.poNumber||"") + " " + (item.supplier||"") + " " + (item.items||"")).toLowerCase();
-      const matchText = term.includes(query);
-      
-      // 2. Status Filter
-      let matchStatus = true;
-      const itemStatus = item.status || "Pending"; 
+  }
 
-      if (currentStatusFilter === "All") {
-          matchStatus = true;
-      } else if (currentStatusFilter === "Pending") {
-          matchStatus = (itemStatus === "Pending");
-      } else if (currentStatusFilter === "Partial") {
-          matchStatus = (itemStatus === "Partial");
-      } else if (currentStatusFilter === "Completed") {
-          matchStatus = (itemStatus === "Completed");
-      }
+  // --- DATA FETCHING & RENDERING (EDIT HISTORY) ---
+  async function loadHistoryList() {
+    invoiceGrid.innerHTML = `<div class="empty-state"><div class="loading-spinner" style="margin:0 auto;"></div><br>Loading Receiving History...</div>`;
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=geteditablelist`);
+      const list = await res.json();
+      allHistory = list;
+      renderHistoryCards(allHistory);
+    } catch (e) {
+      invoiceGrid.innerHTML = `<div class="empty-state">Error loading history: ${e.message}</div>`;
+    }
+  }
 
-      return matchText && matchStatus;
+  function renderHistoryCards(listData) {
+    invoiceGrid.innerHTML = "";
+    if (!listData || listData.length === 0) {
+      invoiceGrid.innerHTML = `<div class="empty-state">No editable receiving entries found.</div>`;
+      return;
+    }
+    listData.forEach(item => {
+      const card = document.createElement("div");
+      card.className = `inv-list-card history-card`; 
+      card.onclick = () => { loadReceivingEntry(item.receivingId); };
+      card.innerHTML = `
+        <div class="card-body">
+          <div class="card-info">
+            <div class="card-main-title">
+               ${item.receivingId}
+            </div>
+            <div class="card-meta">
+              <div class="meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <span style="font-weight:600; color:#333;">Ref Inv: ${item.invNumber}</span>
+              </div>
+              <div class="meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>Received Date: ${item.date}</span>
+              </div>
+            </div>
+          </div>
+          <div class="status-badge" style="background:#f3e8ff; color:#6b21a8;">Edit Mode</div>
+        </div>
+        <div class="card-footer-action" style="color:#6b21a8;">
+           Open & Edit Entry 
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        </div>
+      `;
+      invoiceGrid.appendChild(card);
     });
-    
-    renderCards(filtered);
-}
+  }
 
   // --- FORM LOGIC ---
   function mergeDiscountLines(rawLines) {
@@ -654,9 +766,7 @@ function filterCards() {
         tr.innerHTML = `
           <td class="row-handle">⋮⋮</td>
           <td>${ln.poNumber}</td>
-          
           <td style="display:none;"><span class="kpc-original">${ln.itemCode||ln.kpc||""}</span></td>
-          
           <td><input class="table-input kpc-new" placeholder="KPC"></td> 
           <td>${ln.description}</td>
           <td><input class="table-input readonly-field ordered" value="${ln.orderedQty}" readonly></td>
@@ -692,9 +802,7 @@ function filterCards() {
         baseTr.innerHTML = `
           <td class="row-handle">⋮⋮</td>
           <td>${baseData.poNumber}</td>
-          
           <td style="display:none;"><span class="kpc-original">${baseData.itemCode||""}</span></td>
-          
           <td><input class="${kpcClass}" placeholder="KPC" value="${kpcVal}" ${kpcAttr}></td>
           <td>${baseData.description}</td>
           <td><input class="table-input readonly-field ordered" value="${baseData.orderedQty}" readonly></td>
@@ -717,9 +825,7 @@ function filterCards() {
              subTr.innerHTML = `
                <td class="row-handle">⋮⋮</td>
                <td>${baseData.poNumber}</td>
-               
                <td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${s.itemCode||baseData.itemCode}</span></td>
-               
                <td><input class="table-input kpc-new" placeholder="KPC" value="${s.kpc||""}"></td>
                <td>${baseData.description}</td>
                <td><input class="table-input readonly-field ordered" value="${baseData.orderedQty}" readonly></td>
@@ -747,7 +853,6 @@ function filterCards() {
     const idx = baseTr.dataset.rowIndex;
     const subs = getSubRowsByIndex(idx);
     const po = baseTr.children[1].textContent;
-    // UPDATED: Query selector still works because element is hidden, not removed
     const ic = baseTr.querySelector(".kpc-original").textContent;
     const desc = baseTr.children[4].textContent;
     const ord = baseTr.querySelector(".ordered").value;
@@ -768,9 +873,7 @@ function filterCards() {
     subTr.innerHTML = `
       <td class="row-handle">⋮⋮</td>
       <td>${po}</td>
-      
       <td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
-      
       <td><input class="table-input kpc-new" placeholder="KPC"></td>
       <td>${desc}</td>
       <td><input class="table-input readonly-field ordered" value="${ord}" readonly></td>
@@ -822,7 +925,6 @@ function filterCards() {
     Object.keys(groupMap).forEach(idx => {
       const g = groupMap[idx]; const base = g.base; if (!base) return;
       const poNumber = base.children[1].textContent.trim();
-      // UPDATED: Still able to read hidden column
       const itemCode = base.querySelector(".kpc-original").textContent.trim();
       const description = base.children[4].textContent.trim();
       const orderedQty = base.querySelector(".ordered").value;
@@ -854,9 +956,10 @@ function filterCards() {
          hideLoading();
          if(res.status==="success") {
            alert("Saved: " + payload.receivingId);
+           // Reset History agar data terbaru muncul saat tab dibuka lagi
+           allHistory = [];
            await Promise.all([ loadNextReceivingId(), loadInvListAndRender() ]);
-           showDashboard(); tableBody.innerHTML="";
-           ["summarySupplier","summaryDate","summaryStatus","summaryTotalOrdered","summaryTotalReceived","summaryTotalRemaining"].forEach(id=>document.getElementById(id).textContent="-");
+           showDashboard(); 
          } else { alert("Error: "+res.message); }
       })
       .catch(e=>{ hideLoading(); alert("Fail: "+e); });
@@ -883,9 +986,7 @@ function filterCards() {
       const data = await res.json();
       currentINV = inv; 
       renderSummary(data.header); 
-      // UPDATE PO DISPLAY (Jika backend kirim header.poNumber)
       poNumberDisplay.value = data.header.poNumber || "-"; 
-      
       renderLines(data.lines, false); applyLockState(false);
     } finally { hideLoading(); }
   }
@@ -905,9 +1006,7 @@ function filterCards() {
       if (data.receivingDate) receivingDate.value = data.receivingDate; 
       notes.value = data.notes||"";
       renderSummary(data.header); 
-      // UPDATE PO DISPLAY FOR EXISTING
       poNumberDisplay.value = data.header.poNumber || "-"; 
-
       document.getElementById("summaryStatus").textContent = data.locked ? "LOCKED" : "Open";
       renderLines(data.lines, true); applyLockState(data.locked);
     } finally { hideLoading(); }
@@ -934,9 +1033,14 @@ function filterCards() {
     currentINV = ""; 
     selectedInvDisplay.value = "";
     poNumberDisplay.value = "";
-    
     applyLockState(false); loadNextReceivingId();
-    tableBody.innerHTML=""; ["summarySupplier","summaryDate","summaryStatus"].forEach(id=>document.getElementById(id).textContent="-");
+    tableBody.innerHTML=""; 
+    ["summarySupplier","summaryDate","summaryStatus","summaryTotalOrdered","summaryTotalReceived","summaryTotalRemaining"].forEach(id=>document.getElementById(id).textContent="-");
+  }
+
+  function enterEditMode() {
+      isEditMode = true;
+      // Clear table and summaries handled by data load
   }
 
   function reloadINV() {
