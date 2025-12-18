@@ -394,7 +394,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHqRczvVqsFOzwzcc1e8ej5ILjEszF0htUm2kPEy56tsmRknSaT3vM6uecw9XgV9wt/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpRHtD3j0j0nhWUfQOJqr71RJjwz_p_dl0j8UUDN69mgHtYzVbLW6ThNQAgmayE0Im/exec";
 
   let currentINV = "";
   let isLocked = false;
@@ -470,20 +470,22 @@ function renderCards(listData) {
     listData.forEach(item => {
       const supplierName = item.supplier || "Supplier Data N/A";
       const invDate = item.invoiceDate || "-"; 
-      // const poNum sudah tidak wajib ditampilkan di header jika fokus Inv, tapi bisa dibiarkan
-      // itemsPreview sekarang sudah string gabungan dari Apps Script
+      
+      // Tampilkan PO Number jika ada
+      const poDisplay = item.poNumber ? `<span class="po-tag">/ ${item.poNumber}</span>` : "";
+
       const itemsPreview = item.items || "Click view details to see items...";
       const rawStatus = item.status || "Pending"; 
       
+      // LOGIKA TAMPILAN BADGE & WARNA KARTU
       let badgeClass = "badge-pending";
       let borderClass = "status-pending";
       let statusLabel = "Belum Diterima";
 
-      // LOGIKA TAMPILAN STATUS BARU
       if (rawStatus === "Partial") {
           badgeClass = "badge-partial"; 
           borderClass = "status-partial"; 
-          statusLabel = "Sebagian Diterima";
+          statusLabel = "Diterima Sebagian";
       } else if (rawStatus === "Completed") {
           badgeClass = "badge-completed"; 
           borderClass = "status-completed"; 
@@ -493,10 +495,7 @@ function renderCards(listData) {
       const card = document.createElement("div");
       card.className = `inv-list-card ${borderClass}`;
       
-      // Event Click Card
       card.onclick = () => {
-         // Jika status selain pending, idealnya cek receivingId jika ada fitur edit
-         // Untuk sekarang arahkan ke showForm dulu
          showForm(item.invNumber);
       };
 
@@ -504,7 +503,7 @@ function renderCards(listData) {
         <div class="card-body">
           <div class="card-info">
             <div class="card-main-title">
-               ${item.invNumber}
+               ${item.invNumber} ${poDisplay}
             </div>
             <div class="card-meta">
               <div class="meta-row">
@@ -531,29 +530,29 @@ function renderCards(listData) {
       invoiceGrid.appendChild(card);
     });
   }
-
 function filterCards() {
     const query = document.getElementById("searchInput").value.toLowerCase();
     
     const filtered = allInvoices.filter(item => {
-      // Search text logic
-      const term = (item.invNumber + " " + (item.supplier||"") + " " + (item.items||"")).toLowerCase();
+      // 1. Text Search: Cari di Inv, PO, Supplier, atau Items
+      const term = (item.invNumber + " " + (item.poNumber||"") + " " + (item.supplier||"") + " " + (item.items||"")).toLowerCase();
       const matchText = term.includes(query);
       
+      // 2. Status Filter
       let matchStatus = true;
-      const itemStatus = item.status || "Pending"; // Pending, Partial, Completed
+      const itemStatus = item.status || "Pending"; // Nilai dari Backend: Pending, Partial, Completed
 
-      // Filter Logic berdasarkan Tab yang dipilih
       if (currentStatusFilter === "All") {
+          // Tampilkan SEMUA
           matchStatus = true;
       } else if (currentStatusFilter === "Pending") {
-          // Tombol "Belum Diterima" menampilkan status Pending
+          // Tombol "Belum Diterima" -> Backend "Pending"
           matchStatus = (itemStatus === "Pending");
       } else if (currentStatusFilter === "Partial") {
-          // Tombol "Diterima Sebagian"
+          // Tombol "Diterima Sebagian" -> Backend "Partial"
           matchStatus = (itemStatus === "Partial");
       } else if (currentStatusFilter === "Completed") {
-          // Tombol "Sudah Diterima"
+          // Tombol "Sudah Diterima" -> Backend "Completed"
           matchStatus = (itemStatus === "Completed");
       }
 
@@ -561,7 +560,7 @@ function filterCards() {
     });
     
     renderCards(filtered);
-  }
+}
 
   // --- FORM LOGIC ---
   function mergeDiscountLines(rawLines) {
