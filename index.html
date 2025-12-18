@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Receiving PO Entry V2 (Tabs Edition)</title>
+  <title>Receiving PO Entry V2 (Final Tabs Edition)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
@@ -395,7 +395,7 @@
               <th class="sticky-col" style="width:28px;"></th>
               <th>PO Number</th>
               
-              <th style="display:none;">Item Code</th>
+              <th>Tipe Produk</th>
               
               <th>KPC</th>
               <th>Description</th>
@@ -430,7 +430,7 @@
 
 <script>
   // UPDATE URL KE SCRIPT TERBARU
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvQEBvZNukJy_foDNz3cLgNFmzPAWQd4KF0nc8FkL5Sx-aFQjmVxTnstVhDki5JT__0Q/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9bpoodnrwqYOdUK00uICmz-sBUOlm56yMs9MiNNqOEE0gJ0Jww4PAG3lF2e4HY3Sbww/exec";
 
   let currentINV = "";
   let isLocked = false;
@@ -726,6 +726,13 @@
         if (tr.classList.contains("subline-row")) recalcParentTotal(idx);
       });
     }
+    
+    // Hilangkan border merah saat user mulai mengetik KPC
+    const kpcInput = tr.querySelector(".kpc-new");
+    if(kpcInput) {
+        kpcInput.addEventListener('input', function(){ this.style.border = ""; });
+    }
+
     const del = tr.querySelector(".delete-btn");
     if (del) {
       del.addEventListener("click", e => {
@@ -771,7 +778,9 @@
         tr.innerHTML = `
           <td class="row-handle">⋮⋮</td>
           <td>${ln.poNumber}</td>
-          <td style="display:none;"><span class="kpc-original">${ln.itemCode||ln.kpc||""}</span></td>
+          
+          <td><span class="kpc-original">${ln.itemCode||ln.kpc||""}</span></td>
+          
           <td><input class="table-input kpc-new" placeholder="KPC" value="${ln.kpc || ""}"></td> 
           <td>${ln.description}</td>
           <td><input class="table-input readonly-field ordered" value="${ln.orderedQty}" readonly></td>
@@ -791,8 +800,6 @@
       // --- MODE EDIT (EXISTING DATA) ---
       const groups = {};
       lines.forEach(ln => {
-        // PERBAIKAN: Kunci grouping diganti: RowIndex + ItemCode.
-        // Mencegah item berbeda (HIJK1 & HIJK2) bergabung jika RowIndex sama.
         const idxStr = String(ln.rowIndex || "");
         const itemStr = String(ln.itemCode || ln.kpc || "").trim();
         const k = idxStr + "_" + itemStr; 
@@ -806,7 +813,6 @@
         const baseData = grp.base;
         let totalQty = 0; 
         
-        // Hitung total qty dari splits (jika item benar-benar sama dan displit lagi)
         grp.splits.forEach(s => totalQty += Number(s.qtyThisReceipt)||0);
         
         const displayQty = grp.splits.length > 1 ? totalQty : (baseData.qtyThisReceipt || "");
@@ -823,7 +829,9 @@
         baseTr.innerHTML = `
           <td class="row-handle">⋮⋮</td>
           <td>${baseData.poNumber}</td>
-          <td style="display:none;"><span class="kpc-original">${baseData.itemCode||""}</span></td>
+          
+          <td><span class="kpc-original">${baseData.itemCode||""}</span></td>
+          
           <td><input class="${kpcClass}" placeholder="KPC" value="${kpcVal}" ${kpcAttr}></td>
           <td>${baseData.description}</td>
           <td><input class="table-input readonly-field ordered" value="${baseData.orderedQty}" readonly></td>
@@ -843,7 +851,6 @@
         // Render Sub-Rows (Split)
         if (grp.splits.length > 1) {
           ensureParentModeForSplit(baseTr);
-          // Render sisa split (index 1 ke atas)
           grp.splits.slice(1).forEach(s => {
              const subTr = document.createElement("tr");
              subTr.classList.add("subline-row"); 
@@ -851,7 +858,9 @@
              subTr.innerHTML = `
                <td class="row-handle">⋮⋮</td>
                <td>${baseData.poNumber}</td>
-               <td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${s.itemCode||baseData.itemCode}</span></td>
+               
+               <td><span class="subline-label">↳ Split</span><span class="kpc-original">${s.itemCode||baseData.itemCode}</span></td>
+               
                <td><input class="table-input kpc-new" placeholder="KPC" value="${s.kpc||""}"></td>
                <td>${baseData.description}</td>
                <td><input class="table-input readonly-field ordered" value="${baseData.orderedQty}" readonly></td>
@@ -880,7 +889,10 @@
     const idx = baseTr.dataset.rowIndex;
     const subs = getSubRowsByIndex(idx);
     const po = baseTr.children[1].textContent;
+    
+    // Perbaikan: Ambil konten original Item Code/Tipe Produk
     const ic = baseTr.querySelector(".kpc-original").textContent;
+    
     const desc = baseTr.children[4].textContent;
     const ord = baseTr.querySelector(".ordered").value;
     const rec = baseTr.querySelector(".received").value;
@@ -897,10 +909,12 @@
     }
     const subTr = document.createElement("tr");
     subTr.classList.add("subline-row"); subTr.dataset.rowIndex = idx;
+    
+    // Perbaikan: Pastikan kolom ke-3 (Tipe Produk) muncul juga di baris baru
     subTr.innerHTML = `
       <td class="row-handle">⋮⋮</td>
       <td>${po}</td>
-      <td style="display:none;"><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
+      <td><span class="subline-label">↳ Split</span><span class="kpc-original">${ic}</span></td>
       <td><input class="table-input kpc-new" placeholder="KPC"></td>
       <td>${desc}</td>
       <td><input class="table-input readonly-field ordered" value="${ord}" readonly></td>
@@ -913,6 +927,7 @@
       <td><input class="table-input readonly-field uom-field" value="${uom}" readonly></td>
       <td style="text-align:center;"><button type="button" class="split-btn"><span class="split-icon"></span></button></td>
       <td class="delete-btn">🗑</td>`;
+    
     if (subs.length === 0) tableBody.insertBefore(subTr, baseTr.nextSibling);
     else tableBody.insertBefore(subTr, subs[subs.length-1].nextSibling);
     attachRowEvents(subTr);
@@ -921,21 +936,42 @@
 
   function validateForm() {
     if (isLocked) return "Locked.";
-    if (!receivingDate.value) return "Date required.";
-    if (!isEditMode && !currentINV) return "Inv required.";
+    if (!receivingDate.value) return "Receiving Date required.";
+    if (!isEditMode && !currentINV) return "Invoice required.";
+    
     const rows = [...document.querySelectorAll("#tableBody tr")];
     if (rows.length === 0) return "No lines.";
+    
     const grp = {};
+    
     for (let r of rows) {
       const idx = r.dataset.rowIndex; if (!idx) continue;
+      
+      const qtyInput = r.querySelector(".qty-receipt");
+      const kpcInput = r.querySelector(".kpc-new");
+      
+      const q = Number(qtyInput.value) || 0;
+      const k = kpcInput.value.trim();
+      
+      // --- INTERNAL CONTROL KPC ---
+      // Cek jika Qty diisi (> 0) DAN input KPC tidak read-only (user bisa ketik)
+      // Maka KPC Wajib diisi.
+      if (q > 0 && !kpcInput.readOnly && k === "") {
+        // Highlight visual agar user tahu mana yang kurang
+        kpcInput.style.border = "2px solid red";
+        kpcInput.focus();
+        return "Internal Control: KPC Wajib Diisi untuk baris yang diterima!";
+      }
+      
       if (!grp[idx]) grp[idx] = { rem: Number(r.querySelector(".remaining").value)||0, tot:0 };
-      const q = Number(r.querySelector(".qty-receipt").value)||0;
-      const k = r.querySelector(".kpc-new").value.trim();
-      const isParent = !r.classList.contains("subline-row");
-      if (!isParent && q > 0 && !k) return "Missing KPC for split line";
+      
       if (r.classList.contains("subline-row") || !r.dataset.hasSplit) grp[idx].tot += q;
     }
-    for (let idx in grp) { if (grp[idx].tot > grp[idx].rem) return `Total Qty > Remaining for one item.`; }
+    
+    for (let idx in grp) { 
+        if (grp[idx].tot > grp[idx].rem) return `Total Qty melebihi sisa (Remaining) untuk salah satu item.`; 
+    }
+    
     return null;
   }
 
