@@ -1,737 +1,523 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Production Management - Auxilium</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auxilium PO System</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/feather-icons"></script> 
+    <style>
+        /* STYLES UTAMA */
+        :root { 
+            --primary-color: #116999; 
+            --bg-light: #eef2f6; 
+            --primary-teal: #008080;
+            --primary-teal-hover: #006666;
+        }
+        body { margin: 0; background: var(--bg-light); font-family: 'Inter', sans-serif; }
 
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://unpkg.com/feather-icons"></script>
+        /* NAVBAR */
+        .aux-navbar { background: #fff; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 1px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1050; }
+        .aux-logo img { height: 40px; width: auto; }
+        .aux-menu { display: flex; gap: 10px; align-items: center; height: 100%; }
+        .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
+        .aux-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .aux-link:hover, .nav-item:hover .aux-link { color: #1d2939; background: #f9fafb; }
+        .aux-link.active { color: var(--primary-color); background: #eff8ff; font-weight: 700; }
+        
+        .dropdown-menu-aux { visibility: hidden; opacity: 0; position: absolute; top: 90%; left: 50%; transform: translateX(-50%) translateY(-10px); background: white; min-width: 220px; border: 1px solid #eaecf0; border-radius: 8px; box-shadow: 0 12px 16px -4px rgba(16, 24, 40, 0.08); padding: 6px; z-index: 10000; transition: all 0.2s ease; }
+        .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+        .dropdown-item-aux { display: block; padding: 10px 12px; color: #344054; text-decoration: none; font-size: 14px; border-radius: 6px; }
+        .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+        .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid #eee; }
+        .user-details { display: flex; flex-direction: column; text-align: right; }
+        .user-name { font-weight: 700; font-size: 13px; color: #333; }
+        .user-role { font-size: 11px; color: #888; }
+        .user-avatar { width: 36px; height: 36px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
+        .logout-btn { background: none; border: 1px solid #ddd; color: #666; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .logout-btn:hover { background: #fee2e2; color: #991b1b; border-color: #fee2e2; }
 
-<style>
-  /* =========================================
-     A. STANDARD NAVBAR STYLES
-     ========================================= */
-  :root { --primary-color: #116999; --primary-hover: #0e5a85; }
-  .aux-navbar { font-family: 'Inter', sans-serif; background-color: #ffffff; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 1px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 9000; }
-  .aux-logo img { height: 40px; width: auto; display: block; }
-  .aux-menu { display: flex; gap: 10px; align-items: center; height: 100%; }
-  .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
-  .aux-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 6px; transition: all 0.2s; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-  .aux-link:hover, .nav-item:hover .aux-link { color: #1d2939; background-color: #f9fafb; }
-  .aux-link.active { color: var(--primary-color); background-color: #eff8ff; font-weight: 700; }
-  
-  /* Dropdown & User Panel */
-  .dropdown-menu { visibility: hidden; opacity: 0; position: absolute; top: 90%; left: 50%; transform: translateX(-50%) translateY(-10px); background: white; min-width: 220px; border: 1px solid #eaecf0; border-radius: 8px; box-shadow: 0 12px 16px -4px rgba(16, 24, 40, 0.08); padding: 6px; z-index: 10000; transition: all 0.2s ease; }
-  .nav-item:hover .dropdown-menu { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
-  .dropdown-item { display: block; padding: 10px 12px; color: #344054; text-decoration: none; font-size: 14px; border-radius: 6px; text-align: left; font-weight: 400; }
-  .dropdown-item:hover { background-color: #f9fafb; color: var(--primary-color); }
-  .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid #eee; }
-  .user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
-  .user-name { font-weight: 700; font-size: 13px; color: #333; }
-  .user-role { font-size: 11px; color: #888; }
-  .user-avatar { width: 36px; height: 36px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; user-select: none; }
-  .logout-btn { background: none; border: 1px solid #ddd; color: #666; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 14px; }
-  .logout-btn:hover { background-color: #fee2e2; color: #991b1b; border-color: #fee2e2; }
+        /* CONTENT */
+        .stat-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.04); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .stat-value { font-size: 26px; font-weight: 800; margin-bottom: 5px; color: #1e293b; }
+        .stat-label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; }
 
-  /* Modal Logout */
-  .modal-logout { display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
-  .modal-logout-content { background-color: #fff; margin: 15% auto; padding: 32px; border-radius: 16px; width: 360px; text-align: center; font-family: 'Inter', sans-serif; }
-  .btn-modal { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1; }
-  .btn-yes { background-color: #d92d20; color: #fff; }
-  .btn-cancel { background-color: #f2f4f7; color: #344054; }
+        .table-card { background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid rgba(0,0,0,0.04); }
+        .table-header-custom { background: #f8fafc; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
+        
+        .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; }
+        .status-pill.waiting { background: #eff6ff; color: #3b82f6; border: 1px solid #dbeafe; } 
+        .status-pill.done { background: #ecfdf5; color: #10b981; border: 1px solid #d1fae5; }
 
-  /* Dashboard Styles */
-  body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
-  .active-tab { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
-  .inactive-tab { color: #64748b; border-bottom: 2px solid transparent; }
-  .inactive-tab:hover { color: #334155; border-bottom: 2px solid #e2e8f0; }
-  .sub-pill { padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
-  .sub-pill-active { background-color: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
-  .sub-pill-inactive { background-color: white; color: #64748b; border-color: #e2e8f0; }
-  .sub-pill-inactive:hover { background-color: #f1f5f9; color: #334155; }
-  
-  #loading { position: fixed; inset: 0; background: rgba(255,255,255,0.85); z-index: 50000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
-  .spinner { border: 4px solid #e2e8f0; border-top: 4px solid #3b82f6; border-radius: 50%; width: 45px; height: 45px; animation: spin 0.8s linear infinite; }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-  .input-xs { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; transition: border 0.2s; }
-  .input-xs:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-  .input-readonly { background-color: #f8fafc; color: #64748b; cursor: not-allowed; border-color: #e2e8f0; }
-  select.input-xs { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; appearance: none; }
-  .swal2-container { z-index: 100000 !important; }
-</style>
+        .form-container { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .form-label-custom { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; display: block; }
+        .form-control-custom { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; width: 100%; }
+        .form-control-custom:focus { border-color: var(--primary-teal); outline: none; }
+        
+        .select2-container--bootstrap-5 .select2-selection { border-color: #cbd5e1 !important; padding: 10px 12px !important; min-height: 42px; border-radius: 8px !important; }
+        .btn-confirm { background: var(--primary-teal); color: white; font-weight: 600; border: none; padding: 10px 24px; border-radius: 8px; height: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-confirm:hover { background: var(--primary-teal-hover); color: white; }
+        
+        .table-form th { font-size: 12px; color: #475569; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding: 12px; background: #f8fafc; text-transform: uppercase; }
+        .input-table { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; font-size: 14px; width: 100%; }
+        .btn-add-product { color: var(--primary-teal); font-weight: 600; cursor: pointer; padding: 10px 18px; border-radius: 8px; background: rgba(0,128,128,0.05); display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; border: 1px dashed rgba(0,128,128,0.3); }
+        
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(4px); }
+    </style>
 </head>
-
 <body>
 
-<div class="aux-navbar">
-    <div class="aux-logo">
-        <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
+    <div class="aux-navbar">
+        <div class="aux-logo">
+            <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
+        </div>
+        <nav class="aux-menu">
+            <div class="nav-item"><a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a></div>
+            <div class="nav-item">
+                <div class="aux-link active">Pembelian <i data-feather="chevron-down" style="width:14px;"></i></div>
+                <div class="dropdown-menu-aux">
+                    <a href="#" class="dropdown-item-aux" style="font-weight:600; color:#116999;">Pemesanan Pembelian</a>
+                </div>
+            </div>
+        </nav>
+        <div class="user-panel">
+            <div class="user-details"><span class="user-name">Admin Gudang</span><span class="user-role">CV Sukses Jaya</span></div>
+            <div class="user-avatar">AG</div>
+            <button class="logout-btn" onclick="alert('Fitur logout')" title="Keluar"><i data-feather="log-out" style="width:16px;"></i></button>
+        </div>
     </div>
-    <nav class="aux-menu">
-        <div class="nav-item"><a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a></div>
-        <div class="nav-item">
-            <div class="aux-link">Penjualan <i data-feather="chevron-down" style="width:14px; height:14px;"></i></div>
-            <div class="dropdown-menu">
-                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/" class="dropdown-item">Order Penjualan</a>
-                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Review%20Penjualan/" class="dropdown-item">Review Penjualan</a>
+
+    <div class="container-fluid" style="margin-top: 40px; max-width: 1400px; padding-bottom: 50px;">
+        
+        <div id="view-list">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div><h3 class="page-title" style="font-size:24px; font-weight:700;">List Overview</h3><div class="breadcrumb-text">Dashboard &bullet; Purchase Orders</div></div>
+                <button class="btn btn-confirm shadow-sm" style="width: auto;" onclick="createNewPO()"><i class="bi bi-plus-lg"></i> NEW PO</button>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Orders</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-success" id="statToday">0</div><div class="stat-label">Created Today</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-primary" id="statWaiting">0</div><div class="stat-label">Waiting Approval</div></div></div>
+                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-danger" id="statItems">0</div><div class="stat-label">Total Items Qty</div></div></div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="input-group shadow-sm" style="width: 350px;">
+                    <span class="input-group-text bg-white border-end-0 border-light-subtle"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="searchInput" class="form-control border-start-0 border-light-subtle ps-0" placeholder="Search Reference, Vendor..." onkeyup="filterTable()">
+                </div>
+                <button class="btn btn-white shadow-sm fw-bold" onclick="fetchListPO()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+            </div>
+
+            <div class="table-card shadow-sm">
+                <table class="table table-hover mb-0">
+                    <thead class="table-header-custom">
+                        <tr>
+                            <th class="py-3 ps-4">Reference</th>
+                            <th class="py-3">Vendor</th>
+                            <th class="py-3">Order Date</th>
+                            <th class="py-3">Created At</th>
+                            <th class="py-3 text-center">Items</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3 text-center">Action</th> 
+                        </tr>
+                    </thead>
+                    <tbody id="listTableBody"><tr><td colspan="7" class="text-center py-5 text-muted">Loading data...</td></tr></tbody>
+                </table>
             </div>
         </div>
-        <div class="nav-item">
-            <div class="aux-link">Pembelian <i data-feather="chevron-down" style="width:14px; height:14px;"></i></div>
-            <div class="dropdown-menu">
-                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item">Pemesanan Pembelian</a>
-                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item">Daftar Tagihan</a>
-                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item">Penerimaan Pemesanan</a>
+
+        <div id="view-form" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center">
+                    <div><h3 class="page-title" id="formTitle" style="font-size:24px; font-weight:700;">New Quote</h3><div class="breadcrumb-text">Dashboard &bullet; Data Entry</div></div>
+                    <div id="editBadge" class="d-none edit-badge shadow-sm ms-3" style="background:#fffbeb; color:#b45309; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;"><i class="bi bi-pencil-square"></i> Editing Mode</div>
+                </div>
+                <button class="btn btn-white shadow-sm fw-bold" onclick="switchView('list')"><i class="bi bi-arrow-left me-1"></i> Back to List</button>
+            </div>
+
+            <div class="form-container shadow-sm">
+                <div class="row g-3 align-items-end mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Select Vendor</label>
+                        <select id="vendorSelect" class="form-select" style="width:100%;">
+                            <option value="" disabled selected>-- Select Vendor --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-custom">Order Date</label>
+                        <input type="date" id="poDate" class="form-control-custom">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-confirm w-100" onclick="submitPO()">
+                            <i class="bi bi-cloud-upload"></i> <span id="btnSubmitText">CONFIRM PO</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-title">Order Items</div>
+                <div class="table-responsive">
+                    <table class="table table-form w-100">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th style="width: 40%;">Product / Item</th>
+                                <th style="width: 15%;">Qty</th>
+                                <th style="width: 15%;">Unit</th>
+                                <th>Note</th>
+                                <th style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="entryTableBody"></tbody>
+                    </table>
+                </div>
+                <div onclick="addNewRow()" class="btn-add-product"><i class="bi bi-plus-circle-fill"></i> Add a product line</div>
             </div>
         </div>
-        <div class="nav-item">
-            <div class="aux-link active">Produksi <i data-feather="chevron-down" style="width:14px; height:14px;"></i></div>
-            <div class="dropdown-menu">
-                <a href="#" class="dropdown-item">Persiapan Pemesanan</a>
-                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/" class="dropdown-item">Produksi Barang Jadi</a>
-                <a href="#" class="dropdown-item">Retur Penjualan</a>
+    </div>
+
+    <div class="modal fade" id="modalViewPO" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light">
+                    <div><h5 class="modal-title fw-bold text-dark" id="viewPoTitle">PO Detail</h5><div class="text-muted small" id="viewPoDate"></div></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <div><div class="text-uppercase text-muted small fw-bold mb-1">Vendor</div><div class="fs-5 fw-bold text-primary" id="viewVendorName">-</div></div>
+                        <div class="text-end"><div class="text-uppercase text-muted small fw-bold mb-1">Status</div><span id="viewPoStatus" class="status-pill">-</span></div>
+                    </div>
+                    <div class="table-responsive border rounded">
+                        <table class="table table-striped mb-0">
+                            <thead class="bg-light"><tr class="text-uppercase small text-muted"><th class="ps-3">Item Name</th><th class="text-center">Qty</th><th class="text-center">Unit</th><th>Note</th></tr></thead>
+                            <tbody id="viewItemsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btnPrintFromModal"><i class="bi bi-printer"></i> Print PO</button>
+                </div>
             </div>
         </div>
-        <div class="nav-item">
-            <div class="aux-link">Persediaan <i data-feather="chevron-down" style="width:14px; height:14px;"></i></div>
-            <div class="dropdown-menu">
-                <a href="#" class="dropdown-item">Stok KPC</a>
-                <a href="#" class="dropdown-item">Stok Spandek</a>
-                <a href="#" class="dropdown-item">Gudang BS</a>
-            </div>
-        </div>
-    </nav>
-    <div class="user-panel">
-        <div class="user-details"><span class="user-name">Admin Gudang</span><span class="user-role">CV Sukses Jaya</span></div>
-        <div class="user-avatar">AG</div>
-        <button class="logout-btn" onclick="showLogoutModal()" title="Keluar Akun"><i data-feather="log-out" style="width:16px; height:16px;"></i></button>
     </div>
-</div>
 
-<div id="logoutModal" class="modal-logout">
-    <div class="modal-logout-content">
-      <p style="font-size:18px; font-weight:600; color:#101828; margin-bottom:10px;">Log out</p>
-      <p style="color:#667085; font-size:14px; margin-bottom:24px;">Are you sure you want to log out?</p>
-      <div style="display: flex; gap:12px;">
-        <button class="btn-modal btn-yes" onclick="logout()">Log out</button>
-        <button class="btn-modal btn-cancel" onclick="closeLogoutModal()">Cancel</button>
-      </div>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+        <div class="fw-bold text-dark fs-5" id="loadingText">Processing...</div>
     </div>
-</div>
 
-<div id="loading"><div class="spinner"></div></div>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-  <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-    <div class="flex items-start gap-4">
-      <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/" class="mt-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 rounded-lg w-10 h-10 flex items-center justify-center transition shadow-sm" title="Kembali ke Menu Produksi">
-        <i class="fas fa-arrow-left"></i>
-      </a>
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Production Management</h1>
-        <p class="text-sm text-slate-500 mt-1">Manage production queue, results, and Xero sync.</p>
-      </div>
-    </div>
-    <button onclick="fetchData()" class="bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 px-4 py-2.5 rounded-lg text-sm font-medium transition shadow-sm flex items-center justify-center">
-      <i class="fas fa-sync-alt mr-2"></i> Refresh Data
-    </button>
-  </div>
+    <script>
+        feather.replace();
 
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
-      <div class="absolute right-0 top-0 h-full w-1 bg-blue-500"></div>
-      <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Queue</div>
-      <div class="flex items-baseline"><span class="text-3xl font-bold text-slate-800" id="count-queue">0</span></div>
-    </div>
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
-      <div class="absolute right-0 top-0 h-full w-1 bg-emerald-500"></div>
-      <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Completed</div>
-      <div class="flex items-baseline"><span class="text-3xl font-bold text-slate-800" id="count-completed">0</span></div>
-    </div>
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
-      <div class="absolute right-0 top-0 h-full w-1 bg-indigo-500"></div>
-      <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">To Sync</div>
-      <div class="flex items-baseline"><span class="text-3xl font-bold text-slate-800" id="count-import">0</span></div>
-    </div>
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
-      <div class="absolute right-0 top-0 h-full w-1 bg-gray-500"></div>
-      <div class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Monitoring</div>
-      <div class="flex items-baseline"><span class="text-3xl font-bold text-slate-800" id="count-monitoring">0</span></div>
-    </div>
-  </div>
+        // -----------------------------------------------------------
+        // PENTING: GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT ANDA
+        // -----------------------------------------------------------
+        const API_URL = "https://script.google.com/macros/s/AKfycbwKQA8KJGRWeGbDoor6-JFuhf3eVUfZOKqx6wKWSnpmzcxkTW_Lpacgzxj9MCicUKWW/exec"; 
+        
+        let vendorData = {};
+        let savedOrders = [];
+        let isVendorLoaded = false;
+        let currentEditId = null;
 
-  <div class="border-b border-slate-200 mb-6">
-    <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
-      <button onclick="switchTab('queue')" id="tab-queue" class="active-tab whitespace-nowrap py-4 px-1 font-medium text-sm transition-colors">Siap Untuk Di Produksi</button>
-      <button onclick="switchTab('completed')" id="tab-completed" class="inactive-tab whitespace-nowrap py-4 px-1 font-medium text-sm transition-colors">Sudah Di Produksi</button>
-      <button onclick="switchTab('import')" id="tab-import" class="inactive-tab whitespace-nowrap py-4 px-1 font-medium text-sm transition-colors">Siap Import Xero</button>
-      <button onclick="switchTab('monitoring')" id="tab-monitoring" class="inactive-tab whitespace-nowrap py-4 px-1 font-medium text-sm transition-colors">Monitoring Xero</button>
-    </nav>
-  </div>
+        window.onload = function() {
+            fetchListPO();
+            setDefaultDate();
+        };
 
-  <div id="monitoring-submenu" class="hidden mb-6 flex gap-3 overflow-x-auto pb-2">
-    <button onclick="switchSubTab('all')" id="sub-all" class="sub-pill sub-pill-active">All Status</button>
-    <button onclick="switchSubTab('Proses')" id="sub-proses" class="sub-pill sub-pill-inactive"><i class="fas fa-spinner fa-spin mr-1.5 text-xs"></i>Proses</button>
-    <button onclick="switchSubTab('Sukses')" id="sub-sukses" class="sub-pill sub-pill-inactive"><i class="fas fa-check-circle mr-1.5 text-xs text-emerald-500"></i>Sukses</button>
-    <button onclick="switchSubTab('Gagal')" id="sub-gagal" class="sub-pill sub-pill-inactive"><i class="fas fa-times-circle mr-1.5 text-xs text-red-500"></i>Gagal</button>
-  </div>
-
-  <div class="mb-6">
-    <div class="relative max-w-md">
-      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-search text-slate-400"></i></div>
-      <input type="text" id="searchInput" onkeyup="renderData()" class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm shadow-sm" placeholder="Search ID, Machine, or Item...">
-    </div>
-  </div>
-
-  <div id="list-container" class="space-y-4 pb-20"></div>
-</div>
-
-<div id="modalResult" class="relative z-[9999] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-  <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
-  <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      <div class="relative transform overflow-visible rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-[90rem]">
-        <div class="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-start rounded-t-lg">
-          <div>
-            <h3 class="text-xl font-bold text-slate-900" id="modal-title">Input Production Result</h3>
-            <div class="mt-1 text-sm text-slate-500">Entry ID: <span id="modal-batch-id" class="font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded"></span></div>
-          </div>
-          <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition p-1"><i class="fas fa-times text-xl"></i></button>
-        </div>
-        <div class="bg-slate-50 px-6 py-6 overflow-visible">
-          <div class="overflow-visible rounded-lg border border-slate-200 shadow-sm bg-white">
-            <table class="min-w-full divide-y divide-slate-200">
-              <thead class="bg-slate-50"><tr id="modal-table-header"></tr></thead>
-              <tbody id="modal-table-body" class="divide-y divide-slate-200"></tbody>
-            </table>
-            <div id="add-row-container" class="hidden bg-slate-50 px-4 py-3 border-t border-slate-200">
-               <button onclick="addNewRow()" class="text-sm text-blue-600 font-semibold hover:text-blue-800 flex items-center"><i class="fas fa-plus-circle mr-2"></i> Add Row</button>
-            </div>
-          </div>
-          <div class="mt-4 flex items-start p-3 bg-amber-50 border border-amber-200 rounded-lg" id="modal-warning">
-            <i class="fas fa-exclamation-circle text-amber-500 mt-0.5 mr-2"></i>
-            <p class="text-xs text-amber-700" id="modal-warning-text"></p>
-          </div>
-        </div>
-        <div class="bg-white px-6 py-4 flex flex-row-reverse gap-3 border-t border-slate-100 rounded-b-lg" id="modal-footer"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// --- INITIALIZE NAVBAR ICONS ---
-feather.replace();
-
-// --- LOGOUT LOGIC ---
-function showLogoutModal() { document.getElementById("logoutModal").style.display = "block"; }
-function closeLogoutModal() { document.getElementById("logoutModal").style.display = "none"; }
-function logout() {
-    document.getElementById("loading").style.display = "flex";
-    setTimeout(() => {
-        localStorage.removeItem("uxilium_current_user");
-        window.location.href = "login.html"; 
-    }, 800);
-}
-
-// =================================================================
-// MAIN LOGIC
-// =================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbxNxOOOfN4BMK2KnDD9SUXmf8g4RyBP37F7P9VXcsCsp5JHrF6YT6j6KaVotlNGINI/exec"; 
-
-let RAW_DATA = [];
-let GROUPED_DATA = {};
-let OPTIONS = { items: [], kpcs: [] };
-let CURRENT_TAB = 'queue';
-let CURRENT_SUB_TAB = 'all'; 
-let CURRENT_BATCH_ID = null;
-let CURRENT_BATCH_DATE = null;
-let CURRENT_MODE = ''; 
-
-const MONITORING_STATUSES = ['Proses', 'Sukses', 'Gagal'];
-
-window.addEventListener('DOMContentLoaded', () => { fetchData(); });
-
-async function fetchData() {
-  document.getElementById('loading').style.display = 'flex';
-  try {
-    const [dataRes, optionsRes] = await Promise.all([
-      fetch(`${API_URL}?action=getData`),
-      fetch(`${API_URL}?action=getOptions`)
-    ]);
-    RAW_DATA = await dataRes.json();
-    OPTIONS = await optionsRes.json();
-    processData();
-    updateCounts();
-    renderData();
-  } catch (err) { 
-    Swal.fire('Error', err.toString(), 'error');
-  } 
-  finally { document.getElementById('loading').style.display = 'none'; }
-}
-
-function processData() {
-  GROUPED_DATA = {};
-  RAW_DATA.forEach(row => {
-    const allowed = ['Siap Untuk Di Produksi', 'Sudah Di Produksi', 'Siap Import', ...MONITORING_STATUSES];
-    if(!allowed.includes(row.status)) return;
-    if (!GROUPED_DATA[row.id]) {
-      GROUPED_DATA[row.id] = { id: row.id, date: row.date, status: row.status, timestamp: row.timestamp, items: [] };
-    }
-    GROUPED_DATA[row.id].items.push(row);
-  });
-}
-
-function updateCounts() {
-  let q = 0, c = 0, i = 0, m = 0;
-  Object.values(GROUPED_DATA).forEach(batch => {
-    const st = batch.items[0].status;
-    if (st === 'Siap Untuk Di Produksi') q++;
-    else if (st === 'Sudah Di Produksi') c++;
-    else if (st === 'Siap Import') i++;
-    else if (MONITORING_STATUSES.includes(st)) m++;
-  });
-  document.getElementById('count-queue').innerText = q;
-  document.getElementById('count-completed').innerText = c;
-  document.getElementById('count-import').innerText = i;
-  document.getElementById('count-monitoring').innerText = m;
-}
-
-function switchTab(tabName) {
-  CURRENT_TAB = tabName;
-  ['queue', 'completed', 'import', 'monitoring'].forEach(t => {
-    const el = document.getElementById('tab-' + t);
-    t === tabName ? (el.classList.remove('inactive-tab'), el.classList.add('active-tab')) : (el.classList.remove('active-tab'), el.classList.add('inactive-tab'));
-  });
-  const subMenu = document.getElementById('monitoring-submenu');
-  if (tabName === 'monitoring') {
-    subMenu.classList.remove('hidden');
-    switchSubTab('all');
-  } else {
-    subMenu.classList.add('hidden');
-  }
-  renderData();
-}
-
-function switchSubTab(subName) {
-  CURRENT_SUB_TAB = subName;
-  const pills = ['all', 'proses', 'sukses', 'gagal'];
-  pills.forEach(p => {
-    let id = 'sub-' + p; 
-    let el = document.getElementById(id);
-    let isMatch = false;
-    if (subName === 'all' && p === 'all') isMatch = true;
-    if (subName === 'Proses' && p === 'proses') isMatch = true;
-    if (subName === 'Sukses' && p === 'sukses') isMatch = true;
-    if (subName === 'Gagal' && p === 'gagal') isMatch = true;
-    if (isMatch) {
-      el.classList.remove('sub-pill-inactive');
-      el.classList.add('sub-pill-active');
-    } else {
-      el.classList.remove('sub-pill-active');
-      el.classList.add('sub-pill-inactive');
-    }
-  });
-  renderData();
-}
-
-function renderData() {
-  const container = document.getElementById('list-container');
-  container.innerHTML = '';
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const batches = Object.values(GROUPED_DATA).filter(batch => {
-    const st = batch.items[0].status;
-    let matchTab = false;
-    if (CURRENT_TAB === 'queue' && st === 'Siap Untuk Di Produksi') matchTab = true;
-    else if (CURRENT_TAB === 'completed' && st === 'Sudah Di Produksi') matchTab = true;
-    else if (CURRENT_TAB === 'import' && st === 'Siap Import') matchTab = true;
-    else if (CURRENT_TAB === 'monitoring') {
-      if (MONITORING_STATUSES.includes(st)) {
-        if (CURRENT_SUB_TAB === 'all') matchTab = true;
-        else if (CURRENT_SUB_TAB === st) matchTab = true;
-      }
-    }
-    if (!matchTab) return false;
-    const searchString = (batch.id + batch.items.map(i => i.item + i.machine).join(' ')).toLowerCase();
-    return searchString.includes(search);
-  });
-  batches.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  if (batches.length === 0) {
-    container.innerHTML = `<div class="text-center py-16 text-slate-400">Tidak ada data.</div>`;
-    return;
-  }
-  batches.forEach(batch => {
-    let actionBtn = '';
-    const currentStatus = batch.items[0].status;
-    if (CURRENT_TAB === 'queue') {
-      actionBtn = `
-        <div class="flex gap-2">
-          <button onclick="generateSPK('${batch.id}')" title="Cetak SPK" class="bg-slate-800 hover:bg-slate-900 text-white w-9 h-9 rounded-lg flex items-center justify-center shadow-sm transition">
-            <i class="fas fa-print"></i>
-          </button>
-          <button onclick="openInputModal('${batch.id}', 'plan_edit')" class="bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200 px-3 py-2 rounded-lg text-sm font-semibold shadow-sm transition flex items-center"><i class="fas fa-edit mr-2"></i> Edit Plan</button>
-          <button onclick="openInputModal('${batch.id}', 'result_input')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold shadow-sm transition flex items-center"><i class="fas fa-clipboard-check mr-2"></i> Input Result</button>
-        </div>`;
-    } else if (CURRENT_TAB === 'completed') {
-      actionBtn = `
-        <div class="flex gap-2">
-          <button onclick="openInputModal('${batch.id}', 'result_revise')" class="bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200 px-3 py-2 rounded-lg text-sm font-semibold shadow-sm transition flex items-center"><i class="fas fa-pen mr-2"></i> Revisi</button>
-          <button onclick="approveBatch('${batch.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition flex items-center"><i class="fas fa-check-circle mr-2"></i> Approve</button>
-        </div>`;
-    } else if (CURRENT_TAB === 'import') {
-       actionBtn = `<button onclick="syncXero('${batch.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition flex items-center"><i class="fas fa-cloud-upload-alt mr-2"></i> Sync Xero</button>`;
-    } else if (CURRENT_TAB === 'monitoring') {
-       let badgeClass = "bg-gray-100 text-gray-600 border-gray-200";
-       let icon = "";
-       if(currentStatus === 'Proses') { badgeClass = "bg-sky-50 text-sky-600 border-sky-100"; icon = "<i class='fas fa-spinner fa-spin mr-2'></i>"; }
-       else if (currentStatus === 'Sukses') { badgeClass = "bg-emerald-50 text-emerald-600 border-emerald-100"; icon = "<i class='fas fa-check-circle mr-2'></i>"; }
-       else if (currentStatus === 'Gagal') { badgeClass = "bg-red-50 text-red-600 border-red-100"; icon = "<i class='fas fa-times-circle mr-2'></i>"; }
-       actionBtn = `<div class="px-4 py-1.5 rounded-full text-xs font-bold border flex items-center ${badgeClass}">${icon} ${currentStatus.toUpperCase()}</div>`;
-    }
-
-    let itemRows = '';
-    batch.items.forEach(item => {
-      const kpcData = OPTIONS.kpcs.find(k => k.name === item.kpc);
-      const sisaVal = kpcData ? kpcData.sisa : 0;
-      const sisaDisplay = new Intl.NumberFormat('id-ID').format(sisaVal);
-      // FITUR 3: Display BS di list jika ada
-      const bsDisplay = item.qtyBS ? `<span class="text-red-600 ml-2 border border-red-200 bg-red-50 px-1 rounded">BS: <b>${item.qtyBS}</b></span>` : '';
-      const resultDisplay = (CURRENT_TAB !== 'queue') ? `<div class="ml-auto text-xs font-mono text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200 flex gap-3"><span>Qty: <b>${item.qty}</b></span>${bsDisplay}<span>Berat: <b>${item.weight} kg</b></span></div>` : '<div class="ml-auto"></div>';
-      itemRows += `
-        <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition px-2 -mx-2 rounded">
-           <div class="flex items-center flex-1 gap-4">
-             <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-             <div class="w-32 text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded text-center">${item.machine}</div>
-             <div class="text-sm font-medium text-slate-700 w-48">${item.item}</div>
-             <div class="text-xs text-slate-400 font-mono">${item.kpc}</div>
-             <div class="ml-6 pl-6 border-l border-slate-200">
-                <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Sisa KPC</div>
-                <div class="text-xs font-mono font-bold text-slate-600">${sisaDisplay}</div>
-             </div>
-             </div>
-           ${resultDisplay}
-        </div>`;
-    });
-    container.innerHTML += `
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition duration-200 overflow-hidden">
-        <div class="px-6 py-4 flex items-center justify-between bg-slate-50 border-b border-slate-100">
-          <div>
-            <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">ID</div>
-            <div class="text-lg font-bold text-slate-800 font-mono">${batch.id}</div>
-            <div class="text-xs text-slate-500 mt-1"><i class="far fa-calendar-alt mr-1.5"></i> ${batch.date}</div>
-          </div>
-          <div>${actionBtn}</div>
-        </div>
-        <div class="px-6 py-4">${itemRows}</div>
-      </div>`;
-  });
-}
-
-function openInputModal(batchId, mode) {
-  CURRENT_BATCH_ID = batchId;
-  CURRENT_MODE = mode; 
-  const batch = GROUPED_DATA[batchId];
-  CURRENT_BATCH_DATE = batch.date;
-  document.getElementById('modal-batch-id').innerText = batchId;
-  let title = "Form"; let warning = ""; const thead = document.getElementById('modal-table-header');
-  if (CURRENT_MODE === 'plan_edit') {
-      title = "Edit Production Plan";
-      warning = "<strong>Mode Edit Plan:</strong> Ubah Mesin, Item, atau KPC. Kolom hasil produksi disembunyikan.";
-      thead.innerHTML = `<th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase w-40">Machine</th><th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase w-56">Item</th><th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase w-56">KPC</th><th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">WE Number</th><th class="px-2 py-3 w-10">Action</th>`;
-  } else if (CURRENT_MODE === 'result_input' || CURRENT_MODE === 'result_revise') {
-      title = (CURRENT_MODE === 'result_revise') ? "Revisi Production Result" : "Input Production Result";
-      warning = "<strong>Mode Input Hasil:</strong> Masukkan Qty, Qty BS, dan Berat Coil (Kg).";
-      // FITUR 3: Tambah kolom Qty BS
-      thead.innerHTML = `<th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase w-24">Machine</th><th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase w-40">Item</th><th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase w-28">KPC</th><th class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase w-28 bg-slate-100">Sisa Coil</th><th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase w-20">Qty</th><th class="px-4 py-3 text-center text-xs font-bold text-red-500 uppercase w-20">Qty BS</th><th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase w-24">Berat (Kg)</th><th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">WE Number</th>`;
-  }
-  document.getElementById('modal-title').innerText = title;
-  document.getElementById('modal-warning-text').innerHTML = warning;
-  document.getElementById('add-row-container').classList.toggle('hidden', CURRENT_MODE !== 'plan_edit');
-  const tbody = document.getElementById('modal-table-body');
-  tbody.innerHTML = '';
-  batch.items.forEach(item => { renderModalRow(item); });
-  renderFooterButtons();
-  document.getElementById('modalResult').classList.remove('hidden');
-}
-
-function renderModalRow(item = null) {
-  const tbody = document.getElementById('modal-table-body');
-  const rowIndex = item ? item.rowIndex : 'new';
-  const itemVal = item ? item.item : '';
-  const machineVal = item ? item.machine : '';
-  const kpcVal = item ? item.kpc : '';
-  const weVal = item ? item.weNumber : '';
-  const qtyVal = item ? (item.qty || 0) : 0;
-  // FITUR 3: Ambil value BS
-  const qtyBSVal = item ? (item.qtyBS || 0) : 0;
-  const weightVal = item ? (item.weight || 0) : 0; 
-  let html = '';
-  if (CURRENT_MODE === 'plan_edit') {
-    const machineOpts = [...new Set(OPTIONS.items.map(i => i.machine))].sort();
-    let machineEl = `<select class="input-xs machine-select bg-white" onchange="onMachineChange(this)"><option value="">Select Machine</option>${machineOpts.map(m => `<option value="${m}" ${m === machineVal ? 'selected' : ''}>${m}</option>`).join('')}</select>`;
-    let itemEl = `<select class="input-xs item-select bg-white" onchange="onItemChange(this)" data-current="${itemVal}"><option value="">Select Machine First</option></select>`;
-    let kpcEl = `<select class="input-xs kpc-select bg-white" onchange="updateRowWE(this)" data-current="${kpcVal}"><option value="">Select Item First</option></select>`;
-    let deleteBtn = `<button onclick="deleteRow(this)" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button>`;
-    html = `<td class="px-4 py-3">${machineEl}</td><td class="px-4 py-3">${itemEl}</td><td class="px-4 py-3">${kpcEl}</td><td class="px-4 py-3"><input type="text" class="input-xs bg-slate-50 text-slate-500 we-preview font-mono text-xs cursor-not-allowed" value="${weVal}" readonly></td><td class="px-2 py-3 text-center">${deleteBtn}</td>`;
-  } else {
-    const kpcObj = OPTIONS.kpcs.find(k => k.name === kpcVal);
-    const sisaVal = kpcObj ? new Intl.NumberFormat('id-ID').format(kpcObj.sisa) : '0';
-    // FITUR 3: Tambah input BS
-    html = `<td class="px-4 py-3"><input type="text" class="input-xs input-readonly machine-select" value="${machineVal}" readonly></td><td class="px-4 py-3"><span class="text-sm font-medium text-slate-700 item-text">${itemVal}</span></td><td class="px-4 py-3"><input type="text" class="input-xs input-readonly kpc-select" value="${kpcVal}" readonly></td><td class="px-4 py-3 bg-slate-50 border-x border-slate-100"><input type="text" class="input-xs input-readonly text-right font-mono font-bold text-slate-600 bg-transparent border-0" value="${sisaVal}" readonly></td><td class="px-4 py-3"><input type="number" class="input-xs input-qty text-center font-mono border-blue-300 focus:ring-blue-200" value="${qtyVal}" min="0"></td><td class="px-4 py-3"><input type="number" class="input-xs input-bs text-center font-mono border-red-300 focus:ring-red-200 text-red-600 font-bold" value="${qtyBSVal}" min="0"></td><td class="px-4 py-3"><input type="number" class="input-xs input-weight text-center font-mono border-blue-300 focus:ring-blue-200" value="${weightVal}" min="0"></td><td class="px-4 py-3"><input type="text" class="input-xs bg-slate-50 text-slate-500 we-preview font-mono text-xs cursor-not-allowed" value="${weVal}" readonly></td>`;
-  }
-  const tr = document.createElement('tr');
-  tr.setAttribute('data-row-index', rowIndex);
-  tr.innerHTML = html;
-  tbody.appendChild(tr);
-  if (CURRENT_MODE === 'plan_edit' && machineVal) {
-    setTimeout(() => { onMachineChange(tr.querySelector('.machine-select'), false); }, 0);
-  }
-}
-
-function addNewRow() { renderModalRow(); }
-function deleteRow(btn) { btn.closest('tr').remove(); }
-function onMachineChange(el, resetValue = true) {
-  if(!el) return;
-  const tr = el.closest('tr');
-  const selectedMachine = el.value;
-  const itemSelect = tr.querySelector('.item-select');
-  const currentItem = itemSelect.getAttribute('data-current');
-  const validItems = OPTIONS.items.filter(i => i.machine === selectedMachine);
-  itemSelect.innerHTML = `<option value="">Select Item</option>` + validItems.map(i => `<option value="${i.name}" ${!resetValue && i.name === currentItem ? 'selected' : ''}>${i.name}</option>`).join('');
-  if(resetValue) { itemSelect.value = ""; onItemChange(itemSelect, true); } else { onItemChange(itemSelect, false); }
-}
-function onItemChange(el, resetValue = true) {
-  if(!el) return;
-  const tr = el.closest('tr');
-  const selectedItem = el.value;
-  const kpcSelect = tr.querySelector('.kpc-select');
-  const currentKpc = kpcSelect.getAttribute('data-current');
-  const validKPCs = OPTIONS.kpcs.filter(k => k.relatedItem === selectedItem);
-  kpcSelect.innerHTML = `<option value="">Select KPC</option>` + validKPCs.map(k => { const label = `${k.name} (Sisa: ${new Intl.NumberFormat('id-ID').format(k.sisa)})`; return `<option value="${k.name}" ${!resetValue && k.name === currentKpc ? 'selected' : ''}>${label}</option>`; }).join('');
-  if(resetValue) kpcSelect.value = "";
-  updateRowWE(el);
-}
-function updateRowWE(el) {
-  const tr = el.closest('tr');
-  const machine = tr.querySelector('.machine-select').value;
-  const kpc = tr.querySelector('.kpc-select').value;
-  let item = (CURRENT_MODE === 'plan_edit') ? tr.querySelector('.item-select').value : tr.querySelector('.item-text').innerText;
-  if(!machine || !item || !kpc) return;
-  let machineCode = "XX"; const mUpper = machine.toUpperCase();
-  if(mUpper.includes("RENG")) machineCode = "RG"; else if(mUpper.includes("TRUSS")) machineCode = "TS"; else machineCode = mUpper.substring(0,2);
-  const machineDigits = machine.match(/\d+/); const machineNum = machineDigits ? machineDigits[0].slice(-2) : "00";
-  const finalMachine = machineCode + machineNum;
-  const itemDigitsMatch = item.match(/\d+/g); let itemSuffix = "00"; if(itemDigitsMatch) itemSuffix = itemDigitsMatch[itemDigitsMatch.length - 1].slice(-2);
-  tr.querySelector('.we-preview').value = `${finalMachine}_${kpc}_${CURRENT_BATCH_ID}_${itemSuffix}`;
-}
-
-function renderFooterButtons() {
-  const footer = document.getElementById('modal-footer'); let btns = '';
-  if (CURRENT_MODE === 'plan_edit') { btns = `<button onclick="submitForm('replaceBatch')" class="bg-amber-400 text-amber-900 px-5 py-2.5 rounded hover:bg-amber-500 font-semibold shadow-sm">Save Changes</button>`; } 
-  else if (CURRENT_MODE === 'result_input') { btns = `<button onclick="submitForm('replaceBatch', true)" class="bg-blue-600 text-white px-5 py-2.5 rounded hover:bg-blue-700 font-semibold shadow-sm">Submit & Complete</button>`; } 
-  else if (CURRENT_MODE === 'result_revise') { btns = `<button onclick="submitForm('replaceBatch', true)" class="bg-emerald-600 text-white px-5 py-2.5 rounded hover:bg-emerald-700 font-semibold shadow-sm">Simpan Revisi</button>`; }
-  btns += `<button onclick="closeModal()" class="bg-white border px-5 py-2.5 rounded hover:bg-slate-50 font-medium text-slate-700 shadow-sm ml-2">Cancel</button>`;
-  footer.innerHTML = btns;
-}
-function closeModal() { document.getElementById('modalResult').classList.add('hidden'); }
-
-async function submitForm(action, forceComplete = false) {
-  const rows = document.querySelectorAll('#modal-table-body tr'); const items = []; let isError = false;
-  rows.forEach(tr => {
-    let itemVal = "";
-    if (CURRENT_MODE === 'plan_edit') {
-         itemVal = tr.querySelector('.item-select').value;
-         const machineVal = tr.querySelector('.machine-select').value; const kpcVal = tr.querySelector('.kpc-select').value;
-         if(!itemVal || !machineVal || !kpcVal) { isError = true; tr.classList.add('bg-red-50'); } else { tr.classList.remove('bg-red-50'); }
-    } else { itemVal = tr.querySelector('.item-text').innerText; }
-    
-    const qty = (CURRENT_MODE === 'plan_edit') ? 0 : parseFloat(tr.querySelector('.input-qty').value) || 0;
-    // FITUR 3: Ambil value BS
-    const qtyBS = (CURRENT_MODE === 'plan_edit') ? 0 : parseFloat(tr.querySelector('.input-bs').value) || 0;
-    const weight = (CURRENT_MODE === 'plan_edit') ? 0 : parseFloat(tr.querySelector('.input-weight').value) || 0;
-    
-    // FITUR 3: Sertakan qtyBS dalam payload
-    items.push({ 
-        rowIndex: tr.getAttribute('data-row-index'), 
-        item: itemVal, 
-        machine: tr.querySelector('.machine-select').value, 
-        kpc: tr.querySelector('.kpc-select').value, 
-        qty: qty, 
-        qtyBS: qtyBS, 
-        weight: weight, 
-        weNumber: tr.querySelector('.we-preview').value, 
-        date: CURRENT_BATCH_DATE 
-    });
-  });
-  if(isError) { Swal.fire('Data Belum Lengkap', 'Mohon lengkapi semua kolom (Mesin, Item, KPC) sebelum menyimpan.', 'warning'); return; }
-  const result = await Swal.fire({ title: 'Simpan Data?', text: "Pastikan data yang diinput sudah benar.", icon: 'question', showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Simpan', cancelButtonText: 'Batal' });
-  if (!result.isConfirmed) return;
-  closeModal();
-  await postAction(action, { batchId: CURRENT_BATCH_ID, items: items, forceComplete: forceComplete });
-}
-
-async function postAction(action, payload) {
-  document.getElementById('loading').style.display = 'flex';
-  try {
-    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify({ action, ...payload }) });
-    const result = await res.json();
-    if(result.status === 'success') { await Swal.fire({ title: 'Berhasil!', text: 'Data telah berhasil disimpan.', icon: 'success', confirmButtonColor: '#2563eb', timer: 2000, timerProgressBar: true }); fetchData(); }
-    else throw new Error(result.message);
-  } catch(e) { Swal.fire({ title: 'Gagal!', text: "Terjadi kesalahan: " + e.message, icon: 'error', confirmButtonColor: '#ef4444' }); } 
-  finally { document.getElementById('loading').style.display = 'none'; }
-}
-async function approveBatch(batchId) { const result = await Swal.fire({ title: 'Approve Batch?', text: `Anda akan menyetujui batch ID: ${batchId}`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#059669', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Approve!', cancelButtonText: 'Batal' }); if(result.isConfirmed) { await postAction('approve', { batchId }); } }
-async function syncXero(batchId) { const result = await Swal.fire({ title: 'Sync ke Xero?', text: `Data batch ${batchId} akan dikirim ke Xero.`, icon: 'info', showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Sync Sekarang', cancelButtonText: 'Nanti Saja' }); if(result.isConfirmed) { await postAction('syncXero', { batchId }); } }
-
-// ==========================================
-// FUNGSI GENERATE SPK (UPDATE: DATE FORMAT DD/MM/YYYY)
-// ==========================================
-function generateSPK(batchId) {
-    const { jsPDF } = window.jspdf;
-    
-    // Set format A5 Landscape
-    const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a5'
-    });
-    
-    const batch = GROUPED_DATA[batchId];
-
-    if (!batch) {
-        Swal.fire('Error', 'Data batch tidak ditemukan', 'error');
-        return;
-    }
-
-    // --- 1. HEADER KANAN (Informasi Perusahaan) ---
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(245, 158, 11); 
-    doc.text("CV. SUKSES JAYA MAKMUR LESTARI", 200, 12, { align: "right" });
-    
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 100, 100); 
-    doc.setFontSize(7);
-    doc.text("Jl. D.I Panjaitan, RT/RW. 008/003", 200, 16, { align: "right" });
-    doc.text("Kel. Wundudopi, Kec. Baruga, Kendari", 200, 19, { align: "right" });
-    doc.text("Sulawesi Tenggara | Telp. 0822 4708 4908", 200, 22, { align: "right" });
-
-    // --- 2. HEADER KIRI (Judul SPK) ---
-    doc.setTextColor(0, 0, 0); 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("SURAT PERINTAH KERJA", 10, 16);
-
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 100, 100); 
-    doc.text("Produksi Barang Jadi (FG) - Non Spandek", 10, 21);
-
-    // --- 3. GARIS PEMBATAS TEBAL ---
-    doc.setDrawColor(0, 0, 0); 
-    doc.setLineWidth(0.5);
-    doc.line(10, 25, 200, 25); 
-
-    // --- 4. INFO BATCH (Entry ID & Date) ---
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
-    
-    // Label Entry ID
-    doc.setFont("helvetica", "bold");
-    doc.text("Entry ID:", 10, 32);
-    
-    // Value Entry ID
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(100, 100, 100); 
-    doc.text(batchId, 30, 32);
-    
-    // Tanggal
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0); 
-    doc.text("Date:", 10, 37);
-    
-    doc.setFont("helvetica", "normal");
-    // FITUR 2: Date sudah dalam format DD/MM/YYYY dari backend, langsung tampilkan
-    doc.text(batch.date, 30, 37);
-
-    // --- 5. TABEL ITEM ---
-    const tableBody = batch.items.map((item, index) => [
-        index + 1,
-        item.item + "\n" + (item.notes || "Non Spandek"), 
-        item.machine,
-        item.kpc,
-        item.weNumber || "-"
-    ]);
-
-    doc.autoTable({
-        startY: 42,
-        head: [['NO', 'NAMA BARANG', 'MACHINE', 'KPC', 'WE NUMBER']],
-        body: tableBody,
-        theme: 'plain', 
-        styles: { 
-            font: 'helvetica',
-            fontSize: 8, 
-            cellPadding: 3, 
-            valign: 'middle',
-            textColor: [0, 0, 0], 
-            lineColor: [200, 200, 200], 
-            lineWidth: 0
-        },
-        headStyles: {
-            fillColor: [240, 240, 240], 
-            textColor: [0, 0, 0], 
-            fontStyle: 'bold',
-            halign: 'left',
-            lineWidth: { top: 0.1, bottom: 0.1 }, 
-            lineColor: [0, 0, 0]
-        },
-        columnStyles: {
-            0: { halign: 'center', width: 10 }, 
-            1: { width: 70 }, 
-            2: { width: 30, halign: 'left' }, 
-            3: { width: 30, halign: 'left' }, 
-            4: { width: 50, halign: 'left' }  
-        },
-        didParseCell: function (data) {
-            if (data.section === 'body' && data.column.index === 1) {
-                data.cell.styles.fontStyle = 'bold';
+        // --- NAVIGATION & VIEWS ---
+        function switchView(viewName) {
+            const listDiv = document.getElementById("view-list");
+            const formDiv = document.getElementById("view-form");
+            if (viewName === 'form') {
+                listDiv.classList.add("d-none");
+                formDiv.classList.remove("d-none");
+                if (!isVendorLoaded) fetchVendorData();
+            } else {
+                formDiv.classList.add("d-none");
+                listDiv.classList.remove("d-none");
+                resetFormState();
             }
-        },
-        margin: { left: 10, right: 10 }
-    });
+        }
 
-    // --- 6. FOOTER (Tanda Tangan) ---
-    let finalY = doc.lastAutoTable.finalY + 20;
-    
-    if (finalY > 110) {
-        doc.addPage();
-        finalY = 30;
-    }
+        function createNewPO() { resetFormState(); switchView('form'); }
 
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
+        function resetFormState() {
+            currentEditId = null;
+            document.getElementById("formTitle").innerText = "New Quote";
+            document.getElementById("btnSubmitText").innerText = "CONFIRM PO";
+            document.getElementById("editBadge").classList.add("d-none");
+            $('#vendorSelect').val(null).trigger('change');
+            document.getElementById("entryTableBody").innerHTML = "";
+            setDefaultDate();
+        }
 
-    // TTD Kiri
-    doc.text("Admin Produksi", 40, finalY, { align: "center" });
-    doc.setLineWidth(0.3);
-    doc.line(20, finalY + 20, 60, finalY + 20); 
+        function showLoading(show, text = "Processing...") {
+            document.getElementById("loadingText").innerText = text;
+            document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+        }
 
-    // TTD Kanan
-    doc.text("Kepala Gudang", 160, finalY, { align: "center" });
-    doc.line(140, finalY + 20, 180, finalY + 20); 
+        // --- FETCHING DATA ---
+        function fetchListPO() {
+            const tbody = document.getElementById("listTableBody");
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-secondary spinner-border-sm me-2"></div>Updating...</td></tr>`;
 
-    // Simpan PDF
-    doc.save(`SPK_${batchId}.pdf`);
-}
-</script>
+            fetch(API_URL + "?action=getSavedOrders")
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    savedOrders = res.data;
+                    renderListTable(savedOrders);
+                    calculateStats(savedOrders);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${res.message}</td></tr>`;
+                }
+            })
+            .catch(err => tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Error Connection (Cek API URL)</td></tr>`);
+        }
+
+        function renderListTable(data) {
+            const tbody = document.getElementById("listTableBody");
+            tbody.innerHTML = "";
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No orders found.</td></tr>`;
+                return;
+            }
+
+            data.forEach(po => {
+                let date = new Date(po.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
+                let created = new Date(po.createdAt).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
+                let statusClass = (po.status.includes("Menunggu")) ? "waiting" : "done";
+                
+                // Tombol Action
+                let btns = `<div class="d-flex justify-content-center gap-2">`;
+                btns += `<button class="btn btn-sm btn-outline-info border-0" onclick="viewPO('${po.id}', '${po.status}')" title="View"><i class="bi bi-eye-fill"></i></button>`;
+                btns += `<button class="btn btn-sm btn-outline-secondary border-0" onclick="printPO('${po.id}')" title="Print"><i class="bi bi-printer-fill"></i></button>`;
+                if (statusClass === "waiting") {
+                    btns += `<button class="btn btn-sm btn-outline-primary border-0" onclick="editPO('${po.id}')" title="Edit"><i class="bi bi-pencil-square"></i></button>`;
+                } else {
+                    btns += `<button class="btn btn-sm btn-outline-secondary border-0 text-muted" style="cursor:not-allowed;" title="Locked"><i class="bi bi-lock-fill"></i></button>`;
+                }
+                btns += `</div>`;
+
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="ps-4 fw-bold text-dark">${po.id}</td>
+                    <td>${po.vendor}</td>
+                    <td>${date}</td>
+                    <td class="text-muted small">${created}</td>
+                    <td class="text-center"><span class="badge bg-light text-dark border">${po.itemsCount}</span></td>
+                    <td><span class="status-pill ${statusClass}">${po.status}</span></td>
+                    <td class="text-center">${btns}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function printPO(poId) {
+            window.open(API_URL + "?action=printPO&id=" + poId, '_blank');
+        }
+
+        function viewPO(poId, currentStatus) {
+            showLoading(true, "Loading View...");
+            fetch(API_URL + "?action=getPoDetails&id=" + poId)
+            .then(res => res.json())
+            .then(res => {
+                showLoading(false);
+                if(res.status === 'success') {
+                    const data = res.data;
+                    document.getElementById("viewPoTitle").innerText = poId;
+                    document.getElementById("viewPoDate").innerText = "Order Date: " + data.info.date;
+                    document.getElementById("viewVendorName").innerText = data.info.vendor;
+                    document.getElementById("viewPoStatus").innerText = currentStatus || "-";
+                    
+                    const tbody = document.getElementById("viewItemsBody");
+                    tbody.innerHTML = "";
+                    data.items.forEach(item => {
+                        tbody.innerHTML += `<tr><td class="ps-3">${item.itemName}</td><td class="text-center fw-bold">${item.qty}</td><td class="text-center small">${item.unit}</td><td class="text-muted fst-italic small">${item.note}</td></tr>`;
+                    });
+
+                    document.getElementById("btnPrintFromModal").onclick = function() { printPO(poId); };
+                    const myModal = new bootstrap.Modal(document.getElementById('modalViewPO'));
+                    myModal.show();
+                } else { Swal.fire("Error", "Gagal load data.", "error"); }
+            })
+            .catch(err => { showLoading(false); Swal.fire("Error", "Connection Error", "error"); });
+        }
+
+        function editPO(poId) {
+            showLoading(true, "Fetching PO Details...");
+            currentEditId = poId;
+            fetch(API_URL + "?action=getPoDetails&id=" + poId)
+            .then(res => res.json())
+            .then(res => {
+                showLoading(false);
+                if(res.status === 'success') {
+                    const data = res.data;
+                    if(!isVendorLoaded) {
+                        fetchVendorData().then(() => populateEditForm(data, poId));
+                    } else {
+                        populateEditForm(data, poId);
+                    }
+                } else { Swal.fire("Error", "Gagal mengambil detail PO", "error"); }
+            })
+            .catch(err => { showLoading(false); Swal.fire("Error", "Koneksi Error", "error"); });
+        }
+
+        function populateEditForm(data, poId) {
+            switchView('form');
+            document.getElementById("formTitle").innerText = "Edit Quote: " + poId;
+            document.getElementById("btnSubmitText").innerText = "UPDATE PO";
+            document.getElementById("editBadge").classList.remove("d-none");
+            $('#vendorSelect').val(data.info.vendor).trigger('change');
+            document.getElementById("poDate").value = data.info.date;
+            document.getElementById("entryTableBody").innerHTML = "";
+            
+            data.items.forEach(item => {
+                let vendorName = data.info.vendor;
+                let itemIndex = -1;
+                if(vendorData[vendorName]) itemIndex = vendorData[vendorName].findIndex(x => x.item === item.itemName);
+                if(itemIndex !== -1) addNewRow(itemIndex, item.qty, item.note);
+            });
+        }
+
+        function fetchVendorData() {
+            return new Promise((resolve, reject) => {
+                fetch(API_URL + "?action=getData")
+                .then(res => res.json())
+                .then(res => {
+                    if(res.status === 'success'){
+                        vendorData = res.data;
+                        isVendorLoaded = true;
+                        populateVendorSelect();
+                        resolve();
+                    } else reject();
+                });
+            });
+        }
+
+        function populateVendorSelect() {
+            const select = $('#vendorSelect');
+            select.empty();
+            select.append('<option value="" disabled selected>-- Select Vendor --</option>');
+            Object.keys(vendorData).sort().forEach(v => { select.append(new Option(v, v)); });
+            select.select2({ theme: 'bootstrap-5', placeholder: "-- Select Vendor --", width: '100%' });
+            select.on('select2:select', function (e) { document.getElementById("entryTableBody").innerHTML = ""; addNewRow(); });
+        }
+
+        function addNewRow(preselectIndex = null, preQty = null, preNote = null) {
+            var vendor = $('#vendorSelect').val(); 
+            if(!vendor && !preselectIndex) return Swal.fire("Vendor Required", "Select vendor first.", "warning");
+
+            var tbody = document.getElementById("entryTableBody");
+            var rowIdx = tbody.children.length; 
+            var newSelectId = "product-select-" + rowIdx + "-" + Date.now();
+
+            var itemOptions = '<option value="" disabled selected>Select Product</option>';
+            vendorData[vendor].forEach((obj, index) => {
+                let selected = (preselectIndex !== null && preselectIndex == index) ? "selected" : "";
+                itemOptions += `<option value="${index}" ${selected}>${obj.item}</option>`;
+            });
+
+            var tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center text-muted align-middle row-number">${rowIdx + 1}</td>
+                <td><select id="${newSelectId}" class="form-select input-table item-select" style="width:100%">${itemOptions}</select></td>
+                <td><input type="number" class="input-table qty-input text-center" value="${preQty || ''}" placeholder="0.00" min="0"></td>
+                <td><input type="text" class="input-table unit-input bg-light text-muted" readonly tabindex="-1"></td>
+                <td><input type="text" class="input-table note-input" value="${preNote || ''}" placeholder="Note"></td>
+                <td class="text-center align-middle"><i class="bi bi-trash3-fill text-danger" style="cursor:pointer;" onclick="this.closest('tr').remove();"></i></td>
+            `;
+            tbody.appendChild(tr);
+
+            $(`#${newSelectId}`).select2({ theme: 'bootstrap-5', placeholder: "Search Product...", width: '100%', dropdownAutoWidth: true });
+            if(preselectIndex !== null) {
+                let unitInput = tr.querySelector(".unit-input");
+                if(vendorData[vendor][preselectIndex]) unitInput.value = vendorData[vendor][preselectIndex].unit;
+            }
+            $(`#${newSelectId}`).on('select2:select', function (e) { 
+                var vendor = $('#vendorSelect').val();
+                if(vendorData[vendor] && vendorData[vendor][this.value]) {
+                     this.closest("tr").querySelector(".unit-input").value = vendorData[vendor][this.value].unit;
+                }
+            });
+        }
+
+        function submitPO() {
+            var vendor = $('#vendorSelect').val();
+            var poDate = document.getElementById("poDate").value;
+            if(!vendor) return Swal.fire("Missing Data", "Select vendor.", "error");
+            if(!poDate) return Swal.fire("Missing Data", "Select date.", "error");
+
+            var rows = document.querySelectorAll("#entryTableBody tr");
+            var itemsToSave = [];
+            var isValid = true;
+
+            rows.forEach((row) => {
+                var itemIdx = row.querySelector(".item-select").value;
+                var qty = row.querySelector(".qty-input").value;
+                var unit = row.querySelector(".unit-input").value;
+                var note = row.querySelector(".note-input").value;
+                if(!itemIdx || !qty || qty <= 0) { isValid = false; } 
+                else {
+                    var realItemName = vendorData[vendor][itemIdx].item;
+                    itemsToSave.push({ itemName: realItemName, qty: qty, unit: unit, note: note });
+                }
+            });
+
+            if(rows.length === 0) return Swal.fire("Empty", "Add at least one product.", "warning");
+            if(!isValid) return Swal.fire("Invalid", "Check Qty fields.", "error");
+
+            showLoading(true, "Saving PO...");
+            let payload = { vendor: vendor, poDate: poDate, items: itemsToSave, poId: currentEditId };
+
+            fetch(API_URL + "?action=saveOrder", { method: "POST", body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(res => {
+                showLoading(false);
+                if(res.status === 'success') {
+                    let msg = currentEditId ? "PO Updated Successfully!" : "PO Created: " + res.id;
+                    Swal.fire({ title: 'Success!', text: msg, icon: 'success', confirmButtonColor: '#008080' })
+                    .then(() => { resetFormState(); switchView('list'); fetchListPO(); });
+                } else { throw new Error(res.message); }
+            })
+            .catch(err => { showLoading(false); Swal.fire('Failed', err.message, 'error'); });
+        }
+
+        function calculateStats(data) {
+            document.getElementById("statTotal").innerText = data.length;
+            const today = new Date().toDateString();
+            document.getElementById("statToday").innerText = data.filter(po => new Date(po.createdAt).toDateString() === today).length;
+            document.getElementById("statWaiting").innerText = data.filter(po => po.status.includes("Menunggu")).length;
+            document.getElementById("statItems").innerText = data.reduce((sum, po) => sum + po.itemsCount, 0);
+        }
+
+        function filterTable() {
+            const term = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = savedOrders.filter(po => po.id.toLowerCase().includes(term) || po.vendor.toLowerCase().includes(term));
+            renderListTable(filtered);
+        }
+
+        function setDefaultDate() {
+            const date = new Date();
+            const local = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+            document.getElementById("poDate").value = local;
+        }
+    </script>
 </body>
 </html>
