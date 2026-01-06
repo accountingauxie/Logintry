@@ -1,523 +1,558 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auxilium PO System</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"> 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/feather-icons"></script> 
-    <style>
-        /* STYLES UTAMA */
-        :root { 
-            --primary-color: #116999; 
-            --bg-light: #eef2f6; 
-            --primary-teal: #008080;
-            --primary-teal-hover: #006666;
-        }
-        body { margin: 0; background: var(--bg-light); font-family: 'Inter', sans-serif; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AUXILIUM Portal – CV. Sukses Jaya</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/feather-icons" rel="stylesheet">
+<style>
+/* --- 1. SYSTEM STYLE (Web UI) --- */
+:root { 
+    --primary-color: #116999; 
+    --bg-color: #f4f7f6; 
+    --text-color: #333; 
+    --red-bg: #fee2e2; 
+    --red-text: #991b1b;
+    --border-color: #eaecf0;
+}
 
-        /* NAVBAR */
-        .aux-navbar { background: #fff; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; box-shadow: 0 1px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1050; }
-        .aux-logo img { height: 40px; width: auto; }
-        .aux-menu { display: flex; gap: 10px; align-items: center; height: 100%; }
-        .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
-        .aux-link { text-decoration: none; color: #666; font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-        .aux-link:hover, .nav-item:hover .aux-link { color: #1d2939; background: #f9fafb; }
-        .aux-link.active { color: var(--primary-color); background: #eff8ff; font-weight: 700; }
-        
-        .dropdown-menu-aux { visibility: hidden; opacity: 0; position: absolute; top: 90%; left: 50%; transform: translateX(-50%) translateY(-10px); background: white; min-width: 220px; border: 1px solid #eaecf0; border-radius: 8px; box-shadow: 0 12px 16px -4px rgba(16, 24, 40, 0.08); padding: 6px; z-index: 10000; transition: all 0.2s ease; }
-        .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
-        .dropdown-item-aux { display: block; padding: 10px 12px; color: #344054; text-decoration: none; font-size: 14px; border-radius: 6px; }
-        .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
+* { box-sizing: border-box; }
+body { 
+    margin: 0; 
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    font-size: 14px; 
+    background: var(--bg-color); 
+    color: var(--text-color); 
+    -webkit-font-smoothing: antialiased; 
+}
 
-        .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid #eee; }
-        .user-details { display: flex; flex-direction: column; text-align: right; }
-        .user-name { font-weight: 700; font-size: 13px; color: #333; }
-        .user-role { font-size: 11px; color: #888; }
-        .user-avatar { width: 36px; height: 36px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
-        .logout-btn { background: none; border: 1px solid #ddd; color: #666; width: 32px; height: 32px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .logout-btn:hover { background: #fee2e2; color: #991b1b; border-color: #fee2e2; }
+/* --- UTILITY CLASSES --- */
+.hidden { display: none !important; }
 
-        /* CONTENT */
-        .stat-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.04); transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .stat-value { font-size: 26px; font-weight: 800; margin-bottom: 5px; color: #1e293b; }
-        .stat-label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; }
+/* --- LOGIN PAGE STYLES --- */
+#login-section {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-color);
+}
+.login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+.login-logo img { height: 50px; margin-bottom: 20px; }
+.login-title { font-size: 24px; font-weight: 700; color: #101828; margin-bottom: 8px; }
+.login-subtitle { color: #667085; margin-bottom: 30px; }
+.form-group { margin-bottom: 16px; text-align: left; }
+.form-group label { display: block; font-weight: 500; margin-bottom: 6px; color: #344054; }
+.form-input { 
+    width: 100%; padding: 10px 14px; border: 1px solid #d0d5dd; border-radius: 8px; 
+    font-size: 16px; outline: none; transition: border 0.2s;
+}
+.form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(17, 105, 153, 0.1); }
+.btn-login {
+    width: 100%; padding: 12px; background-color: var(--primary-color); color: white;
+    border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer;
+    transition: background 0.2s; margin-top: 10px;
+}
+.btn-login:hover { background-color: #0c4e75; }
+.btn-login:disabled { background-color: #98a2b3; cursor: not-allowed; }
+.error-msg { color: var(--red-text); background: var(--red-bg); padding: 10px; border-radius: 6px; margin-top: 15px; font-size: 13px; display: none; }
 
-        .table-card { background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid rgba(0,0,0,0.04); }
-        .table-header-custom { background: #f8fafc; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
-        
-        .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; }
-        .status-pill.waiting { background: #eff6ff; color: #3b82f6; border: 1px solid #dbeafe; } 
-        .status-pill.done { background: #ecfdf5; color: #10b981; border: 1px solid #d1fae5; }
+/* --- NAVIGATION BAR --- */
+.aux-navbar {
+    background-color: #ffffff;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    position: sticky; top: 0; z-index: 1000;
+}
 
-        .form-container { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .form-label-custom { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; display: block; }
-        .form-control-custom { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; width: 100%; }
-        .form-control-custom:focus { border-color: var(--primary-teal); outline: none; }
-        
-        .select2-container--bootstrap-5 .select2-selection { border-color: #cbd5e1 !important; padding: 10px 12px !important; min-height: 42px; border-radius: 8px !important; }
-        .btn-confirm { background: var(--primary-teal); color: white; font-weight: 600; border: none; padding: 10px 24px; border-radius: 8px; height: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-confirm:hover { background: var(--primary-teal-hover); color: white; }
-        
-        .table-form th { font-size: 12px; color: #475569; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding: 12px; background: #f8fafc; text-transform: uppercase; }
-        .input-table { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; font-size: 14px; width: 100%; }
-        .btn-add-product { color: var(--primary-teal); font-weight: 600; cursor: pointer; padding: 10px 18px; border-radius: 8px; background: rgba(0,128,128,0.05); display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; border: 1px dashed rgba(0,128,128,0.3); }
-        
-        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(4px); }
-    </style>
+/* Logo Setup */
+.aux-logo { display: flex; align-items: center; gap: 10px; }
+.aux-logo img { height: 45px; width: auto; object-fit: contain; }
+
+/* Menu Wrapper */
+.aux-menu { 
+    display: flex; 
+    gap: 8px; 
+    align-items: center; 
+    height: 100%; 
+}
+
+/* Navigation Item Wrapper */
+.nav-item {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Main Link Style */
+.aux-link { 
+    text-decoration: none; 
+    color: #475467; 
+    font-weight: 600; 
+    font-size: 14px; 
+    padding: 8px 16px; 
+    border-radius: 6px; 
+    transition: all 0.2s; 
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aux-link:hover, .nav-item:hover .aux-link { 
+    background-color: #f2f4f7; 
+    color: #101828;
+}
+
+.aux-link.active { 
+    background-color: #eff8ff; 
+    color: var(--primary-color); 
+    font-weight: 700; 
+}
+
+.chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
+.nav-item:hover .chevron-down { transform: rotate(180deg); }
+
+/* --- DROPDOWN MENU --- */
+.dropdown-menu {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: 85%; 
+    left: 0;
+    background: white;
+    min-width: 240px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 8px;
+    z-index: 9999;
+    transform: translateY(10px);
+    transition: all 0.2s ease-in-out;
+}
+
+.dropdown-menu::before {
+    content: "";
+    position: absolute;
+    top: -20px; left: 0; width: 100%; height: 20px; background: transparent;
+}
+
+.nav-item:hover .dropdown-menu {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    color: #344054;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f9fafb;
+    color: var(--primary-color);
+}
+
+.dropdown-divider { height: 1px; background-color: #eaecf0; margin: 6px 0; }
+
+.dropdown-header {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #98a2b3;
+    font-weight: 600;
+    padding: 8px 12px 4px;
+    letter-spacing: 0.5px;
+}
+
+/* --- USER PANEL --- */
+.user-panel { 
+    display: flex; align-items: center; gap: 12px; 
+    padding-left: 20px; border-left: 1px solid var(--border-color); 
+}
+.user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
+.user-name { font-weight: 700; font-size: 13px; color: #101828; }
+.user-role { font-size: 11px; color: #667085; }
+.user-avatar { 
+    width: 36px; height: 36px; 
+    background-color: var(--primary-color); 
+    color: white; 
+    border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; 
+    font-weight: 600; font-size: 14px; user-select: none; 
+}
+.logout-btn { 
+    background: none; border: 1px solid var(--border-color); color: #666; 
+    width: 36px; height: 36px; border-radius: 8px; 
+    cursor: pointer; display: flex; align-items: center; justify-content: center; 
+    transition: all 0.2s; 
+}
+.logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
+
+/* --- CONTENT GRID --- */
+.main-container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 40px; }
+.content h2 { margin-top: 0; font-size: 28px; font-weight: 700; color: #101828; }
+.subtitle { font-size: 16px; color: #667085; margin-top: 8px; margin-bottom: 40px; }
+
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+@media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+.tile {
+    background: white; padding: 24px; border-radius: 12px;
+    box-shadow: 0px 1px 3px rgba(16, 24, 40, 0.1), 0px 1px 2px rgba(16, 24, 40, 0.06);
+    cursor: pointer; transition: all 0.2s ease;
+    min-height: 220px; display: flex; flex-direction: column; justify-content: space-between;
+    border: 1px solid var(--border-color); text-decoration: none;
+}
+.tile:hover { transform: translateY(-4px); box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08); border-color: #d0d5dd; }
+.tile-icon { margin-bottom: 20px; color: #475467; }
+.tile-title { font-size: 18px; font-weight: 700; color: #101828; margin-bottom: 8px; }
+.tile-desc { font-size: 14px; color: #667085; line-height: 1.5; }
+
+/* --- MODAL & LOADER --- */
+.modal { display: none; position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+.modal-content { background-color: #fff; margin: 15% auto; padding: 32px; border-radius: 16px; width: 360px; text-align: center; }
+.modal-buttons { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
+.btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1; }
+.btn-yes { background-color: #d92d20; color: #fff; }
+.btn-cancel { background-color: #f2f4f7; color: #344054; }
+
+.auxie-loader { position: fixed; inset: 0; background: #ffffff; display: flex; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.5s ease; }
+.auxie-loader.hide { opacity: 0; pointer-events: none; }
+.spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
 </head>
-<body>
 
-    <div class="aux-navbar">
+<body>
+  <div id="auxieLoading" class="auxie-loader">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="login-section">
+      <div class="login-card">
+          <div class="login-logo">
+              <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
+          </div>
+          <h1 class="login-title">Log in</h1>
+          <p class="login-subtitle">Masukkan kredensial Anda untuk mengakses portal.</p>
+          
+          <form onsubmit="event.preventDefault(); handleLogin();">
+              <div class="form-group">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" class="form-input" placeholder="nama@cvsuksesjaya.com" required>
+              </div>
+              <div class="form-group">
+                  <label for="password">Password</label>
+                  <input type="password" id="password" class="form-input" placeholder="Masukkan password" required>
+              </div>
+              <div id="login-error" class="error-msg"></div>
+              <button type="submit" id="login-btn" class="btn-login">Masuk</button>
+          </form>
+      </div>
+  </div>
+
+  <div id="dashboard-section" class="hidden">
+      <div class="aux-navbar">
         <div class="aux-logo">
             <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
         </div>
+        
         <nav class="aux-menu">
-            <div class="nav-item"><a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a></div>
             <div class="nav-item">
-                <div class="aux-link active">Pembelian <i data-feather="chevron-down" style="width:14px;"></i></div>
-                <div class="dropdown-menu-aux">
-                    <a href="#" class="dropdown-item-aux" style="font-weight:600; color:#116999;">Pemesanan Pembelian</a>
+                <a href="#" class="aux-link active">Home</a>
+            </div>
+
+            <div class="nav-item" id="nav-group-penjualan">
+                <div class="aux-link">
+                    Penjualan 
+                    <i data-feather="chevron-down" class="chevron-down"></i>
+                </div>
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">Sales Orders</div>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="dropdown-item" id="access-orderPenjualan">Order Penjualan</a>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Review%20Penjualan/review_penjualan.html" class="dropdown-item" id="access-reviewPenjualan">Review Penjualan</a>
+                </div>
+            </div>
+
+            <div class="nav-item" id="nav-group-pembelian">
+                <div class="aux-link">
+                    Pembelian
+                    <i data-feather="chevron-down" class="chevron-down"></i>
+                </div>
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">Purchasing</div>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item" id="access-pemesananBarang">Pemesanan Pembelian</a>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item" id="access-penerimaanBarang">Penerimaan Barang (Entry)</a>
+                    
+                    <div class="dropdown-divider"></div>
+                    
+                    <div class="dropdown-header">Finance</div>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item" id="access-daftarTagihan">Daftar Tagihan (Bill)</a>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item" id="access-importXero">Import Xero PO</a>
+                </div>
+            </div>
+
+            <div class="nav-item" id="nav-group-produksi">
+                <div class="aux-link">
+                    Produksi
+                    <i data-feather="chevron-down" class="chevron-down"></i>
+                </div>
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">Input Mesin</div>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item" id="access-backOrder">Back Order</a>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item" id="access-generalOrder">General Order</a>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Pre%20Order/produksi_preorder.html" class="dropdown-item" id="access-preOrder">Pre Order</a>
+
+                    <div class="dropdown-divider"></div>
+                    
+                    <div class="dropdown-header">Hasil Produksi</div>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item" id="access-produksiBarang">Produksi Barang Jadi</a>
+                </div>
+            </div>
+
+            <div class="nav-item" id="nav-group-persediaan">
+                <div class="aux-link">
+                    Persediaan
+                    <i data-feather="chevron-down" class="chevron-down"></i>
+                </div>
+                <div class="dropdown-menu">
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/inventory/index.html" class="dropdown-item" id="access-cekStok">Cek Stok Inventory</a>
                 </div>
             </div>
         </nav>
+
         <div class="user-panel">
-            <div class="user-details"><span class="user-name">Admin Gudang</span><span class="user-role">CV Sukses Jaya</span></div>
-            <div class="user-avatar">AG</div>
-            <button class="logout-btn" onclick="alert('Fitur logout')" title="Keluar"><i data-feather="log-out" style="width:16px;"></i></button>
+            <div class="user-details">
+                <span class="user-name" id="display-nama">Loading...</span>
+                <span class="user-role" id="display-role">...</span>
+            </div>
+            <div class="user-avatar" id="display-initial">AX</div>
+            <button class="logout-btn" onclick="showLogoutModal()" title="Keluar Akun">
+                <i data-feather="log-out" style="width:16px; height:16px;"></i>
+            </button>
         </div>
-    </div>
+      </div>
 
-    <div class="container-fluid" style="margin-top: 40px; max-width: 1400px; padding-bottom: 50px;">
-        
-        <div id="view-list">
-            <div class="d-flex justify-content-between align-items-end mb-4">
-                <div><h3 class="page-title" style="font-size:24px; font-weight:700;">List Overview</h3><div class="breadcrumb-text">Dashboard &bullet; Purchase Orders</div></div>
-                <button class="btn btn-confirm shadow-sm" style="width: auto;" onclick="createNewPO()"><i class="bi bi-plus-lg"></i> NEW PO</button>
-            </div>
+      <div class="main-container">
+        <div class="content">
+          <h2>Welcome Back, <span id="display-nama-sapaan">User</span> 👋</h2>
+          <p class="subtitle">Silakan pilih modul melalui menu navigasi di atas atau kartu akses cepat di bawah ini.</p>
+          
+          <div class="grid">
+            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="tile" id="tile-penerimaanBarang">
+              <div>
+                <div class="tile-icon"><i data-feather="truck" style="width:32px; height:32px;"></i></div>
+                <div class="tile-title">Penerimaan (Receiving)</div>
+                <div class="tile-desc">Input penerimaan barang material dan purchase order masuk.</div>
+              </div>
+            </a>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Orders</div></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-success" id="statToday">0</div><div class="stat-label">Created Today</div></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-primary" id="statWaiting">0</div><div class="stat-label">Waiting Approval</div></div></div>
-                <div class="col-md-3"><div class="stat-card"><div class="stat-value text-danger" id="statItems">0</div><div class="stat-label">Total Items Qty</div></div></div>
-            </div>
+            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="tile" id="tile-produksiBarang">
+              <div>
+                  <div class="tile-icon"><i data-feather="package" style="width:32px; height:32px;"></i></div>
+                  <div class="tile-title">Produksi (Finished Goods)</div>
+                  <div class="tile-desc">Lihat dan kelola daftar barang jadi hasil produksi.</div>
+              </div>
+            </a>
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="input-group shadow-sm" style="width: 350px;">
-                    <span class="input-group-text bg-white border-end-0 border-light-subtle"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="searchInput" class="form-control border-start-0 border-light-subtle ps-0" placeholder="Search Reference, Vendor..." onkeyup="filterTable()">
-                </div>
-                <button class="btn btn-white shadow-sm fw-bold" onclick="fetchListPO()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
-            </div>
+            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="tile" id="tile-orderPenjualan">
+              <div>
+                  <div class="tile-icon"><i data-feather="shopping-cart" style="width:32px; height:32px;"></i></div>
+                  <div class="tile-title">Penjualan (Sales)</div>
+                  <div class="tile-desc">Buat order penjualan baru untuk pelanggan.</div>
+              </div>
+            </a>
 
-            <div class="table-card shadow-sm">
-                <table class="table table-hover mb-0">
-                    <thead class="table-header-custom">
-                        <tr>
-                            <th class="py-3 ps-4">Reference</th>
-                            <th class="py-3">Vendor</th>
-                            <th class="py-3">Order Date</th>
-                            <th class="py-3">Created At</th>
-                            <th class="py-3 text-center">Items</th>
-                            <th class="py-3">Status</th>
-                            <th class="py-3 text-center">Action</th> 
-                        </tr>
-                    </thead>
-                    <tbody id="listTableBody"><tr><td colspan="7" class="text-center py-5 text-muted">Loading data...</td></tr></tbody>
-                </table>
-            </div>
+            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/inventory/index.html" class="tile" id="tile-cekStok">
+              <div>
+                  <div class="tile-icon"><i data-feather="layers" style="width:32px; height:32px;"></i></div>
+                  <div class="tile-title">Inventory</div>
+                  <div class="tile-desc">Monitoring stok gudang, Spandek, KPC, dan lainnya.</div>
+              </div>
+            </a>
+          </div> 
         </div>
+      </div>
+  </div>
 
-        <div id="view-form" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="d-flex align-items-center">
-                    <div><h3 class="page-title" id="formTitle" style="font-size:24px; font-weight:700;">New Quote</h3><div class="breadcrumb-text">Dashboard &bullet; Data Entry</div></div>
-                    <div id="editBadge" class="d-none edit-badge shadow-sm ms-3" style="background:#fffbeb; color:#b45309; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;"><i class="bi bi-pencil-square"></i> Editing Mode</div>
-                </div>
-                <button class="btn btn-white shadow-sm fw-bold" onclick="switchView('list')"><i class="bi bi-arrow-left me-1"></i> Back to List</button>
-            </div>
-
-            <div class="form-container shadow-sm">
-                <div class="row g-3 align-items-end mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label-custom">Select Vendor</label>
-                        <select id="vendorSelect" class="form-select" style="width:100%;">
-                            <option value="" disabled selected>-- Select Vendor --</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label-custom">Order Date</label>
-                        <input type="date" id="poDate" class="form-control-custom">
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-confirm w-100" onclick="submitPO()">
-                            <i class="bi bi-cloud-upload"></i> <span id="btnSubmitText">CONFIRM PO</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="section-title">Order Items</div>
-                <div class="table-responsive">
-                    <table class="table table-form w-100">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">#</th>
-                                <th style="width: 40%;">Product / Item</th>
-                                <th style="width: 15%;">Qty</th>
-                                <th style="width: 15%;">Unit</th>
-                                <th>Note</th>
-                                <th style="width: 50px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="entryTableBody"></tbody>
-                    </table>
-                </div>
-                <div onclick="addNewRow()" class="btn-add-product"><i class="bi bi-plus-circle-fill"></i> Add a product line</div>
-            </div>
-        </div>
+  <div id="logoutModal" class="modal">
+    <div class="modal-content">
+      <div style="background:#fee2e2; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+        <i data-feather="alert-circle" style="color:#d92d20;"></i>
+      </div>
+      <p style="font-size:18px; font-weight:600; color:#101828; margin-bottom:10px; margin-top:0;">Konfirmasi Keluar</p>
+      <p style="color:#667085; font-size:14px; margin-bottom:24px;">Apakah Anda yakin ingin keluar dari sistem?</p>
+      <div class="modal-buttons">
+        <button class="btn btn-cancel" onclick="closeLogoutModal()">Batal</button>
+        <button class="btn btn-yes" onclick="performLogout()">Keluar</button>
+      </div>
     </div>
+  </div>
 
-    <div class="modal fade" id="modalViewPO" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-light">
-                    <div><h5 class="modal-title fw-bold text-dark" id="viewPoTitle">PO Detail</h5><div class="text-muted small" id="viewPoDate"></div></div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
-                        <div><div class="text-uppercase text-muted small fw-bold mb-1">Vendor</div><div class="fs-5 fw-bold text-primary" id="viewVendorName">-</div></div>
-                        <div class="text-end"><div class="text-uppercase text-muted small fw-bold mb-1">Status</div><span id="viewPoStatus" class="status-pill">-</span></div>
-                    </div>
-                    <div class="table-responsive border rounded">
-                        <table class="table table-striped mb-0">
-                            <thead class="bg-light"><tr class="text-uppercase small text-muted"><th class="ps-3">Item Name</th><th class="text-center">Qty</th><th class="text-center">Unit</th><th>Note</th></tr></thead>
-                            <tbody id="viewItemsBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light border-top-0">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="btnPrintFromModal"><i class="bi bi-printer"></i> Print PO</button>
-                </div>
-            </div>
-        </div>
-    </div>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
+    // --- KONFIGURASI PENTING ---
+    // GANTI URL INI DENGAN URL APPS SCRIPT YANG KAMU BUAT DI LANGKAH SEBELUMNYA
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyInz6Qqip0xfaw-0XVS7vDixu5RLdjGbEIhqrCfTuw-J07kyT9WCM1uUtrSyEBn89o/exec"; 
 
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
-        <div class="fw-bold text-dark fs-5" id="loadingText">Processing...</div>
-    </div>
+    // --- MAIN LOGIC ---
+    feather.replace();
 
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    // 1. Cek sesi saat halaman dimuat
+    window.onload = function() {
+        const loader = document.getElementById("auxieLoading");
+        const savedUser = localStorage.getItem('userSession');
 
-    <script>
-        feather.replace();
+        if (savedUser) {
+            // Jika sudah login, langsung tampilkan dashboard
+            const user = JSON.parse(savedUser);
+            initDashboard(user);
+            setTimeout(() => loader.classList.add("hide"), 500);
+        } else {
+            // Jika belum login, tampilkan form login
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            setTimeout(() => loader.classList.add("hide"), 500);
+        }
+    };
 
-        // -----------------------------------------------------------
-        // PENTING: GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT ANDA
-        // -----------------------------------------------------------
-        const API_URL = "https://script.google.com/macros/s/AKfycbwKQA8KJGRWeGbDoor6-JFuhf3eVUfZOKqx6wKWSnpmzcxkTW_Lpacgzxj9MCicUKWW/exec"; 
-        
-        let vendorData = {};
-        let savedOrders = [];
-        let isVendorLoaded = false;
-        let currentEditId = null;
+    // 2. Fungsi Login
+    function handleLogin() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const btn = document.getElementById('login-btn');
+        const errorMsg = document.getElementById('login-error');
 
-        window.onload = function() {
-            fetchListPO();
-            setDefaultDate();
-        };
+        // Reset UI
+        btn.disabled = true;
+        btn.innerText = "Memproses...";
+        errorMsg.style.display = 'none';
 
-        // --- NAVIGATION & VIEWS ---
-        function switchView(viewName) {
-            const listDiv = document.getElementById("view-list");
-            const formDiv = document.getElementById("view-form");
-            if (viewName === 'form') {
-                listDiv.classList.add("d-none");
-                formDiv.classList.remove("d-none");
-                if (!isVendorLoaded) fetchVendorData();
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ email: email, password: password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                // Simpan data user
+                localStorage.setItem('userSession', JSON.stringify(data.user));
+                // Pindah ke dashboard
+                initDashboard(data.user);
             } else {
-                formDiv.classList.add("d-none");
-                listDiv.classList.remove("d-none");
-                resetFormState();
+                errorMsg.innerText = data.message;
+                errorMsg.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = "Masuk";
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorMsg.innerText = "Gagal terhubung ke server. Coba lagi.";
+            errorMsg.style.display = 'block';
+            btn.disabled = false;
+            btn.innerText = "Masuk";
+        });
+    }
+
+    // 3. Inisialisasi Dashboard & Hak Akses
+    function initDashboard(user) {
+        // Hide Login, Show Dashboard
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+
+        // Isi Data User
+        document.getElementById('display-nama').innerText = user.nama;
+        document.getElementById('display-nama-sapaan').innerText = user.nama.split(" ")[0]; // Ambil nama depan
+        document.getElementById('display-role').innerText = user.role;
+        
+        // Buat Inisial (Contoh: Ericko Kevin -> EK)
+        const initials = user.nama.split(" ").map((n)=>n[0]).join("").substring(0,2).toUpperCase();
+        document.getElementById('display-initial').innerText = initials;
+
+        // --- TERAPKAN HAK AKSES (Logic Inti) ---
+        const rights = user.akses;
+
+        // Fungsi helper untuk menyembunyikan elemen jika akses FALSE
+        // Kita cek id di Navbar (access-...) dan id di Tile (tile-...)
+        applyPermission('access-orderPenjualan', rights.orderPenjualan);
+        applyPermission('tile-orderPenjualan', rights.orderPenjualan); // Tile di grid
+
+        applyPermission('access-reviewPenjualan', rights.reviewPenjualan);
+        
+        applyPermission('access-pemesananBarang', rights.pemesananBarang);
+        
+        applyPermission('access-penerimaanBarang', rights.penerimaanBarang);
+        applyPermission('tile-penerimaanBarang', rights.penerimaanBarang); // Tile di grid
+
+        applyPermission('access-daftarKelolaPO', rights.daftarKelolaPO);
+        applyPermission('access-daftarTagihan', rights.daftarTagihan);
+        applyPermission('access-importXero', rights.importXero);
+        
+        applyPermission('access-backOrder', rights.backOrder);
+        applyPermission('access-generalOrder', rights.generalOrder);
+        applyPermission('access-preOrder', rights.preOrder);
+        
+        applyPermission('access-produksiBarang', rights.produksiBarang);
+        applyPermission('tile-produksiBarang', rights.produksiBarang); // Tile di grid
+        
+        applyPermission('access-cekStok', rights.cekStok);
+        applyPermission('tile-cekStok', rights.cekStok); // Tile di grid
+
+        // Refresh icons karena elemen mungkin berubah
+        feather.replace();
+    }
+
+    function applyPermission(elementId, isAllowed) {
+        const el = document.getElementById(elementId);
+        if (!el) return; // Jika elemen tidak ada di HTML, skip
+
+        // Cek apakah TRUE, "TRUE", atau "true"
+        const allowed = (isAllowed === true || isAllowed === "TRUE" || isAllowed === "true");
+        
+        if (!allowed) {
+            el.style.display = 'none'; // Sembunyikan jika tidak punya akses
+        } else {
+            el.style.display = ''; // Tampilkan (reset)
         }
+    }
 
-        function createNewPO() { resetFormState(); switchView('form'); }
+    // 4. Modal Logic
+    function showLogoutModal() { document.getElementById("logoutModal").style.display = "block"; }
+    function closeLogoutModal() { document.getElementById("logoutModal").style.display = "none"; }
+    
+    function performLogout() {
+        localStorage.removeItem('userSession');
+        location.reload(); // Refresh halaman untuk kembali ke login
+    }
 
-        function resetFormState() {
-            currentEditId = null;
-            document.getElementById("formTitle").innerText = "New Quote";
-            document.getElementById("btnSubmitText").innerText = "CONFIRM PO";
-            document.getElementById("editBadge").classList.add("d-none");
-            $('#vendorSelect').val(null).trigger('change');
-            document.getElementById("entryTableBody").innerHTML = "";
-            setDefaultDate();
+    // Klik di luar modal untuk menutup
+    window.onclick = function(event) {
+        if (event.target == document.getElementById("logoutModal")) {
+            closeLogoutModal();
         }
-
-        function showLoading(show, text = "Processing...") {
-            document.getElementById("loadingText").innerText = text;
-            document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
-        }
-
-        // --- FETCHING DATA ---
-        function fetchListPO() {
-            const tbody = document.getElementById("listTableBody");
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-secondary spinner-border-sm me-2"></div>Updating...</td></tr>`;
-
-            fetch(API_URL + "?action=getSavedOrders")
-            .then(res => res.json())
-            .then(res => {
-                if(res.status === 'success') {
-                    savedOrders = res.data;
-                    renderListTable(savedOrders);
-                    calculateStats(savedOrders);
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${res.message}</td></tr>`;
-                }
-            })
-            .catch(err => tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Error Connection (Cek API URL)</td></tr>`);
-        }
-
-        function renderListTable(data) {
-            const tbody = document.getElementById("listTableBody");
-            tbody.innerHTML = "";
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No orders found.</td></tr>`;
-                return;
-            }
-
-            data.forEach(po => {
-                let date = new Date(po.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'});
-                let created = new Date(po.createdAt).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'});
-                let statusClass = (po.status.includes("Menunggu")) ? "waiting" : "done";
-                
-                // Tombol Action
-                let btns = `<div class="d-flex justify-content-center gap-2">`;
-                btns += `<button class="btn btn-sm btn-outline-info border-0" onclick="viewPO('${po.id}', '${po.status}')" title="View"><i class="bi bi-eye-fill"></i></button>`;
-                btns += `<button class="btn btn-sm btn-outline-secondary border-0" onclick="printPO('${po.id}')" title="Print"><i class="bi bi-printer-fill"></i></button>`;
-                if (statusClass === "waiting") {
-                    btns += `<button class="btn btn-sm btn-outline-primary border-0" onclick="editPO('${po.id}')" title="Edit"><i class="bi bi-pencil-square"></i></button>`;
-                } else {
-                    btns += `<button class="btn btn-sm btn-outline-secondary border-0 text-muted" style="cursor:not-allowed;" title="Locked"><i class="bi bi-lock-fill"></i></button>`;
-                }
-                btns += `</div>`;
-
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="ps-4 fw-bold text-dark">${po.id}</td>
-                    <td>${po.vendor}</td>
-                    <td>${date}</td>
-                    <td class="text-muted small">${created}</td>
-                    <td class="text-center"><span class="badge bg-light text-dark border">${po.itemsCount}</span></td>
-                    <td><span class="status-pill ${statusClass}">${po.status}</span></td>
-                    <td class="text-center">${btns}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function printPO(poId) {
-            window.open(API_URL + "?action=printPO&id=" + poId, '_blank');
-        }
-
-        function viewPO(poId, currentStatus) {
-            showLoading(true, "Loading View...");
-            fetch(API_URL + "?action=getPoDetails&id=" + poId)
-            .then(res => res.json())
-            .then(res => {
-                showLoading(false);
-                if(res.status === 'success') {
-                    const data = res.data;
-                    document.getElementById("viewPoTitle").innerText = poId;
-                    document.getElementById("viewPoDate").innerText = "Order Date: " + data.info.date;
-                    document.getElementById("viewVendorName").innerText = data.info.vendor;
-                    document.getElementById("viewPoStatus").innerText = currentStatus || "-";
-                    
-                    const tbody = document.getElementById("viewItemsBody");
-                    tbody.innerHTML = "";
-                    data.items.forEach(item => {
-                        tbody.innerHTML += `<tr><td class="ps-3">${item.itemName}</td><td class="text-center fw-bold">${item.qty}</td><td class="text-center small">${item.unit}</td><td class="text-muted fst-italic small">${item.note}</td></tr>`;
-                    });
-
-                    document.getElementById("btnPrintFromModal").onclick = function() { printPO(poId); };
-                    const myModal = new bootstrap.Modal(document.getElementById('modalViewPO'));
-                    myModal.show();
-                } else { Swal.fire("Error", "Gagal load data.", "error"); }
-            })
-            .catch(err => { showLoading(false); Swal.fire("Error", "Connection Error", "error"); });
-        }
-
-        function editPO(poId) {
-            showLoading(true, "Fetching PO Details...");
-            currentEditId = poId;
-            fetch(API_URL + "?action=getPoDetails&id=" + poId)
-            .then(res => res.json())
-            .then(res => {
-                showLoading(false);
-                if(res.status === 'success') {
-                    const data = res.data;
-                    if(!isVendorLoaded) {
-                        fetchVendorData().then(() => populateEditForm(data, poId));
-                    } else {
-                        populateEditForm(data, poId);
-                    }
-                } else { Swal.fire("Error", "Gagal mengambil detail PO", "error"); }
-            })
-            .catch(err => { showLoading(false); Swal.fire("Error", "Koneksi Error", "error"); });
-        }
-
-        function populateEditForm(data, poId) {
-            switchView('form');
-            document.getElementById("formTitle").innerText = "Edit Quote: " + poId;
-            document.getElementById("btnSubmitText").innerText = "UPDATE PO";
-            document.getElementById("editBadge").classList.remove("d-none");
-            $('#vendorSelect').val(data.info.vendor).trigger('change');
-            document.getElementById("poDate").value = data.info.date;
-            document.getElementById("entryTableBody").innerHTML = "";
-            
-            data.items.forEach(item => {
-                let vendorName = data.info.vendor;
-                let itemIndex = -1;
-                if(vendorData[vendorName]) itemIndex = vendorData[vendorName].findIndex(x => x.item === item.itemName);
-                if(itemIndex !== -1) addNewRow(itemIndex, item.qty, item.note);
-            });
-        }
-
-        function fetchVendorData() {
-            return new Promise((resolve, reject) => {
-                fetch(API_URL + "?action=getData")
-                .then(res => res.json())
-                .then(res => {
-                    if(res.status === 'success'){
-                        vendorData = res.data;
-                        isVendorLoaded = true;
-                        populateVendorSelect();
-                        resolve();
-                    } else reject();
-                });
-            });
-        }
-
-        function populateVendorSelect() {
-            const select = $('#vendorSelect');
-            select.empty();
-            select.append('<option value="" disabled selected>-- Select Vendor --</option>');
-            Object.keys(vendorData).sort().forEach(v => { select.append(new Option(v, v)); });
-            select.select2({ theme: 'bootstrap-5', placeholder: "-- Select Vendor --", width: '100%' });
-            select.on('select2:select', function (e) { document.getElementById("entryTableBody").innerHTML = ""; addNewRow(); });
-        }
-
-        function addNewRow(preselectIndex = null, preQty = null, preNote = null) {
-            var vendor = $('#vendorSelect').val(); 
-            if(!vendor && !preselectIndex) return Swal.fire("Vendor Required", "Select vendor first.", "warning");
-
-            var tbody = document.getElementById("entryTableBody");
-            var rowIdx = tbody.children.length; 
-            var newSelectId = "product-select-" + rowIdx + "-" + Date.now();
-
-            var itemOptions = '<option value="" disabled selected>Select Product</option>';
-            vendorData[vendor].forEach((obj, index) => {
-                let selected = (preselectIndex !== null && preselectIndex == index) ? "selected" : "";
-                itemOptions += `<option value="${index}" ${selected}>${obj.item}</option>`;
-            });
-
-            var tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="text-center text-muted align-middle row-number">${rowIdx + 1}</td>
-                <td><select id="${newSelectId}" class="form-select input-table item-select" style="width:100%">${itemOptions}</select></td>
-                <td><input type="number" class="input-table qty-input text-center" value="${preQty || ''}" placeholder="0.00" min="0"></td>
-                <td><input type="text" class="input-table unit-input bg-light text-muted" readonly tabindex="-1"></td>
-                <td><input type="text" class="input-table note-input" value="${preNote || ''}" placeholder="Note"></td>
-                <td class="text-center align-middle"><i class="bi bi-trash3-fill text-danger" style="cursor:pointer;" onclick="this.closest('tr').remove();"></i></td>
-            `;
-            tbody.appendChild(tr);
-
-            $(`#${newSelectId}`).select2({ theme: 'bootstrap-5', placeholder: "Search Product...", width: '100%', dropdownAutoWidth: true });
-            if(preselectIndex !== null) {
-                let unitInput = tr.querySelector(".unit-input");
-                if(vendorData[vendor][preselectIndex]) unitInput.value = vendorData[vendor][preselectIndex].unit;
-            }
-            $(`#${newSelectId}`).on('select2:select', function (e) { 
-                var vendor = $('#vendorSelect').val();
-                if(vendorData[vendor] && vendorData[vendor][this.value]) {
-                     this.closest("tr").querySelector(".unit-input").value = vendorData[vendor][this.value].unit;
-                }
-            });
-        }
-
-        function submitPO() {
-            var vendor = $('#vendorSelect').val();
-            var poDate = document.getElementById("poDate").value;
-            if(!vendor) return Swal.fire("Missing Data", "Select vendor.", "error");
-            if(!poDate) return Swal.fire("Missing Data", "Select date.", "error");
-
-            var rows = document.querySelectorAll("#entryTableBody tr");
-            var itemsToSave = [];
-            var isValid = true;
-
-            rows.forEach((row) => {
-                var itemIdx = row.querySelector(".item-select").value;
-                var qty = row.querySelector(".qty-input").value;
-                var unit = row.querySelector(".unit-input").value;
-                var note = row.querySelector(".note-input").value;
-                if(!itemIdx || !qty || qty <= 0) { isValid = false; } 
-                else {
-                    var realItemName = vendorData[vendor][itemIdx].item;
-                    itemsToSave.push({ itemName: realItemName, qty: qty, unit: unit, note: note });
-                }
-            });
-
-            if(rows.length === 0) return Swal.fire("Empty", "Add at least one product.", "warning");
-            if(!isValid) return Swal.fire("Invalid", "Check Qty fields.", "error");
-
-            showLoading(true, "Saving PO...");
-            let payload = { vendor: vendor, poDate: poDate, items: itemsToSave, poId: currentEditId };
-
-            fetch(API_URL + "?action=saveOrder", { method: "POST", body: JSON.stringify(payload) })
-            .then(res => res.json())
-            .then(res => {
-                showLoading(false);
-                if(res.status === 'success') {
-                    let msg = currentEditId ? "PO Updated Successfully!" : "PO Created: " + res.id;
-                    Swal.fire({ title: 'Success!', text: msg, icon: 'success', confirmButtonColor: '#008080' })
-                    .then(() => { resetFormState(); switchView('list'); fetchListPO(); });
-                } else { throw new Error(res.message); }
-            })
-            .catch(err => { showLoading(false); Swal.fire('Failed', err.message, 'error'); });
-        }
-
-        function calculateStats(data) {
-            document.getElementById("statTotal").innerText = data.length;
-            const today = new Date().toDateString();
-            document.getElementById("statToday").innerText = data.filter(po => new Date(po.createdAt).toDateString() === today).length;
-            document.getElementById("statWaiting").innerText = data.filter(po => po.status.includes("Menunggu")).length;
-            document.getElementById("statItems").innerText = data.reduce((sum, po) => sum + po.itemsCount, 0);
-        }
-
-        function filterTable() {
-            const term = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = savedOrders.filter(po => po.id.toLowerCase().includes(term) || po.vendor.toLowerCase().includes(term));
-            renderListTable(filtered);
-        }
-
-        function setDefaultDate() {
-            const date = new Date();
-            const local = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
-            document.getElementById("poDate").value = local;
-        }
-    </script>
+    }
+  </script>
 </body>
 </html>
