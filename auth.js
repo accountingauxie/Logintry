@@ -1,5 +1,5 @@
-// Konfigurasi URL Halaman Login (Sesuaikan dengan nama repo kamu)
-// Jika link kamu: https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/
+// Konfigurasi URL Halaman Login Utama
+// Pastikan path ini sesuai dengan struktur folder GitHub Pages kamu
 const LOGIN_PAGE = "/Auxilium-Portal-Sukses-Jaya/index.html"; 
 
 function checkAuth(requiredPermission) {
@@ -14,18 +14,18 @@ function checkAuth(requiredPermission) {
 
     const user = JSON.parse(sessionData);
 
-    // 2. Cek apakah user punya hak akses spesifik untuk halaman ini?
-    // requiredPermission adalah nama kolom di Sheet (misal: 'orderPenjualan')
-    // Kita cek apakah nilainya TRUE (boolean atau string "TRUE")
+    // 2. Cek apakah user punya hak akses spesifik?
+    // requiredPermission adalah nama property di object akses (misal: 'orderPenjualan')
     const isAllowed = user.akses[requiredPermission];
     
+    // Validasi nilai TRUE (bisa boolean true, string "TRUE", atau string "true")
     if (isAllowed !== true && isAllowed !== "TRUE" && isAllowed !== "true") {
         alert("AKSES DITOLAK: Anda tidak memiliki izin untuk mengakses halaman ini.");
         window.location.href = LOGIN_PAGE;
         return;
     }
 
-    // 3. Jika lolos pengecekan, tampilkan konten halaman
-    // (Kita set body jadi visible karena defaultnya kita hide agar tidak kedip)
+    // 3. Jika lolos, tampilkan konten halaman
+    // (Default body biasanya di-hide via CSS biar tidak kedip, lalu di-unhide di sini)
     document.body.style.display = 'block';
 }
