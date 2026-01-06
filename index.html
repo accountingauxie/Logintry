@@ -410,14 +410,38 @@ body {
     </div>
   </div>
 
+  <div id="newPasswordModal" class="modal">
+    <div class="modal-content" style="text-align: left;">
+      <h3 style="margin-top:0; color:#101828;">Buat Password Baru</h3>
+      <p style="color:#667085; font-size:14px; margin-bottom:20px;">
+        Demi keamanan, Anda wajib mengganti password sementara Anda dengan password baru.
+      </p>
+      
+      <form onsubmit="event.preventDefault(); handleSetPassword();">
+        <div class="form-group">
+            <label for="new-pass">Password Baru</label>
+            <input type="password" id="new-pass" class="form-input" required minlength="6">
+        </div>
+        <div class="form-group">
+            <label for="confirm-pass">Konfirmasi Password</label>
+            <input type="password" id="confirm-pass" class="form-input" required>
+        </div>
+        <div id="password-error" class="error-msg"></div>
+        
+        <button type="submit" id="btn-save-pass" class="btn-login" style="margin-top:10px;">Simpan Password</button>
+      </form>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/feather-icons"></script>
   <script>
     // --- KONFIGURASI PENTING ---
-    // GANTI URL INI DENGAN URL APPS SCRIPT YANG KAMU BUAT DI LANGKAH SEBELUMNYA
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyInz6Qqip0xfaw-0XVS7vDixu5RLdjGbEIhqrCfTuw-J07kyT9WCM1uUtrSyEBn89o/exec"; 
+    // GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT APP SCRIPT TERBARU
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXk4Prn3XcUuxuHBy_Veg4h7WRhX7chjAfjbnDuvVIMAhqnXkMjMrJ4_Cb6tI0SJ4e/exec"; 
 
     // --- MAIN LOGIC ---
     feather.replace();
+    let tempEmailForReset = ""; 
 
     // 1. Cek sesi saat halaman dimuat
     window.onload = function() {
@@ -425,12 +449,10 @@ body {
         const savedUser = localStorage.getItem('userSession');
 
         if (savedUser) {
-            // Jika sudah login, langsung tampilkan dashboard
             const user = JSON.parse(savedUser);
             initDashboard(user);
             setTimeout(() => loader.classList.add("hide"), 500);
         } else {
-            // Jika belum login, tampilkan form login
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
             setTimeout(() => loader.classList.add("hide"), 500);
@@ -451,16 +473,22 @@ body {
 
         fetch(SCRIPT_URL, {
             method: "POST",
-            body: JSON.stringify({ email: email, password: password })
+            body: JSON.stringify({ action: 'login', email: email, password: password })
         })
         .then(response => response.json())
         .then(data => {
             if (data.status === "success") {
-                // Simpan data user
+                // Login Sukses
                 localStorage.setItem('userSession', JSON.stringify(data.user));
-                // Pindah ke dashboard
                 initDashboard(data.user);
+            } else if (data.status === "new_password_required") {
+                // User harus ganti password
+                tempEmailForReset = data.email; 
+                document.getElementById('newPasswordModal').style.display = 'block'; 
+                btn.disabled = false;
+                btn.innerText = "Masuk";
             } else {
+                // Error login biasa
                 errorMsg.innerText = data.message;
                 errorMsg.style.display = 'block';
                 btn.disabled = false;
@@ -476,37 +504,76 @@ body {
         });
     }
 
-    // 3. Inisialisasi Dashboard & Hak Akses
+    // 3. Fungsi Simpan Password Baru
+    function handleSetPassword() {
+        const newPass = document.getElementById('new-pass').value;
+        const confirmPass = document.getElementById('confirm-pass').value;
+        const errorMsg = document.getElementById('password-error');
+        const btn = document.getElementById('btn-save-pass');
+
+        if (newPass !== confirmPass) {
+            errorMsg.innerText = "Konfirmasi password tidak cocok.";
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Menyimpan...";
+        errorMsg.style.display = 'none';
+
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ 
+                action: 'update_password', 
+                email: tempEmailForReset, 
+                newPassword: newPass 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert("Password berhasil disimpan! Silakan login ulang dengan password baru.");
+                location.reload(); 
+            } else {
+                errorMsg.innerText = data.message;
+                errorMsg.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = "Simpan Password";
+            }
+        })
+        .catch(error => {
+            errorMsg.innerText = "Terjadi kesalahan jaringan.";
+            errorMsg.style.display = 'block';
+            btn.disabled = false;
+            btn.innerText = "Simpan Password";
+        });
+    }
+
+    // 4. Inisialisasi Dashboard
     function initDashboard(user) {
-        // Hide Login, Show Dashboard
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('dashboard-section').classList.remove('hidden');
 
-        // Isi Data User
         document.getElementById('display-nama').innerText = user.nama;
-        document.getElementById('display-nama-sapaan').innerText = user.nama.split(" ")[0]; // Ambil nama depan
+        document.getElementById('display-nama-sapaan').innerText = user.nama.split(" ")[0]; 
         document.getElementById('display-role').innerText = user.role;
         
-        // Buat Inisial (Contoh: Ericko Kevin -> EK)
         const initials = user.nama.split(" ").map((n)=>n[0]).join("").substring(0,2).toUpperCase();
         document.getElementById('display-initial').innerText = initials;
 
-        // --- TERAPKAN HAK AKSES (Logic Inti) ---
+        // Apply Permissions
         const rights = user.akses;
-
-        // Fungsi helper untuk menyembunyikan elemen jika akses FALSE
-        // Kita cek id di Navbar (access-...) dan id di Tile (tile-...)
+        
         applyPermission('access-orderPenjualan', rights.orderPenjualan);
-        applyPermission('tile-orderPenjualan', rights.orderPenjualan); // Tile di grid
+        applyPermission('tile-orderPenjualan', rights.orderPenjualan);
 
         applyPermission('access-reviewPenjualan', rights.reviewPenjualan);
         
         applyPermission('access-pemesananBarang', rights.pemesananBarang);
         
         applyPermission('access-penerimaanBarang', rights.penerimaanBarang);
-        applyPermission('tile-penerimaanBarang', rights.penerimaanBarang); // Tile di grid
+        applyPermission('tile-penerimaanBarang', rights.penerimaanBarang);
 
-        applyPermission('access-daftarKelolaPO', rights.daftarKelolaPO);
         applyPermission('access-daftarTagihan', rights.daftarTagihan);
         applyPermission('access-importXero', rights.importXero);
         
@@ -515,43 +582,33 @@ body {
         applyPermission('access-preOrder', rights.preOrder);
         
         applyPermission('access-produksiBarang', rights.produksiBarang);
-        applyPermission('tile-produksiBarang', rights.produksiBarang); // Tile di grid
+        applyPermission('tile-produksiBarang', rights.produksiBarang);
         
         applyPermission('access-cekStok', rights.cekStok);
-        applyPermission('tile-cekStok', rights.cekStok); // Tile di grid
+        applyPermission('tile-cekStok', rights.cekStok);
 
-        // Refresh icons karena elemen mungkin berubah
         feather.replace();
     }
 
     function applyPermission(elementId, isAllowed) {
         const el = document.getElementById(elementId);
-        if (!el) return; // Jika elemen tidak ada di HTML, skip
-
-        // Cek apakah TRUE, "TRUE", atau "true"
+        if (!el) return;
         const allowed = (isAllowed === true || isAllowed === "TRUE" || isAllowed === "true");
-        
-        if (!allowed) {
-            el.style.display = 'none'; // Sembunyikan jika tidak punya akses
-        } else {
-            el.style.display = ''; // Tampilkan (reset)
-        }
+        if (!allowed) el.style.display = 'none';
+        else el.style.display = ''; 
     }
 
-    // 4. Modal Logic
+    // 5. Modal Logout Logic
     function showLogoutModal() { document.getElementById("logoutModal").style.display = "block"; }
     function closeLogoutModal() { document.getElementById("logoutModal").style.display = "none"; }
     
     function performLogout() {
         localStorage.removeItem('userSession');
-        location.reload(); // Refresh halaman untuk kembali ke login
+        location.reload(); 
     }
 
-    // Klik di luar modal untuk menutup
     window.onclick = function(event) {
-        if (event.target == document.getElementById("logoutModal")) {
-            closeLogoutModal();
-        }
+        if (event.target == document.getElementById("logoutModal")) closeLogoutModal();
     }
   </script>
 </body>
