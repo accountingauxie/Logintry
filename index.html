@@ -140,8 +140,9 @@
                 <div class="modal-body">
                     <p class="small mb-1 text-muted" id="editPriceItemName"></p>
                     <input type="number" id="inputNewPrice" class="form-control fw-bold text-end mb-2">
+                    
                     <input type="hidden" id="editPriceItemCode">
-                    <button onclick="submitPriceUpdate()" id="btnSavePrice" class="btn btn-success w-100 btn-sm">Simpan</button>
+                    <input type="hidden" id="editPriceOldValue"> <button onclick="submitPriceUpdate()" id="btnSavePrice" class="btn btn-success w-100 btn-sm">Simpan</button>
                 </div>
             </div>
         </div>
@@ -156,9 +157,9 @@
                 </div>
                 <div class="modal-body text-center">
                     <p class="small mb-2 text-muted" id="editStatusItemName"></p>
-                    <input type="hidden" id="editStatusItemCode">
                     
-                    <div class="d-grid gap-2">
+                    <input type="hidden" id="editStatusItemCode">
+                    <input type="hidden" id="editStatusOldValue"> <div class="d-grid gap-2">
                         <button onclick="submitStatusUpdate('Active')" class="btn btn-outline-success btn-sm">Set ACTIVE</button>
                         <button onclick="submitStatusUpdate('Archived')" class="btn btn-outline-secondary btn-sm">Set ARCHIVED</button>
                     </div>
@@ -174,10 +175,10 @@
     
     <script>
         // === CONFIG ===
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCaWQWVyBbyIWP3rhKIwP0NATP-e0lVLOOTTSltzizP2BJ95k9OSIjjzIZ--pg-AKY/exec"; 
+        // PASTE URL DEPLOYMENT APPS SCRIPT ANDA DI SINI
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNvIWpAuWberBC-JXIZx3KRCrtP6KUejwrv5tPg4GHwVpnuE5CxoMABshzB8aOXMya/exec"; 
         
         let currentUser = "";
-        // Default Permissions
         let perms = { editPrice: false, addComment: false, editStatus: false, addNewItem: false };
         let table;
 
@@ -199,21 +200,18 @@
             .then(resp => {
                 if(resp.result === "success") {
                     currentUser = resp.username;
-                    // Simpan Permission dari response server (TRUE/FALSE)
                     perms.editPrice = (String(resp.permissions.editPrice).toUpperCase() === "TRUE");
                     perms.addComment = (String(resp.permissions.addComment).toUpperCase() === "TRUE");
                     perms.editStatus = (String(resp.permissions.editStatus).toUpperCase() === "TRUE");
                     perms.addNewItem = (String(resp.permissions.addNewItem).toUpperCase() === "TRUE");
                     
-                    // Save Session
                     localStorage.setItem("appSession", JSON.stringify({ user: currentUser, permissions: perms }));
-                    
                     initDashboard();
                 } else {
                     alert("Email atau Password Salah!");
                 }
             })
-            .catch(e => alert("Koneksi Error"))
+            .catch(e => alert("Koneksi Error. Cek URL Script."))
             .finally(() => { btn.innerText = "MASUK"; btn.disabled = false; });
         }
 
@@ -222,13 +220,10 @@
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('displayUser').innerText = currentUser;
             
-            // Cek Izin Add New Item
             if(perms.addNewItem) document.getElementById('btnAddItem').classList.remove('hidden');
-
             loadData();
         }
 
-        // Auto Login
         window.onload = function() {
             const sess = localStorage.getItem("appSession");
             if(sess) {
@@ -254,35 +249,37 @@
                     responsive: true,
                     columns: [
                         { data: 0, className: "fw-bold" },
-                        { data: 1 }, // Vendor
-                        { data: 2 }, // Sat Beli
-                        { data: 3 }, // Sat Jual
+                        { data: 1 },
+                        { data: 2 },
+                        { data: 3 },
                         { data: 4, className: "text-end", render: (d) => formatRp(d) },
                         { 
-                            data: 5, // Harga Jual (Col F)
+                            data: 5, // Harga Jual
                             className: "text-end",
                             render: function(data, type, row) {
                                 const txt = formatRp(data);
-                                // LOGIKA HAK AKSES HARGA
                                 if(perms.editPrice) {
                                     const safeName = row[0].replace(/["']/g, ""); 
-                                    const safeCode = row[15]; // ItemCode (Col P = Index 15)
+                                    const safeCode = row[15]; 
+                                    // Kirim data harga saat ini (data) ke modal
                                     return `<span class="editable-price" onclick="openPriceModal('${safeCode}','${safeName}',${data})" title="Edit Harga">${txt} <i class="bi bi-pencil" style="font-size:0.7em"></i></span>`;
                                 }
                                 return txt;
                             }
                         },
-                        { data: 10 }, // Tipe
-                        { data: 11 }, // Merk
-                        { data: 16 }, // Machine
+                        { data: 10 },
+                        { data: 11 },
+                        { data: 16 },
                         { 
-                            data: 17, // Status (Col R)
+                            data: 17, // Status
                             className: "text-center",
                             render: function(d, type, row) {
                                 const s = (d||"").toString();
                                 let badgeClass = s.toLowerCase().includes('active') ? 'badge-active' : 'badge-archived';
-                                let editableClass = perms.editStatus ? 'editable' : ''; // Tambah class editable jika punya akses
-                                let clickAttr = perms.editStatus ? `onclick="openStatusModal('${row[15]}', '${row[0].replace(/["']/g, "")}')"` : '';
+                                let editableClass = perms.editStatus ? 'editable' : '';
+                                
+                                // Kirim Status saat ini 's' ke modal
+                                let clickAttr = perms.editStatus ? `onclick="openStatusModal('${row[15]}', '${row[0].replace(/["']/g, "")}', '${s}')"` : '';
                                 
                                 return `<span class="status-badge ${badgeClass} ${editableClass}" ${clickAttr}>${s}</span>`;
                             }
@@ -295,7 +292,6 @@
                         }
                     ],
                     initComplete: function () {
-                        // Filter Dropdowns
                         this.api().columns([6, 8, 9]).every(function () {
                             var column = this;
                             var select = $('<select class="form-select form-select-sm" style="min-width:80px"><option value="">All</option></select>')
@@ -311,40 +307,61 @@
             });
         }
 
-        // === 3. UPDATE PRICE ===
+        // === 3. UPDATE PRICE (With Before -> After) ===
         function openPriceModal(code, name, price) {
             document.getElementById('editPriceItemName').innerText = name;
             document.getElementById('editPriceItemCode').value = code;
             document.getElementById('inputNewPrice').value = price;
+            // SIMPAN HARGA LAMA
+            document.getElementById('editPriceOldValue').value = price; 
             new bootstrap.Modal(document.getElementById('priceModal')).show();
         }
 
         function submitPriceUpdate() {
             const code = document.getElementById('editPriceItemCode').value;
-            const val = document.getElementById('inputNewPrice').value;
+            const newVal = document.getElementById('inputNewPrice').value;
+            const oldVal = document.getElementById('editPriceOldValue').value; // AMBIL HARGA LAMA
             const btn = document.getElementById('btnSavePrice');
             
             btn.innerText = "..."; btn.disabled = true;
             fetch(SCRIPT_URL, {
-                method: "POST", body: JSON.stringify({ action: "updatePrice", user: currentUser, itemCode: code, newValue: val })
+                method: "POST", 
+                body: JSON.stringify({ 
+                    action: "updatePrice", 
+                    user: currentUser, 
+                    itemCode: code, 
+                    newValue: newVal,
+                    oldValue: oldVal // KIRIM KE SERVER
+                })
             }).then(r=>r.json()).then(res => {
                 if(res.result=="success") { alert("Harga Terupdate!"); location.reload(); }
                 else { alert("Gagal: " + res.message); btn.disabled=false; btn.innerText="Simpan"; }
             });
         }
 
-        // === 4. UPDATE STATUS ===
-        function openStatusModal(code, name) {
-            if(!perms.editStatus) return; // Double check logic
+        // === 4. UPDATE STATUS (With Before -> After) ===
+        function openStatusModal(code, name, currentStatus) {
+            if(!perms.editStatus) return;
             document.getElementById('editStatusItemName').innerText = name;
             document.getElementById('editStatusItemCode').value = code;
+            // SIMPAN STATUS LAMA
+            document.getElementById('editStatusOldValue').value = currentStatus; 
             new bootstrap.Modal(document.getElementById('statusModal')).show();
         }
 
         function submitStatusUpdate(newStatus) {
             const code = document.getElementById('editStatusItemCode').value;
+            const oldStatus = document.getElementById('editStatusOldValue').value; // AMBIL STATUS LAMA
+            
             fetch(SCRIPT_URL, {
-                method: "POST", body: JSON.stringify({ action: "updateStatus", user: currentUser, itemCode: code, newValue: newStatus })
+                method: "POST", 
+                body: JSON.stringify({ 
+                    action: "updateStatus", 
+                    user: currentUser, 
+                    itemCode: code, 
+                    newValue: newStatus,
+                    oldValue: oldStatus // KIRIM KE SERVER
+                })
             }).then(r=>r.json()).then(res => {
                 if(res.result=="success") { alert("Status Berubah jadi " + newStatus); location.reload(); }
                 else { alert("Gagal update status"); }
@@ -357,7 +374,6 @@
             document.getElementById('modalItemNameHidden').value = name;
             new bootstrap.Modal(document.getElementById('commentModal')).show();
             
-            // LOGIKA HAK AKSES KOMEN
             if(perms.addComment) {
                 document.getElementById('commentInputArea').classList.remove('hidden');
                 document.getElementById('commentNoAccess').classList.add('hidden');
@@ -365,7 +381,6 @@
                 document.getElementById('commentInputArea').classList.add('hidden');
                 document.getElementById('commentNoAccess').classList.remove('hidden');
             }
-
             loadComments(code);
         }
 
