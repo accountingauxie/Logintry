@@ -1,615 +1,345 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AUXILIUM Portal – CV. Sukses Jaya</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://unpkg.com/feather-icons" rel="stylesheet">
-<style>
-/* --- 1. SYSTEM STYLE (Web UI) --- */
-:root { 
-    --primary-color: #116999; 
-    --bg-color: #f4f7f6; 
-    --text-color: #333; 
-    --red-bg: #fee2e2; 
-    --red-text: #991b1b;
-    --border-color: #eaecf0;
-}
-
-* { box-sizing: border-box; }
-body { 
-    margin: 0; 
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    font-size: 14px; 
-    background: var(--bg-color); 
-    color: var(--text-color); 
-    -webkit-font-smoothing: antialiased; 
-}
-
-/* --- UTILITY CLASSES --- */
-.hidden { display: none !important; }
-
-/* --- LOGIN PAGE STYLES --- */
-#login-section {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--bg-color);
-}
-.login-card {
-    background: white;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-    border: 1px solid var(--border-color);
-}
-.login-logo img { height: 50px; margin-bottom: 20px; }
-.login-title { font-size: 24px; font-weight: 700; color: #101828; margin-bottom: 8px; }
-.login-subtitle { color: #667085; margin-bottom: 30px; }
-.form-group { margin-bottom: 16px; text-align: left; }
-.form-group label { display: block; font-weight: 500; margin-bottom: 6px; color: #344054; }
-.form-input { 
-    width: 100%; padding: 10px 14px; border: 1px solid #d0d5dd; border-radius: 8px; 
-    font-size: 16px; outline: none; transition: border 0.2s;
-}
-.form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(17, 105, 153, 0.1); }
-.btn-login {
-    width: 100%; padding: 12px; background-color: var(--primary-color); color: white;
-    border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer;
-    transition: background 0.2s; margin-top: 10px;
-}
-.btn-login:hover { background-color: #0c4e75; }
-.btn-login:disabled { background-color: #98a2b3; cursor: not-allowed; }
-.error-msg { color: var(--red-text); background: var(--red-bg); padding: 10px; border-radius: 6px; margin-top: 15px; font-size: 13px; display: none; }
-
-/* --- NAVIGATION BAR --- */
-.aux-navbar {
-    background-color: #ffffff;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 40px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    position: sticky; top: 0; z-index: 1000;
-}
-
-/* Logo Setup */
-.aux-logo { display: flex; align-items: center; gap: 10px; }
-.aux-logo img { height: 45px; width: auto; object-fit: contain; }
-
-/* Menu Wrapper */
-.aux-menu { 
-    display: flex; 
-    gap: 8px; 
-    align-items: center; 
-    height: 100%; 
-}
-
-/* Navigation Item Wrapper */
-.nav-item {
-    position: relative;
-    height: 100%;
-    display: flex;
-    align-items: center;
-}
-
-/* Main Link Style */
-.aux-link { 
-    text-decoration: none; 
-    color: #475467; 
-    font-weight: 600; 
-    font-size: 14px; 
-    padding: 8px 16px; 
-    border-radius: 6px; 
-    transition: all 0.2s; 
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.aux-link:hover, .nav-item:hover .aux-link { 
-    background-color: #f2f4f7; 
-    color: #101828;
-}
-
-.aux-link.active { 
-    background-color: #eff8ff; 
-    color: var(--primary-color); 
-    font-weight: 700; 
-}
-
-.chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
-.nav-item:hover .chevron-down { transform: rotate(180deg); }
-
-/* --- DROPDOWN MENU --- */
-.dropdown-menu {
-    visibility: hidden;
-    opacity: 0;
-    position: absolute;
-    top: 85%; 
-    left: 0;
-    background: white;
-    min-width: 240px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    padding: 8px;
-    z-index: 9999;
-    transform: translateY(10px);
-    transition: all 0.2s ease-in-out;
-}
-
-.dropdown-menu::before {
-    content: "";
-    position: absolute;
-    top: -20px; left: 0; width: 100%; height: 20px; background: transparent;
-}
-
-.nav-item:hover .dropdown-menu {
-    visibility: visible;
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.dropdown-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    color: #344054;
-    text-decoration: none;
-    font-size: 14px;
-    border-radius: 6px;
-    transition: background 0.2s;
-}
-
-.dropdown-item:hover {
-    background-color: #f9fafb;
-    color: var(--primary-color);
-}
-
-.dropdown-divider { height: 1px; background-color: #eaecf0; margin: 6px 0; }
-
-.dropdown-header {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: #98a2b3;
-    font-weight: 600;
-    padding: 8px 12px 4px;
-    letter-spacing: 0.5px;
-}
-
-/* --- USER PANEL --- */
-.user-panel { 
-    display: flex; align-items: center; gap: 12px; 
-    padding-left: 20px; border-left: 1px solid var(--border-color); 
-}
-.user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
-.user-name { font-weight: 700; font-size: 13px; color: #101828; }
-.user-role { font-size: 11px; color: #667085; }
-.user-avatar { 
-    width: 36px; height: 36px; 
-    background-color: var(--primary-color); 
-    color: white; 
-    border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; 
-    font-weight: 600; font-size: 14px; user-select: none; 
-}
-.logout-btn { 
-    background: none; border: 1px solid var(--border-color); color: #666; 
-    width: 36px; height: 36px; border-radius: 8px; 
-    cursor: pointer; display: flex; align-items: center; justify-content: center; 
-    transition: all 0.2s; 
-}
-.logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
-
-/* --- CONTENT GRID --- */
-.main-container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 40px; }
-.content h2 { margin-top: 0; font-size: 28px; font-weight: 700; color: #101828; }
-.subtitle { font-size: 16px; color: #667085; margin-top: 8px; margin-bottom: 40px; }
-
-.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-@media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-
-.tile {
-    background: white; padding: 24px; border-radius: 12px;
-    box-shadow: 0px 1px 3px rgba(16, 24, 40, 0.1), 0px 1px 2px rgba(16, 24, 40, 0.06);
-    cursor: pointer; transition: all 0.2s ease;
-    min-height: 220px; display: flex; flex-direction: column; justify-content: space-between;
-    border: 1px solid var(--border-color); text-decoration: none;
-}
-.tile:hover { transform: translateY(-4px); box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08); border-color: #d0d5dd; }
-.tile-icon { margin-bottom: 20px; color: #475467; }
-.tile-title { font-size: 18px; font-weight: 700; color: #101828; margin-bottom: 8px; }
-.tile-desc { font-size: 14px; color: #667085; line-height: 1.5; }
-
-/* --- MODAL & LOADER --- */
-.modal { display: none; position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
-.modal-content { background-color: #fff; margin: 15% auto; padding: 32px; border-radius: 16px; width: 360px; text-align: center; }
-.modal-buttons { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
-.btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1; }
-.btn-yes { background-color: #d92d20; color: #fff; }
-.btn-cancel { background-color: #f2f4f7; color: #344054; }
-
-.auxie-loader { position: fixed; inset: 0; background: #ffffff; display: flex; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.5s ease; }
-.auxie-loader.hide { opacity: 0; pointer-events: none; }
-.spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
-</head>
-
-<body>
-  <div id="auxieLoading" class="auxie-loader">
-    <div class="spinner"></div>
-  </div>
-
-  <div id="login-section">
-      <div class="login-card">
-          <div class="login-logo">
-              <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
-          </div>
-          <h1 class="login-title">Log in</h1>
-          <p class="login-subtitle">Masukkan kredensial Anda untuk mengakses portal.</p>
-          
-          <form onsubmit="event.preventDefault(); handleLogin();">
-              <div class="form-group">
-                  <label for="email">Email</label>
-                  <input type="email" id="email" class="form-input" placeholder="nama@cvsuksesjaya.com" required>
-              </div>
-              <div class="form-group">
-                  <label for="password">Password</label>
-                  <input type="password" id="password" class="form-input" placeholder="Masukkan password" required>
-              </div>
-              <div id="login-error" class="error-msg"></div>
-              <button type="submit" id="login-btn" class="btn-login">Masuk</button>
-          </form>
-      </div>
-  </div>
-
-  <div id="dashboard-section" class="hidden">
-      <div class="aux-navbar">
-        <div class="aux-logo">
-            <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
-        </div>
-        
-        <nav class="aux-menu">
-            <div class="nav-item">
-                <a href="#" class="aux-link active">Home</a>
-            </div>
-
-            <div class="nav-item" id="nav-group-penjualan">
-                <div class="aux-link">
-                    Penjualan 
-                    <i data-feather="chevron-down" class="chevron-down"></i>
-                </div>
-                <div class="dropdown-menu">
-                    <div class="dropdown-header">Sales Orders</div>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="dropdown-item" id="access-orderPenjualan">Order Penjualan</a>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Review%20Penjualan/review_penjualan.html" class="dropdown-item" id="access-reviewPenjualan">Review Penjualan</a>
-                </div>
-            </div>
-
-            <div class="nav-item" id="nav-group-pembelian">
-                <div class="aux-link">
-                    Pembelian
-                    <i data-feather="chevron-down" class="chevron-down"></i>
-                </div>
-                <div class="dropdown-menu">
-                    <div class="dropdown-header">Purchasing</div>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item" id="access-pemesananBarang">Pemesanan Pembelian</a>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item" id="access-penerimaanBarang">Penerimaan Barang (Entry)</a>
-                    
-                    <div class="dropdown-divider"></div>
-                    
-                    <div class="dropdown-header">Finance</div>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item" id="access-daftarTagihan">Daftar Tagihan (Bill)</a>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item" id="access-importXero">Import Xero PO</a>
-                </div>
-            </div>
-
-            <div class="nav-item" id="nav-group-produksi">
-                <div class="aux-link">
-                    Produksi
-                    <i data-feather="chevron-down" class="chevron-down"></i>
-                </div>
-                <div class="dropdown-menu">
-                    <div class="dropdown-header">Input Mesin</div>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item" id="access-backOrder">Back Order</a>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item" id="access-generalOrder">General Order</a>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Pre%20Order/produksi_preorder.html" class="dropdown-item" id="access-preOrder">Pre Order</a>
-
-                    <div class="dropdown-divider"></div>
-                    
-                    <div class="dropdown-header">Hasil Produksi</div>
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item" id="access-produksiBarang">Produksi Barang Jadi</a>
-                </div>
-            </div>
-
-            <div class="nav-item" id="nav-group-persediaan">
-                <div class="aux-link">
-                    Persediaan
-                    <i data-feather="chevron-down" class="chevron-down"></i>
-                </div>
-                <div class="dropdown-menu">
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/inventory/index.html" class="dropdown-item" id="access-cekStok">Cek Stok Inventory</a>
-                </div>
-            </div>
-        </nav>
-
-        <div class="user-panel">
-            <div class="user-details">
-                <span class="user-name" id="display-nama">Loading...</span>
-                <span class="user-role" id="display-role">...</span>
-            </div>
-            <div class="user-avatar" id="display-initial">AX</div>
-            <button class="logout-btn" onclick="showLogoutModal()" title="Keluar Akun">
-                <i data-feather="log-out" style="width:16px; height:16px;"></i>
-            </button>
-        </div>
-      </div>
-
-      <div class="main-container">
-        <div class="content">
-          <h2>Welcome Back, <span id="display-nama-sapaan">User</span> 👋</h2>
-          <p class="subtitle">Silakan pilih modul melalui menu navigasi di atas atau kartu akses cepat di bawah ini.</p>
-          
-          <div class="grid">
-            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="tile" id="tile-penerimaanBarang">
-              <div>
-                <div class="tile-icon"><i data-feather="truck" style="width:32px; height:32px;"></i></div>
-                <div class="tile-title">Penerimaan (Receiving)</div>
-                <div class="tile-desc">Input penerimaan barang material dan purchase order masuk.</div>
-              </div>
-            </a>
-
-            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="tile" id="tile-produksiBarang">
-              <div>
-                  <div class="tile-icon"><i data-feather="package" style="width:32px; height:32px;"></i></div>
-                  <div class="tile-title">Produksi (Finished Goods)</div>
-                  <div class="tile-desc">Lihat dan kelola daftar barang jadi hasil produksi.</div>
-              </div>
-            </a>
-
-            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="tile" id="tile-orderPenjualan">
-              <div>
-                  <div class="tile-icon"><i data-feather="shopping-cart" style="width:32px; height:32px;"></i></div>
-                  <div class="tile-title">Penjualan (Sales)</div>
-                  <div class="tile-desc">Buat order penjualan baru untuk pelanggan.</div>
-              </div>
-            </a>
-
-            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/inventory/index.html" class="tile" id="tile-cekStok">
-              <div>
-                  <div class="tile-icon"><i data-feather="layers" style="width:32px; height:32px;"></i></div>
-                  <div class="tile-title">Inventory</div>
-                  <div class="tile-desc">Monitoring stok gudang, Spandek, KPC, dan lainnya.</div>
-              </div>
-            </a>
-          </div> 
-        </div>
-      </div>
-  </div>
-
-  <div id="logoutModal" class="modal">
-    <div class="modal-content">
-      <div style="background:#fee2e2; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
-        <i data-feather="alert-circle" style="color:#d92d20;"></i>
-      </div>
-      <p style="font-size:18px; font-weight:600; color:#101828; margin-bottom:10px; margin-top:0;">Konfirmasi Keluar</p>
-      <p style="color:#667085; font-size:14px; margin-bottom:24px;">Apakah Anda yakin ingin keluar dari sistem?</p>
-      <div class="modal-buttons">
-        <button class="btn btn-cancel" onclick="closeLogoutModal()">Batal</button>
-        <button class="btn btn-yes" onclick="performLogout()">Keluar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="newPasswordModal" class="modal">
-    <div class="modal-content" style="text-align: left;">
-      <h3 style="margin-top:0; color:#101828;">Buat Password Baru</h3>
-      <p style="color:#667085; font-size:14px; margin-bottom:20px;">
-        Demi keamanan, Anda wajib mengganti password sementara Anda dengan password baru.
-      </p>
-      
-      <form onsubmit="event.preventDefault(); handleSetPassword();">
-        <div class="form-group">
-            <label for="new-pass">Password Baru</label>
-            <input type="password" id="new-pass" class="form-input" required minlength="6">
-        </div>
-        <div class="form-group">
-            <label for="confirm-pass">Konfirmasi Password</label>
-            <input type="password" id="confirm-pass" class="form-input" required>
-        </div>
-        <div id="password-error" class="error-msg"></div>
-        
-        <button type="submit" id="btn-save-pass" class="btn-login" style="margin-top:10px;">Simpan Password</button>
-      </form>
-    </div>
-  </div>
-
-  <script src="https://unpkg.com/feather-icons"></script>
-  <script>
-    // --- KONFIGURASI PENTING ---
-    // GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT APP SCRIPT TERBARU
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXk4Prn3XcUuxuHBy_Veg4h7WRhX7chjAfjbnDuvVIMAhqnXkMjMrJ4_Cb6tI0SJ4e/exec"; 
-
-    // --- MAIN LOGIC ---
-    feather.replace();
-    let tempEmailForReset = ""; 
-
-    // 1. Cek sesi saat halaman dimuat
-    window.onload = function() {
-        const loader = document.getElementById("auxieLoading");
-        const savedUser = localStorage.getItem('userSession');
-
-        if (savedUser) {
-            const user = JSON.parse(savedUser);
-            initDashboard(user);
-            setTimeout(() => loader.classList.add("hide"), 500);
-        } else {
-            document.getElementById('login-section').classList.remove('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
-            setTimeout(() => loader.classList.add("hide"), 500);
-        }
-    };
-
-    // 2. Fungsi Login
-    function handleLogin() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const btn = document.getElementById('login-btn');
-        const errorMsg = document.getElementById('login-error');
-
-        // Reset UI
-        btn.disabled = true;
-        btn.innerText = "Memproses...";
-        errorMsg.style.display = 'none';
-
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: 'login', email: email, password: password })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
-                // Login Sukses
-                localStorage.setItem('userSession', JSON.stringify(data.user));
-                initDashboard(data.user);
-            } else if (data.status === "new_password_required") {
-                // User harus ganti password
-                tempEmailForReset = data.email; 
-                document.getElementById('newPasswordModal').style.display = 'block'; 
-                btn.disabled = false;
-                btn.innerText = "Masuk";
-            } else {
-                // Error login biasa
-                errorMsg.innerText = data.message;
-                errorMsg.style.display = 'block';
-                btn.disabled = false;
-                btn.innerText = "Masuk";
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            errorMsg.innerText = "Gagal terhubung ke server. Coba lagi.";
-            errorMsg.style.display = 'block';
-            btn.disabled = false;
-            btn.innerText = "Masuk";
-        });
-    }
-
-    // 3. Fungsi Simpan Password Baru
-    function handleSetPassword() {
-        const newPass = document.getElementById('new-pass').value;
-        const confirmPass = document.getElementById('confirm-pass').value;
-        const errorMsg = document.getElementById('password-error');
-        const btn = document.getElementById('btn-save-pass');
-
-        if (newPass !== confirmPass) {
-            errorMsg.innerText = "Konfirmasi password tidak cocok.";
-            errorMsg.style.display = 'block';
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "Menyimpan...";
-        errorMsg.style.display = 'none';
-
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({ 
-                action: 'update_password', 
-                email: tempEmailForReset, 
-                newPassword: newPass 
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
-                alert("Password berhasil disimpan! Silakan login ulang dengan password baru.");
-                location.reload(); 
-            } else {
-                errorMsg.innerText = data.message;
-                errorMsg.style.display = 'block';
-                btn.disabled = false;
-                btn.innerText = "Simpan Password";
-            }
-        })
-        .catch(error => {
-            errorMsg.innerText = "Terjadi kesalahan jaringan.";
-            errorMsg.style.display = 'block';
-            btn.disabled = false;
-            btn.innerText = "Simpan Password";
-        });
-    }
-
-    // 4. Inisialisasi Dashboard
-    function initDashboard(user) {
-        document.getElementById('login-section').classList.add('hidden');
-        document.getElementById('dashboard-section').classList.remove('hidden');
-
-        document.getElementById('display-nama').innerText = user.nama;
-        document.getElementById('display-nama-sapaan').innerText = user.nama.split(" ")[0]; 
-        document.getElementById('display-role').innerText = user.role;
-        
-        const initials = user.nama.split(" ").map((n)=>n[0]).join("").substring(0,2).toUpperCase();
-        document.getElementById('display-initial').innerText = initials;
-
-        // Apply Permissions
-        const rights = user.akses;
-        
-        applyPermission('access-orderPenjualan', rights.orderPenjualan);
-        applyPermission('tile-orderPenjualan', rights.orderPenjualan);
-
-        applyPermission('access-reviewPenjualan', rights.reviewPenjualan);
-        
-        applyPermission('access-pemesananBarang', rights.pemesananBarang);
-        
-        applyPermission('access-penerimaanBarang', rights.penerimaanBarang);
-        applyPermission('tile-penerimaanBarang', rights.penerimaanBarang);
-
-        applyPermission('access-daftarTagihan', rights.daftarTagihan);
-        applyPermission('access-importXero', rights.importXero);
-        
-        applyPermission('access-backOrder', rights.backOrder);
-        applyPermission('access-generalOrder', rights.generalOrder);
-        applyPermission('access-preOrder', rights.preOrder);
-        
-        applyPermission('access-produksiBarang', rights.produksiBarang);
-        applyPermission('tile-produksiBarang', rights.produksiBarang);
-        
-        applyPermission('access-cekStok', rights.cekStok);
-        applyPermission('tile-cekStok', rights.cekStok);
-
-        feather.replace();
-    }
-
-    function applyPermission(elementId, isAllowed) {
-        const el = document.getElementById(elementId);
-        if (!el) return;
-        const allowed = (isAllowed === true || isAllowed === "TRUE" || isAllowed === "true");
-        if (!allowed) el.style.display = 'none';
-        else el.style.display = ''; 
-    }
-
-    // 5. Modal Logout Logic
-    function showLogoutModal() { document.getElementById("logoutModal").style.display = "block"; }
-    function closeLogoutModal() { document.getElementById("logoutModal").style.display = "none"; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Item Dashboard</title>
     
-    function performLogout() {
-        localStorage.removeItem('userSession');
-        location.reload(); 
-    }
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.bootstrap5.min.css" rel="stylesheet">
 
-    window.onclick = function(event) {
-        if (event.target == document.getElementById("logoutModal")) closeLogoutModal();
-    }
-  </script>
+    <style>
+        body { background-color: #f4f6f9; font-size: 0.9rem; }
+        /* Styling untuk Login */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #2c3e50; z-index: 9999; display: flex;
+            justify-content: center; align-items: center;
+        }
+        .login-box { background: white; padding: 2rem; border-radius: 10px; width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .hidden { display: none !important; }
+        
+        /* Styling Tabel agar lebih padat seperti spreadsheet */
+        #mainTable thead th {
+            background-color: #e9ecef;
+            vertical-align: middle;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        #mainTable tbody td {
+            vertical-align: middle;
+            padding: 0.5rem 0.5rem; /* Padding lebih kecil */
+        }
+        /* Styling untuk select filter di header */
+        thead select {
+            width: 100%;
+            padding: 2px;
+            font-size: 0.8rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+        /* Warna status badge */
+        .badge-active { background-color: #28a745; color: white; padding: 4px 8px; border-radius: 4px; }
+        .badge-archived { background-color: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box text-center">
+            <h3>🔐 Master Data Login</h3>
+            <p class="text-muted mb-4">Masukkan kredensial untuk akses.</p>
+            <input type="password" id="passcode" class="form-control mb-3" placeholder="Kode Akses (misal: 123456)">
+            <input type="text" id="username" class="form-control mb-3" placeholder="Nama Anda (Wajib untuk komentar)">
+            <button onclick="checkLogin()" class="btn btn-primary w-100 fw-bold">MASUK DASHBOARD</button>
+            <p id="error-msg" class="text-danger mt-3 hidden fw-bold"></p>
+        </div>
+    </div>
+
+    <div class="container-fluid py-4 px-4 hidden" id="dashboard">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 fw-bold text-primary">📦 Master Item Data List</h4>
+            <div>
+                User: <span id="displayUser" class="fw-bold text-success"></span>
+                <button onclick="logout()" class="btn btn-sm btn-outline-danger ms-3">Logout</button>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div id="loadingSpinner" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Sedang memuat data dari Spreadsheet...</p>
+                </div>
+
+                <table id="mainTable" class="table table-striped table-bordered table-hover w-100 hidden" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>NAMA ITEM</th>
+                            <th>VENDOR</th>
+                            <th>SAT. BELI</th>
+                            <th>SAT. JUAL</th>
+                            <th class="text-end">HRG BELI</th>
+                            <th class="text-end">HRG JUAL</th>
+                            <th>Tipe Produk</th>
+                            <th>Merk</th>
+                            <th>Machine Used</th>
+                            <th>Status</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                        <tr id="filter-row">
+                            <th></th><th></th><th></th><th></th><th></th><th></th>
+                            <th></th> <th></th>
+                            <th></th> <th></th> <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="commentModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title">💬 Kirim Catatan/Komentar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Item:</label>
+                        <input type="text" class="form-control fw-bold readonly-input" id="modalItemName" readonly>
+                    </div>
+                    <input type="hidden" id="modalItemCode"> <div class="mb-3">
+                         <label class="form-label small">Isi Komentar:</label>
+                        <textarea id="commentInput" class="form-control" rows="4" placeholder="Tulis catatan untuk item ini..."></textarea>
+                    </div>
+                </div>
+                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" onclick="sendComment()" id="btnSendComment" class="btn btn-success">Kirim Komentar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
+
+    <script>
+        // ================= KONFIGURASI UTAMA =================
+        // GANTI URL INI DENGAN URL WEB APP ANDA YANG BARU DI-DEPLOY
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPVZMblUpQiEvyO9buO0ZXW9iLpp709l7txNtD2PiTWeAGa7JVFAiX31_6NgdARnre/exec"; 
+        
+        const ACCESS_CODE = "123456"; // Ganti password sesuai keinginan
+        let currentUser = "";
+        let table; // Variabel global untuk DataTable
+
+        // Helper: Format Rupiah
+        const formatRupiah = (money) => {
+             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(money);
+        }
+
+        // ================= FUNGSI LOGIN =================
+        function checkLogin() {
+            const pass = document.getElementById('passcode').value;
+            const user = document.getElementById('username').value.trim();
+            const errorBox = document.getElementById('error-msg');
+            
+            if(pass === ACCESS_CODE && user !== "") {
+                currentUser = user;
+                localStorage.setItem("dashboardUser", currentUser); // Simpan sesi sederhana
+                document.getElementById('displayUser').innerText = currentUser;
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                loadDataFromSheets(); // Mulai load data
+            } else {
+                errorBox.innerText = "Kode akses salah atau nama belum diisi!";
+                errorBox.classList.remove('hidden');
+            }
+        }
+
+        // Cek sesi login saat halaman direfresh (opsional)
+        window.onload = function() {
+            const savedUser = localStorage.getItem("dashboardUser");
+            if(savedUser) {
+                document.getElementById('username').value = savedUser;
+                document.getElementById('passcode').focus();
+            }
+        }
+
+        function logout() {
+             localStorage.removeItem("dashboardUser");
+             location.reload();
+        }
+
+
+        // ================= FUNGSI LOAD & RENDER DATA =================
+        function loadDataFromSheets() {
+            fetch(SCRIPT_URL + "?action=getProducts")
+                .then(response => response.json())
+                .then(data => {
+                    // Data berhasil diload, sembunyikan spinner, tampilkan tabel
+                    document.getElementById('loadingSpinner').classList.add('hidden');
+                    document.getElementById('mainTable').classList.remove('hidden');
+                    initializeDataTable(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('loadingSpinner').innerHTML = '<p class="text-danger">Gagal memuat data. Pastikan URL Apps Script benar.</p>';
+                });
+        }
+
+        function initializeDataTable(dataSet) {
+            // MAPPING INDEX KOLOM SPREADSHEET (Dimulai dari 0 untuk Kolom A)
+            // A=0, B=1, C=2, D=3, E=4(HrgBeli), F=5(HrgJual)
+            // K=10(Tipe), L=11(Merk)
+            // P=15(ItemCode/Unik), Q=16(Machine), R=17(Status)
+
+            table = $('#mainTable').DataTable({
+                data: dataSet,
+                responsive: true,
+                pageLength: 25, // Jumlah baris per halaman default
+                order: [[0, 'asc']], // Default sort kolom pertama (Nama Item)
+                // Definisi Kolom
+                columns: [
+                    { data: 0 }, // NAMA ITEM (Kolom A)
+                    { data: 1 }, // VENDOR (Kolom B)
+                    { data: 2 }, // SATUAN BELI (Kolom C)
+                    { data: 3 }, // SATUAN JUAL (Kolom D)
+                    { 
+                        data: 4, // HRG BELI (Kolom E)
+                        className: "text-end fw-bold",
+                        render: function(data, type, row) { 
+                            return (type === 'display' || type === 'filter') ? formatRupiah(data) : data; 
+                        } 
+                    },
+                    { 
+                        data: 5, // HRG JUAL (Kolom F)
+                        className: "text-end fw-bold text-primary",
+                        render: function(data, type, row) { 
+                            return (type === 'display' || type === 'filter') ? formatRupiah(data) : data; 
+                        }
+                    },
+                    { data: 10 }, // Tipe Produk (Kolom K) - Index 6 di tabel HTML
+                    { data: 11 }, // Merk (Kolom L)
+                    { data: 16 }, // Machine Used (Kolom Q) - Index 8 di tabel HTML
+                    { 
+                        data: 17, // Status (Kolom R) - Index 9 di tabel HTML
+                        className: "text-center",
+                        render: function(data) {
+                            let statusStr = (data || "").toString(); // Pastikan string
+                            if(statusStr.toLowerCase() === 'active') return '<span class="badge-active">Active</span>';
+                            if(statusStr.toLowerCase().includes('archived')) return '<span class="badge-archived">Archived</span>';
+                            return statusStr;
+                        }
+                    },
+                    {
+                        // Kolom Tombol Aksi (Tidak ada di spreadsheet)
+                        data: null,
+                        className: "text-center",
+                        orderable: false,
+                        render: function (data, type, row) {
+                            // Menggunakan Kolom P (Index 15) sebagai ID Unik, dan Kolom A (Index 0) sebagai Nama
+                            // Hati-hati dengan tanda kutip di dalam string
+                            const safeItemName = row[0].replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const safeItemCode = row[15].replace(/'/g, "\\'"); 
+                            return `<button class="btn btn-sm btn-warning shadow-sm px-3" onclick="openCommentModal('${safeItemCode}', '${safeItemName}')">💬 Komen</button>`;
+                        }
+                    }
+                ],
+                // FUNGSI UNTUK MEMBUAT DROPDOWN FILTER DI HEADER
+                initComplete: function () {
+                    this.api().columns([6, 8, 9]).every(function () { // Index kolom di HTML yg mau dikasih filter (Tipe=6, Machine=8, Status=9)
+                        var column = this;
+                        var select = $('<select class="form-select form-select-sm"><option value="">Semua</option></select>')
+                            .appendTo( $('#filter-row').find('th').eq(column.index()) ) // Masukkan ke baris header kedua
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+                        
+                        // Ambil data unik dari kolom tersebut untuk isi dropdown
+                        column.data().unique().sort().each(function (d, j) {
+                             // Bersihkan data jika kosong
+                             let cleanData = d ? d.toString().trim() : "";
+                             if(cleanData !== "") {
+                                select.append('<option value="' + cleanData + '">' + cleanData + '</option>');
+                             }
+                        });
+                    });
+                }
+            });
+        }
+
+
+        // ================= FUNGSI KOMENTAR =================
+        // Menerima ItemCode (Kolom P) dan NamaItem (Kolom A)
+        function openCommentModal(itemCode, itemName) {
+            document.getElementById('modalItemName').value = itemName;
+            document.getElementById('modalItemCode').value = itemCode;
+            document.getElementById('commentInput').value = ""; // Reset textarea
+            
+            // Tampilkan Modal Bootstrap
+            new bootstrap.Modal(document.getElementById('commentModal')).show();
+        }
+
+        function sendComment() {
+            const comment = document.getElementById('commentInput').value;
+            const itemCode = document.getElementById('modalItemCode').value;
+            const itemName = document.getElementById('modalItemName').value;
+            
+            if(!comment.trim()) {
+                alert("Komentar tidak boleh kosong!");
+                return;
+            }
+
+            const btn = document.getElementById('btnSendComment');
+            const originalText = btn.innerText;
+            btn.innerText = "Mengirim...";
+            btn.disabled = true;
+            
+            // Kirim ke Google Apps Script
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                // mode: "no-cors", // HAPUS baris ini jika ingin menerima respon JSON sukses/gagal
+                body: JSON.stringify({
+                    user: currentUser,
+                    itemCode: itemCode, // Kirim ID Unik
+                    itemName: itemName, // Kirim Nama Item juga
+                    comment: comment
+                })
+            })
+            .then(res => res.json()) // Mencoba parsing respon JSON
+            .then(response => {
+                if(response.result === "success") {
+                    alert("Komentar berhasil disimpan di Sheet 'Comments'!");
+                     // Tutup Modal
+                    const modalEl = document.getElementById('commentModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                } else {
+                    alert("Gagal menyimpan: " + response.message);
+                }
+            })
+            .catch(err => {
+                 alert("Terjadi kesalahan jaringan atau script.");
+                 console.error(err);
+            })
+            .finally(() => {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            });
+        }
+    </script>
 </body>
 </html>
