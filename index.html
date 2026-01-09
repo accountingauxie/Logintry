@@ -12,9 +12,12 @@
     <script src="https://unpkg.com/feather-icons"></script>
     
     <style>
-        /* --- 2. AUXILIUM THEME VARIABLES & RESET --- */
+        /* =========================================
+           1. STANDARD AUXILIUM NAVBAR STYLES
+           ========================================= */
         :root { 
             --primary-color: #116999; 
+            --primary-hover: #0e5a85;
             --bg-color: #f4f7f6; 
             --text-color: #333; 
             --red-bg: #fee2e2; 
@@ -31,10 +34,7 @@
             -webkit-font-smoothing: antialiased; 
         }
 
-        /* Utility */
-        .hidden { display: none !important; }
-
-        /* --- 3. NAVIGATION BAR STYLES (From Auxilium) --- */
+        /* --- NAVIGATION BAR --- */
         .aux-navbar {
             background-color: #ffffff;
             height: 70px;
@@ -46,76 +46,91 @@
             position: sticky; top: 0; z-index: 1000;
         }
 
-        .aux-logo img { height: 40px; width: auto; }
-        
+        .aux-logo { display: flex; align-items: center; gap: 10px; }
+        .aux-logo img { height: 45px; width: auto; object-fit: contain; }
+
         .aux-menu { display: flex; gap: 8px; align-items: center; height: 100%; }
         .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
-        
+
         .aux-link { 
             text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; 
-            padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer; 
+            padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer;
             display: flex; align-items: center; gap: 6px;
         }
+
         .aux-link:hover, .nav-item:hover .aux-link { background-color: #f2f4f7; color: #101828; }
-        .aux-link.active { background-color: #eff8ff; color: var(--primary-color); font-weight: 700; }
         
+        .aux-link.active { 
+            background-color: #eff8ff; color: var(--primary-color); font-weight: 700; 
+        }
+
         .chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
         .nav-item:hover .chevron-down { transform: rotate(180deg); }
 
-        /* Dropdown */
-        .dropdown-menu-custom {
-            visibility: hidden; opacity: 0; position: absolute; top: 85%; left: 0;
-            background: white; min-width: 240px;
+        /* --- DROPDOWN (Custom Class to avoid Bootstrap Conflict) --- */
+        .dropdown-menu-aux {
+            visibility: hidden; opacity: 0; position: absolute; 
+            top: 85%; left: 0; background: white; min-width: 240px;
             border: 1px solid var(--border-color); border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             padding: 8px; z-index: 9999; transform: translateY(10px);
             transition: all 0.2s ease-in-out;
+            display: block; /* Override Bootstrap display:none if accidentally applied */
         }
-        .dropdown-menu-custom::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
-        .nav-item:hover .dropdown-menu-custom { visibility: visible; opacity: 1; transform: translateY(0); }
-        
-        .dropdown-item-custom {
-            display: flex; align-items: center; padding: 10px 12px;
-            color: #344054; text-decoration: none; font-size: 14px;
-            border-radius: 6px; transition: background 0.2s;
-        }
-        .dropdown-item-custom:hover { background-color: #f9fafb; color: var(--primary-color); }
-        .dropdown-header-custom { font-size: 11px; text-transform: uppercase; color: #98a2b3; font-weight: 600; padding: 8px 12px 4px; }
+        .dropdown-menu-aux::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
+        .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateY(0); }
 
-        /* User Panel */
+        .dropdown-item-aux {
+            display: flex; align-items: center; padding: 10px 12px; color: #344054;
+            text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s;
+        }
+        .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
+        
+        .dropdown-divider-aux { height: 1px; background-color: #eaecf0; margin: 6px 0; }
+        .dropdown-header-aux {
+            font-size: 11px; text-transform: uppercase; color: #98a2b3;
+            font-weight: 600; padding: 8px 12px 4px; letter-spacing: 0.5px;
+        }
+
+        /* --- USER PANEL --- */
         .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border-color); }
         .user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
         .user-name { font-weight: 700; font-size: 13px; color: #101828; }
         .user-role { font-size: 11px; color: #667085; }
-        .user-avatar { 
-            width: 36px; height: 36px; background-color: var(--primary-color); color: white; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-weight: 600; font-size: 14px; user-select: none;
-        }
-        .logout-btn { 
-            background: none; border: 1px solid var(--border-color); color: #666; 
-            width: 36px; height: 36px; border-radius: 8px; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; transition: all 0.2s; 
-        }
+        .user-avatar { width: 36px; height: 36px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; user-select: none; }
+        .logout-btn { background: none; border: 1px solid var(--border-color); color: #666; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
 
-        /* --- 4. EXISTING DASHBOARD STYLES (Adapted) --- */
+        /* --- STANDARD MODAL (Logout) --- */
+        .modal-logout { display: none; position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+        .modal-logout-content { background-color: #fff; margin: 15% auto; padding: 32px; border-radius: 16px; width: 360px; text-align: center; }
+        .modal-buttons { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
+        .btn-modal { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1; }
+        .btn-yes { background-color: #d92d20; color: #fff; }
+        .btn-cancel { background-color: #f2f4f7; color: #344054; }
+
+        /* =========================================
+           2. APP SPECIFIC STYLES
+           ========================================= */
+        .hidden { display: none !important; }
+
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f6; z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .login-box { background: white; padding: 40px; border-radius: 16px; width: 380px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--border-color); }
         
         .main-container { max-width: 1400px; margin: 0 auto; padding: 30px; }
         .card-table { border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; background: white; }
         
-        /* Table Tweaks to match clean style */
-        #mainTable thead th { background-color: #f9fafb; color: #475467; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border-color); padding: 12px 16px; }
+        /* Table Tweaks */
+        #mainTable { width: 100% !important; }
+        #mainTable thead th { background-color: #f9fafb !important; color: #475467; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border-color); padding: 12px 16px; }
         #mainTable tbody td { padding: 12px 16px; color: #101828; font-size: 13px; border-bottom: 1px solid #f2f4f7; vertical-align: middle; }
         
         /* Badges & Editables */
         .editable-price { cursor: pointer; color: var(--primary-color); font-weight: 600; border-bottom: 1px dashed var(--primary-color); }
         .editable-price:hover { background-color: #eff8ff; }
         .status-badge { padding: 4px 10px; border-radius: 16px; font-weight: 500; font-size: 12px; }
-        .badge-active { background-color: #ecfdf3; color: #027a48; } /* Hijau lembut */
-        .badge-archived { background-color: #fef3f2; color: #b42318; } /* Merah lembut */
+        .badge-active { background-color: #ecfdf3; color: #027a48; } 
+        .badge-archived { background-color: #fef3f2; color: #b42318; }
 
         /* Chat */
         .chat-box { background: #f9fafb; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; max-height: 300px; overflow-y: auto; }
@@ -126,7 +141,7 @@
 
     <div id="login-overlay">
         <div class="login-box text-center">
-            <img src="https://via.placeholder.com/150x50?text=LOGO+ANDA" alt="Logo" style="height: 40px; margin-bottom: 24px;">
+            <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo.png" alt="Logo" style="height: 40px; margin-bottom: 24px;">
             <h4 style="font-weight: 700; color: #101828; margin-bottom: 8px;">Log in</h4>
             <p style="color: #667085; margin-bottom: 24px; font-size: 14px;">Akses portal data master item.</p>
             
@@ -147,25 +162,71 @@
         
         <div class="aux-navbar">
             <div class="aux-logo">
-                 <img src="https://via.placeholder.com/150x50?text=LOGO+ANDA" alt="Logo">
+                <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
             </div>
             
             <nav class="aux-menu">
                 <div class="nav-item">
-                    <a href="#" class="aux-link active">Dashboard</a>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a>
                 </div>
 
                 <div class="nav-item">
                     <div class="aux-link">
-                        Master Data 
+                        Penjualan 
                         <i data-feather="chevron-down" class="chevron-down"></i>
                     </div>
-                    <div class="dropdown-menu-custom">
-                        <div class="dropdown-header-custom">Inventory</div>
-                        <a href="#" class="dropdown-item-custom">Item List</a>
-                        <a href="#" class="dropdown-item-custom">Kategori Item</a>
-                        <div class="dropdown-header-custom">Settings</div>
-                        <a href="#" class="dropdown-item-custom">Satuan Ukur</a>
+                    <div class="dropdown-menu-aux">
+                        <div class="dropdown-header-aux">Sales Orders</div>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="dropdown-item-aux">Order Penjualan</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Review%20Penjualan/review_penjualan.html" class="dropdown-item-aux">Review Penjualan</a>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <div class="aux-link">
+                        Pembelian 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu-aux">
+                        <div class="dropdown-header-aux">Purchasing</div>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item-aux">Pemesanan Pembelian</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item-aux">Penerimaan Barang (Entry)</a>
+                        
+                        <div class="dropdown-divider-aux"></div>
+                        
+                        <div class="dropdown-header-aux">Finance</div>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item-aux">Daftar Tagihan (Bill)</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item-aux">Import Xero PO</a>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <div class="aux-link">
+                        Produksi 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu-aux">
+                        <div class="dropdown-header-aux">Input Mesin</div>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item-aux">Back Order</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item-aux">General Order</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Pre%20Order/produksi_preorder.html" class="dropdown-item-aux">Pre Order</a>
+
+                        <div class="dropdown-divider-aux"></div>
+                        
+                        <div class="dropdown-header-aux">Hasil Produksi</div>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item-aux">Produksi Barang Jadi</a>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <div class="aux-link active">
+                        Persediaan 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu-aux">
+                        <div class="dropdown-header-aux">Inventory</div>
+                        <a href="#" class="dropdown-item-aux" style="color:var(--primary-color); font-weight:700; background:#f9fafb;">Master Item List</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/inventory/index.html" class="dropdown-item-aux">Cek Stok Inventory</a>
                     </div>
                 </div>
             </nav>
@@ -176,12 +237,11 @@
                     <span class="user-role" id="display-role">Staff</span>
                 </div>
                 <div class="user-avatar" id="display-initial">U</div>
-                <button class="logout-btn" onclick="logout()" title="Keluar">
+                <button class="logout-btn" onclick="showLogoutModal()" title="Keluar Akun">
                     <i data-feather="log-out" style="width:16px; height:16px;"></i>
                 </button>
             </div>
         </div>
-
         <div class="main-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -195,7 +255,8 @@
             </div>
             
             <div class="card card-table">
-                <div class="card-body p-0"> <div id="loadingSpinner" class="text-center py-5">
+                <div class="card-body p-0">
+                    <div id="loadingSpinner" class="text-center py-5">
                         <div class="spinner-border text-primary" role="status"></div>
                         <p class="mt-2 text-muted small">Sedang memuat data...</p>
                     </div>
@@ -226,6 +287,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="logoutModal" class="modal-logout">
+        <div class="modal-logout-content">
+          <div style="background:#fee2e2; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+            <i data-feather="alert-circle" style="color:#d92d20;"></i>
+          </div>
+          <p style="font-size:18px; font-weight:600; color:#101828; margin-bottom:10px; margin-top:0;">Konfirmasi Keluar</p>
+          <p style="color:#667085; font-size:14px; margin-bottom:24px;">Apakah Anda yakin ingin keluar dari sistem?</p>
+          <div class="modal-buttons">
+            <button class="btn-modal btn-cancel" onclick="closeLogoutModal()">Batal</button>
+            <button class="btn-modal btn-yes" onclick="confirmLogout()">Keluar</button>
+          </div>
         </div>
     </div>
 
@@ -295,6 +370,14 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
+        // === NAVBAR & LOGOUT LOGIC ===
+        function showLogoutModal() { document.getElementById("logoutModal").style.display = "block"; }
+        function closeLogoutModal() { document.getElementById("logoutModal").style.display = "none"; }
+        function confirmLogout() { 
+            localStorage.removeItem("appSession"); 
+            location.reload(); 
+        }
+
         // === CONFIG ===
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNvIWpAuWberBC-JXIZx3KRCrtP6KUejwrv5tPg4GHwVpnuE5CxoMABshzB8aOXMya/exec"; 
         
@@ -340,13 +423,11 @@
             document.getElementById('dashboard').classList.remove('hidden');
             
             // --- UPDATE NAVBAR PROFILE INFO ---
-            // Karena di login sebelumnya cuma simpan email (currentUser), kita pakai itu.
-            // Idealnya backend kirim 'nama lengkap', tapi kita pakai logic simpel:
             const namePart = currentUser.split('@')[0];
             const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
             
-            document.getElementById('display-nama').innerText = formattedName; // Nama Depan
-            document.getElementById('display-role').innerText = perms.editPrice ? "Administrator" : "Viewer"; // Role dummy based on perm
+            document.getElementById('display-nama').innerText = formattedName; 
+            document.getElementById('display-role').innerText = perms.editPrice ? "Administrator" : "Viewer"; 
             document.getElementById('display-initial').innerText = formattedName.substring(0,2).toUpperCase();
 
             // Init Icons
@@ -365,13 +446,11 @@
                 initDashboard();
             }
         }
-        function logout() { localStorage.removeItem("appSession"); location.reload(); }
 
         // === 2. TABLE & RENDER LOGIC ===
         const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
         function loadData() {
-            // Hindari load double jika tabel sudah ada
             if ($.fn.DataTable.isDataTable('#mainTable')) return;
 
             fetch(SCRIPT_URL + "?action=getProducts").then(r=>r.json()).then(data => {
@@ -443,7 +522,6 @@
         }
 
         // === 3. UPDATE LOGIC (Price, Status, Comments) ===
-        // (Functionality remains identical to your original code, just reusing it)
         
         function openPriceModal(code, name, price) {
             document.getElementById('editPriceItemName').innerText = name;
