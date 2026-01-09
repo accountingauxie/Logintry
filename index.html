@@ -3,106 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Item Dashboard</title>
+    <title>Master Item Dashboard - Auxilium Style</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
     
     <style>
-        body { background-color: #f4f6f9; font-size: 0.85rem; font-family: 'Segoe UI', sans-serif; }
-        
-        /* LOGIN */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #212529; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-box { background: white; padding: 2rem; border-radius: 12px; width: 350px; }
+        /* --- 2. AUXILIUM THEME VARIABLES & RESET --- */
+        :root { 
+            --primary-color: #116999; 
+            --bg-color: #f4f7f6; 
+            --text-color: #333; 
+            --red-bg: #fee2e2; 
+            --red-text: #991b1b;
+            --border-color: #eaecf0;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-size: 14px; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            -webkit-font-smoothing: antialiased; 
+        }
+
+        /* Utility */
         .hidden { display: none !important; }
 
-        /* TABLE */
-        .card-table { border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        #mainTable thead th { background-color: #e9ecef; vertical-align: middle; font-size: 0.8rem; text-transform: uppercase; }
-        
-        /* EDITABLES & BADGES */
-        .editable-price { cursor: pointer; color: #0d6efd; font-weight: bold; border-bottom: 1px dashed #0d6efd; }
-        .editable-price:hover { background-color: #e7f1ff; }
-        
-        .status-badge { cursor: default; padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 0.7rem; }
-        .status-badge.editable { cursor: pointer; border: 1px solid transparent; }
-        .status-badge.editable:hover { border-color: #666; opacity: 0.8; }
-        
-        .badge-active { background-color: #d1e7dd; color: #0f5132; }
-        .badge-archived { background-color: #f8d7da; color: #842029; }
+        /* --- 3. NAVIGATION BAR STYLES (From Auxilium) --- */
+        .aux-navbar {
+            background-color: #ffffff;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: sticky; top: 0; z-index: 1000;
+        }
 
-        /* CHAT */
-        .chat-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; max-height: 300px; overflow-y: auto; }
-        .chat-item { background: white; border-left: 3px solid #0d6efd; padding: 8px; border-radius: 4px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .aux-logo img { height: 40px; width: auto; }
+        
+        .aux-menu { display: flex; gap: 8px; align-items: center; height: 100%; }
+        .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
+        
+        .aux-link { 
+            text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; 
+            padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer; 
+            display: flex; align-items: center; gap: 6px;
+        }
+        .aux-link:hover, .nav-item:hover .aux-link { background-color: #f2f4f7; color: #101828; }
+        .aux-link.active { background-color: #eff8ff; color: var(--primary-color); font-weight: 700; }
+        
+        .chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
+        .nav-item:hover .chevron-down { transform: rotate(180deg); }
+
+        /* Dropdown */
+        .dropdown-menu-custom {
+            visibility: hidden; opacity: 0; position: absolute; top: 85%; left: 0;
+            background: white; min-width: 240px;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 8px; z-index: 9999; transform: translateY(10px);
+            transition: all 0.2s ease-in-out;
+        }
+        .dropdown-menu-custom::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
+        .nav-item:hover .dropdown-menu-custom { visibility: visible; opacity: 1; transform: translateY(0); }
+        
+        .dropdown-item-custom {
+            display: flex; align-items: center; padding: 10px 12px;
+            color: #344054; text-decoration: none; font-size: 14px;
+            border-radius: 6px; transition: background 0.2s;
+        }
+        .dropdown-item-custom:hover { background-color: #f9fafb; color: var(--primary-color); }
+        .dropdown-header-custom { font-size: 11px; text-transform: uppercase; color: #98a2b3; font-weight: 600; padding: 8px 12px 4px; }
+
+        /* User Panel */
+        .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border-color); }
+        .user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
+        .user-name { font-weight: 700; font-size: 13px; color: #101828; }
+        .user-role { font-size: 11px; color: #667085; }
+        .user-avatar { 
+            width: 36px; height: 36px; background-color: var(--primary-color); color: white; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-weight: 600; font-size: 14px; user-select: none;
+        }
+        .logout-btn { 
+            background: none; border: 1px solid var(--border-color); color: #666; 
+            width: 36px; height: 36px; border-radius: 8px; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s; 
+        }
+        .logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
+
+        /* --- 4. EXISTING DASHBOARD STYLES (Adapted) --- */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f6; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: white; padding: 40px; border-radius: 16px; width: 380px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--border-color); }
+        
+        .main-container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+        .card-table { border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; background: white; }
+        
+        /* Table Tweaks to match clean style */
+        #mainTable thead th { background-color: #f9fafb; color: #475467; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border-color); padding: 12px 16px; }
+        #mainTable tbody td { padding: 12px 16px; color: #101828; font-size: 13px; border-bottom: 1px solid #f2f4f7; vertical-align: middle; }
+        
+        /* Badges & Editables */
+        .editable-price { cursor: pointer; color: var(--primary-color); font-weight: 600; border-bottom: 1px dashed var(--primary-color); }
+        .editable-price:hover { background-color: #eff8ff; }
+        .status-badge { padding: 4px 10px; border-radius: 16px; font-weight: 500; font-size: 12px; }
+        .badge-active { background-color: #ecfdf3; color: #027a48; } /* Hijau lembut */
+        .badge-archived { background-color: #fef3f2; color: #b42318; } /* Merah lembut */
+
+        /* Chat */
+        .chat-box { background: #f9fafb; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; max-height: 300px; overflow-y: auto; }
+        .chat-item { background: white; border-left: 3px solid var(--primary-color); padding: 10px; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
     <div id="login-overlay">
         <div class="login-box text-center">
-            <h4 class="fw-bold mb-3">🔐 Portal Master Data</h4>
-            <div class="form-floating mb-3">
+            <img src="https://via.placeholder.com/150x50?text=LOGO+ANDA" alt="Logo" style="height: 40px; margin-bottom: 24px;">
+            <h4 style="font-weight: 700; color: #101828; margin-bottom: 8px;">Log in</h4>
+            <p style="color: #667085; margin-bottom: 24px; font-size: 14px;">Akses portal data master item.</p>
+            
+            <div class="form-floating mb-3 text-start">
                 <input type="email" id="email" class="form-control" placeholder="Email">
                 <label>Email User</label>
             </div>
-            <div class="form-floating mb-3">
+            <div class="form-floating mb-3 text-start">
                 <input type="password" id="password" class="form-control" placeholder="Password">
                 <label>Password</label>
             </div>
-            <button onclick="performLogin()" id="btnLogin" class="btn btn-primary w-100 fw-bold">MASUK</button>
+            <button onclick="performLogin()" id="btnLogin" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: var(--primary-color); border:none;">Masuk</button>
             <p id="error-msg" class="text-danger mt-3 hidden small"></p>
         </div>
     </div>
 
-    <div class="container-fluid py-3 px-3 hidden" id="dashboard">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <h5 class="mb-0 fw-bold">📦 Master Item Data List</h5>
-                <small class="text-muted">Data yang tampil telah difilter (Nama Item tidak kosong).</small>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <button id="btnAddItem" class="btn btn-success btn-sm hidden" onclick="alert('Form Tambah Item akan dibuat nanti!')">
-                    <i class="bi bi-plus-circle"></i> Item Baru
-                </button>
-                
-                <div class="bg-white px-3 py-1 rounded shadow-sm border small">
-                    User: <span id="displayUser" class="fw-bold text-primary"></span>
-                    <span class="mx-2">|</span>
-                    <a href="#" onclick="logout()" class="text-danger fw-bold text-decoration-none">Logout</a>
-                </div>
-            </div>
-        </div>
+    <div id="dashboard" class="hidden">
         
-        <div class="card card-table">
-            <div class="card-body p-2">
-                <div id="loadingSpinner" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2 text-muted small">Memuat data...</p>
+        <div class="aux-navbar">
+            <div class="aux-logo">
+                 <img src="https://via.placeholder.com/150x50?text=LOGO+ANDA" alt="Logo">
+            </div>
+            
+            <nav class="aux-menu">
+                <div class="nav-item">
+                    <a href="#" class="aux-link active">Dashboard</a>
                 </div>
 
-                <table id="mainTable" class="table table-hover w-100 hidden">
-                    <thead>
-                        <tr>
-                            <th>Nama Item</th>
-                            <th>Vendor</th>
-                            <th>Sat. Beli</th>
-                            <th>Sat. Jual</th>
-                            <th class="text-end">Hrg Beli</th>
-                            <th class="text-end">Hrg Jual</th>
-                            <th>Tipe</th>
-                            <th>Merk</th>
-                            <th>Machine</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-center">Aksi</th>
-                        </tr>
-                        <tr id="filter-row">
-                             <th></th><th></th><th></th><th></th><th></th><th></th>
-                             <th></th><th></th><th></th><th></th><th></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="nav-item">
+                    <div class="aux-link">
+                        Master Data 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu-custom">
+                        <div class="dropdown-header-custom">Inventory</div>
+                        <a href="#" class="dropdown-item-custom">Item List</a>
+                        <a href="#" class="dropdown-item-custom">Kategori Item</a>
+                        <div class="dropdown-header-custom">Settings</div>
+                        <a href="#" class="dropdown-item-custom">Satuan Ukur</a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="user-panel">
+                <div class="user-details">
+                    <span class="user-name" id="display-nama">User</span>
+                    <span class="user-role" id="display-role">Staff</span>
+                </div>
+                <div class="user-avatar" id="display-initial">U</div>
+                <button class="logout-btn" onclick="logout()" title="Keluar">
+                    <i data-feather="log-out" style="width:16px; height:16px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 style="font-weight: 700; color: #101828; margin: 0;">Master Item Data</h2>
+                    <p style="color: #667085; margin: 4px 0 0;">Kelola daftar harga dan status item inventory.</p>
+                </div>
+                
+                <button id="btnAddItem" class="btn btn-success hidden" onclick="alert('Fitur segera hadir!')" style="background-color: #12b76a; border:none; padding: 10px 16px; font-weight: 600;">
+                    <i class="bi bi-plus-lg me-1"></i> Item Baru
+                </button>
+            </div>
+            
+            <div class="card card-table">
+                <div class="card-body p-0"> <div id="loadingSpinner" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 text-muted small">Sedang memuat data...</p>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="mainTable" class="table table-hover w-100 hidden mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nama Item</th>
+                                    <th>Vendor</th>
+                                    <th>Sat. Beli</th>
+                                    <th>Sat. Jual</th>
+                                    <th class="text-end">Hrg Beli</th>
+                                    <th class="text-end">Hrg Jual</th>
+                                    <th>Tipe</th>
+                                    <th>Merk</th>
+                                    <th>Machine</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                                <tr id="filter-row" style="background: #f9fafb;">
+                                     <th></th><th></th><th></th><th></th><th></th><th></th>
+                                     <th></th><th></th><th></th><th></th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -110,14 +232,13 @@
     <div class="modal fade" id="commentModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header py-2 bg-light">
-                    <h6 class="modal-title fw-bold">💬 Diskusi</h6>
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold">💬 Diskusi Item</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="modalItemCode"><input type="hidden" id="modalItemNameHidden">
                     <div id="commentHistory" class="chat-box mb-3"></div>
-                    
                     <div id="commentInputArea" class="input-group">
                         <textarea id="commentInput" class="form-control" rows="2" placeholder="Tulis pesan..."></textarea>
                         <button class="btn btn-primary" onclick="sendComment()" id="btnSend">Kirim</button>
@@ -133,16 +254,16 @@
     <div class="modal fade" id="priceModal" tabindex="-1">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header py-2 bg-warning-subtle">
-                    <h6 class="modal-title fw-bold">💰 Update Harga</h6>
+                <div class="modal-header bg-light">
+                    <h6 class="modal-title fw-bold">Update Harga</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p class="small mb-1 text-muted" id="editPriceItemName"></p>
                     <input type="number" id="inputNewPrice" class="form-control fw-bold text-end mb-2">
-                    
                     <input type="hidden" id="editPriceItemCode">
-                    <input type="hidden" id="editPriceOldValue"> <button onclick="submitPriceUpdate()" id="btnSavePrice" class="btn btn-success w-100 btn-sm">Simpan</button>
+                    <input type="hidden" id="editPriceOldValue"> 
+                    <button onclick="submitPriceUpdate()" id="btnSavePrice" class="btn btn-primary w-100 btn-sm">Simpan Perubahan</button>
                 </div>
             </div>
         </div>
@@ -151,17 +272,17 @@
     <div class="modal fade" id="statusModal" tabindex="-1">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header py-2 bg-info-subtle">
-                    <h6 class="modal-title fw-bold">🔄 Update Status</h6>
+                <div class="modal-header bg-light">
+                    <h6 class="modal-title fw-bold">Update Status</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center">
                     <p class="small mb-2 text-muted" id="editStatusItemName"></p>
-                    
                     <input type="hidden" id="editStatusItemCode">
-                    <input type="hidden" id="editStatusOldValue"> <div class="d-grid gap-2">
-                        <button onclick="submitStatusUpdate('Active')" class="btn btn-outline-success btn-sm">Set ACTIVE</button>
-                        <button onclick="submitStatusUpdate('Archived')" class="btn btn-outline-secondary btn-sm">Set ARCHIVED</button>
+                    <input type="hidden" id="editStatusOldValue"> 
+                    <div class="d-grid gap-2">
+                        <button onclick="submitStatusUpdate('Active')" class="btn btn-success btn-sm">Set ACTIVE</button>
+                        <button onclick="submitStatusUpdate('Archived')" class="btn btn-danger btn-sm">Set ARCHIVED</button>
                     </div>
                 </div>
             </div>
@@ -175,7 +296,6 @@
     
     <script>
         // === CONFIG ===
-        // PASTE URL DEPLOYMENT APPS SCRIPT ANDA DI SINI
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNvIWpAuWberBC-JXIZx3KRCrtP6KUejwrv5tPg4GHwVpnuE5CxoMABshzB8aOXMya/exec"; 
         
         let currentUser = "";
@@ -190,7 +310,7 @@
             
             if(!email || !pass) return;
             
-            btn.innerText = "Loading..."; btn.disabled = true;
+            btn.innerText = "Memproses..."; btn.disabled = true;
             
             fetch(SCRIPT_URL, {
                 method: "POST",
@@ -212,14 +332,26 @@
                 }
             })
             .catch(e => alert("Koneksi Error. Cek URL Script."))
-            .finally(() => { btn.innerText = "MASUK"; btn.disabled = false; });
+            .finally(() => { btn.innerText = "Masuk"; btn.disabled = false; });
         }
 
         function initDashboard() {
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('displayUser').innerText = currentUser;
             
+            // --- UPDATE NAVBAR PROFILE INFO ---
+            // Karena di login sebelumnya cuma simpan email (currentUser), kita pakai itu.
+            // Idealnya backend kirim 'nama lengkap', tapi kita pakai logic simpel:
+            const namePart = currentUser.split('@')[0];
+            const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+            
+            document.getElementById('display-nama').innerText = formattedName; // Nama Depan
+            document.getElementById('display-role').innerText = perms.editPrice ? "Administrator" : "Viewer"; // Role dummy based on perm
+            document.getElementById('display-initial').innerText = formattedName.substring(0,2).toUpperCase();
+
+            // Init Icons
+            feather.replace();
+
             if(perms.addNewItem) document.getElementById('btnAddItem').classList.remove('hidden');
             loadData();
         }
@@ -239,6 +371,9 @@
         const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
         function loadData() {
+            // Hindari load double jika tabel sudah ada
+            if ($.fn.DataTable.isDataTable('#mainTable')) return;
+
             fetch(SCRIPT_URL + "?action=getProducts").then(r=>r.json()).then(data => {
                 document.getElementById('loadingSpinner').classList.add('hidden');
                 document.getElementById('mainTable').classList.remove('hidden');
@@ -247,22 +382,25 @@
                     data: data,
                     pageLength: 20,
                     responsive: true,
+                    language: {
+                        search: "Cari Data:",
+                        paginate: { next: ">", previous: "<" }
+                    },
                     columns: [
-                        { data: 0, className: "fw-bold" },
+                        { data: 0, className: "fw-bold text-dark" },
                         { data: 1 },
                         { data: 2 },
                         { data: 3 },
                         { data: 4, className: "text-end", render: (d) => formatRp(d) },
                         { 
-                            data: 5, // Harga Jual
+                            data: 5, 
                             className: "text-end",
                             render: function(data, type, row) {
                                 const txt = formatRp(data);
                                 if(perms.editPrice) {
                                     const safeName = row[0].replace(/["']/g, ""); 
                                     const safeCode = row[15]; 
-                                    // Kirim data harga saat ini (data) ke modal
-                                    return `<span class="editable-price" onclick="openPriceModal('${safeCode}','${safeName}',${data})" title="Edit Harga">${txt} <i class="bi bi-pencil" style="font-size:0.7em"></i></span>`;
+                                    return `<span class="editable-price" onclick="openPriceModal('${safeCode}','${safeName}',${data})" title="Edit Harga">${txt}</span>`;
                                 }
                                 return txt;
                             }
@@ -271,30 +409,27 @@
                         { data: 11 },
                         { data: 16 },
                         { 
-                            data: 17, // Status
+                            data: 17, 
                             className: "text-center",
                             render: function(d, type, row) {
                                 const s = (d||"").toString();
                                 let badgeClass = s.toLowerCase().includes('active') ? 'badge-active' : 'badge-archived';
-                                let editableClass = perms.editStatus ? 'editable' : '';
-                                
-                                // Kirim Status saat ini 's' ke modal
+                                let editableStyle = perms.editStatus ? 'cursor:pointer; text-decoration:underline;' : '';
                                 let clickAttr = perms.editStatus ? `onclick="openStatusModal('${row[15]}', '${row[0].replace(/["']/g, "")}', '${s}')"` : '';
-                                
-                                return `<span class="status-badge ${badgeClass} ${editableClass}" ${clickAttr}>${s}</span>`;
+                                return `<span class="status-badge ${badgeClass}" style="${editableStyle}" ${clickAttr}>${s}</span>`;
                             }
                         },
                         { 
                             data: null, className: "text-center",
                             render: function(d,t,r) {
-                                return `<button class="btn btn-sm btn-outline-primary py-0" onclick="openCommentModal('${r[15]}', '${r[0].replace(/["']/g, "")}')"><i class="bi bi-chat-dots"></i></button>`;
+                                return `<button class="btn btn-sm btn-light border py-1" onclick="openCommentModal('${r[15]}', '${r[0].replace(/["']/g, "")}')"><i class="bi bi-chat-left-text"></i></button>`;
                             }
                         }
                     ],
                     initComplete: function () {
                         this.api().columns([6, 8, 9]).every(function () {
                             var column = this;
-                            var select = $('<select class="form-select form-select-sm" style="min-width:80px"><option value="">All</option></select>')
+                            var select = $('<select class="form-select form-select-sm border-0 bg-transparent fw-bold" style="min-width:80px"><option value="">Filter</option></select>')
                                 .appendTo( $('#filter-row').find('th').eq(column.index()) )
                                 .on('change', function () {
                                     var val = $.fn.dataTable.util.escapeRegex($(this).val());
@@ -307,12 +442,13 @@
             });
         }
 
-        // === 3. UPDATE PRICE (With Before -> After) ===
+        // === 3. UPDATE LOGIC (Price, Status, Comments) ===
+        // (Functionality remains identical to your original code, just reusing it)
+        
         function openPriceModal(code, name, price) {
             document.getElementById('editPriceItemName').innerText = name;
             document.getElementById('editPriceItemCode').value = code;
             document.getElementById('inputNewPrice').value = price;
-            // SIMPAN HARGA LAMA
             document.getElementById('editPriceOldValue').value = price; 
             new bootstrap.Modal(document.getElementById('priceModal')).show();
         }
@@ -320,55 +456,39 @@
         function submitPriceUpdate() {
             const code = document.getElementById('editPriceItemCode').value;
             const newVal = document.getElementById('inputNewPrice').value;
-            const oldVal = document.getElementById('editPriceOldValue').value; // AMBIL HARGA LAMA
+            const oldVal = document.getElementById('editPriceOldValue').value;
             const btn = document.getElementById('btnSavePrice');
             
-            btn.innerText = "..."; btn.disabled = true;
+            btn.innerText = "Menyimpan..."; btn.disabled = true;
             fetch(SCRIPT_URL, {
                 method: "POST", 
-                body: JSON.stringify({ 
-                    action: "updatePrice", 
-                    user: currentUser, 
-                    itemCode: code, 
-                    newValue: newVal,
-                    oldValue: oldVal // KIRIM KE SERVER
-                })
+                body: JSON.stringify({ action: "updatePrice", user: currentUser, itemCode: code, newValue: newVal, oldValue: oldVal })
             }).then(r=>r.json()).then(res => {
-                if(res.result=="success") { alert("Harga Terupdate!"); location.reload(); }
-                else { alert("Gagal: " + res.message); btn.disabled=false; btn.innerText="Simpan"; }
+                if(res.result=="success") { alert("Berhasil diupdate!"); location.reload(); }
+                else { alert("Gagal: " + res.message); btn.disabled=false; btn.innerText="Simpan Perubahan"; }
             });
         }
 
-        // === 4. UPDATE STATUS (With Before -> After) ===
         function openStatusModal(code, name, currentStatus) {
             if(!perms.editStatus) return;
             document.getElementById('editStatusItemName').innerText = name;
             document.getElementById('editStatusItemCode').value = code;
-            // SIMPAN STATUS LAMA
             document.getElementById('editStatusOldValue').value = currentStatus; 
             new bootstrap.Modal(document.getElementById('statusModal')).show();
         }
 
         function submitStatusUpdate(newStatus) {
             const code = document.getElementById('editStatusItemCode').value;
-            const oldStatus = document.getElementById('editStatusOldValue').value; // AMBIL STATUS LAMA
-            
+            const oldStatus = document.getElementById('editStatusOldValue').value;
             fetch(SCRIPT_URL, {
                 method: "POST", 
-                body: JSON.stringify({ 
-                    action: "updateStatus", 
-                    user: currentUser, 
-                    itemCode: code, 
-                    newValue: newStatus,
-                    oldValue: oldStatus // KIRIM KE SERVER
-                })
+                body: JSON.stringify({ action: "updateStatus", user: currentUser, itemCode: code, newValue: newStatus, oldValue: oldStatus })
             }).then(r=>r.json()).then(res => {
-                if(res.result=="success") { alert("Status Berubah jadi " + newStatus); location.reload(); }
+                if(res.result=="success") { alert("Status diubah jadi " + newStatus); location.reload(); }
                 else { alert("Gagal update status"); }
             });
         }
 
-        // === 5. COMMENTS ===
         function openCommentModal(code, name) {
             document.getElementById('modalItemCode').value = code;
             document.getElementById('modalItemNameHidden').value = name;
@@ -390,10 +510,10 @@
             fetch(SCRIPT_URL + "?action=getComments").then(r=>r.json()).then(data => {
                 box.innerHTML = "";
                 const chats = data.filter(r => r[2] == code);
-                if(chats.length === 0) box.innerHTML = "<small class='text-muted d-block text-center'>Belum ada diskusi.</small>";
+                if(chats.length === 0) box.innerHTML = "<div class='text-center py-4'><i class='bi bi-chat-square-dots text-muted' style='font-size:2rem'></i><p class='text-muted small mt-2'>Belum ada diskusi.</p></div>";
                 chats.forEach(c => {
                    const date = new Date(c[0]).toLocaleString('id-ID');
-                   box.innerHTML += `<div class="chat-item"><div class="d-flex justify-content-between small text-muted"><strong>${c[1]}</strong><span>${date}</span></div><div>${c[4]}</div></div>`; 
+                   box.innerHTML += `<div class="chat-item"><div class="d-flex justify-content-between small text-muted"><strong>${c[1]}</strong><span>${date}</span></div><div class="mt-1">${c[4]}</div></div>`; 
                 });
             });
         }
