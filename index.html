@@ -38,7 +38,7 @@
         body { 
             margin: 0; 
             font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            font-size: 13.5px; /* Sedikit dikecilkan agar lebih compact seperti DSS */
+            font-size: 13.5px; 
             background: var(--bg-body); 
             color: var(--text-main); 
             -webkit-font-smoothing: antialiased; 
@@ -426,10 +426,16 @@
         function confirmLogout() { localStorage.removeItem("appSession"); location.reload(); }
 
         // === CONFIG ===
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNvIWpAuWberBC-JXIZx3KRCrtP6KUejwrv5tPg4GHwVpnuE5CxoMABshzB8aOXMya/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzPV35i00thIZJgwSEqo54IYzOjOvgwmeoW4gf77hL3SnL9-_eZ4cIldx1Zgt2XJgnc/exec"; 
         
         let currentUser = "";
-        let perms = { editPrice: false, addComment: false, editStatus: false, addNewItem: false };
+        let perms = { 
+            editPrice: false, 
+            addComment: false, 
+            editStatus: false, 
+            addNewItem: false,
+            viewPrice: false // Default: Tidak bisa lihat harga
+        };
         let table;
 
         // === LOGIN LOGIC ===
@@ -456,6 +462,9 @@
                     perms.editStatus = (String(resp.permissions.editStatus).toUpperCase() === "TRUE");
                     perms.addNewItem = (String(resp.permissions.addNewItem).toUpperCase() === "TRUE");
                     
+                    // Permission Lihat Harga
+                    perms.viewPrice = (String(resp.permissions.viewPrice).toUpperCase() === "TRUE");
+                    
                     localStorage.setItem("appSession", JSON.stringify({ user: currentUser, permissions: perms }));
                     initDashboard();
                 } else {
@@ -474,7 +483,7 @@
             const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
             
             document.getElementById('display-nama').innerText = formattedName; 
-            document.getElementById('display-role').innerText = perms.editPrice ? "Administrator" : "Viewer"; 
+            document.getElementById('display-role').innerText = perms.editPrice ? "Administrator" : "Staff"; 
             document.getElementById('display-initial').innerText = formattedName.substring(0,2).toUpperCase();
 
             feather.replace();
@@ -504,8 +513,6 @@
                 const activeCount = data.filter(r => (r[17]||"").toString().toLowerCase().includes("active")).length;
                 document.getElementById('kpi-active').innerText = activeCount;
 
-                // LOGIKA ITEM BERNILAI SUDAH DIHAPUS
-
                 // Render Table
                 document.getElementById('skeletonLoader').classList.add('hidden');
                 document.getElementById('mainTable').classList.remove('hidden');
@@ -521,11 +528,22 @@
                         { data: 1 },
                         { data: 2 },
                         { data: 3 },
-                        { data: 4, className: "text-end text-secondary", render: (d) => formatRp(d) },
+                        { 
+                            data: 4, 
+                            className: "text-end text-secondary", 
+                            render: (d) => {
+                                // LOGIKA SENSOR HARGA BELI
+                                if(!perms.viewPrice) return '<span class="text-muted" style="letter-spacing:2px;">*****</span>';
+                                return formatRp(d);
+                            }
+                        },
                         { 
                             data: 5, 
                             className: "text-end",
                             render: function(data, type, row) {
+                                // LOGIKA SENSOR HARGA JUAL
+                                if(!perms.viewPrice) return '<span class="text-muted" style="letter-spacing:2px;">*****</span>';
+
                                 const txt = formatRp(data);
                                 if(perms.editPrice) {
                                     const safeName = row[0].replace(/["']/g, ""); 
@@ -547,7 +565,6 @@
                                 const icon = s.toLowerCase().includes('active') ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '<i class="bi bi-archive-fill text-secondary me-1"></i>';
                                 
                                 if(perms.editStatus) {
-                                    // Toggle Logic
                                     const newStatus = s.toLowerCase() === 'active' ? 'Archived' : 'Active';
                                     return `<div onclick="quickStatusUpdate('${row[15]}', '${newStatus}', '${s}')" style="cursor:pointer;" class="badge-dss ${badgeClass}">${icon} ${s}</div>`;
                                 }
