@@ -79,7 +79,7 @@
         .chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
         .nav-item:hover .chevron-down { transform: rotate(180deg); }
 
-        /* --- CUSTOM DROPDOWN (To avoid Bootstrap conflict) --- */
+        /* --- CUSTOM DROPDOWN --- */
         .dropdown-menu-aux {
             visibility: hidden; opacity: 0; position: absolute; 
             top: 85%; left: 0; background: white; min-width: 240px;
@@ -87,7 +87,7 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             padding: 8px; z-index: 9999; transform: translateY(10px);
             transition: all 0.2s ease-in-out;
-            display: block; /* Override bootstrap display:none */
+            display: block; 
         }
         .dropdown-menu-aux::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
         .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateY(0); }
@@ -128,7 +128,7 @@
 
         .main-container { max-width: 1600px; margin: 0 auto; padding: 30px 40px; }
         
-        /* KPI Cards (DSS Style) */
+        /* KPI Cards */
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .kpi-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: transform 0.2s; }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
@@ -145,7 +145,7 @@
         .table-title h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-main); }
         .table-title p { margin: 4px 0 0; font-size: 13px; color: var(--text-sub); }
         
-        /* Custom Table Styling (Overrides Bootstrap & Datatables) */
+        /* Custom Table Styling */
         table.dataTable { border-collapse: separate; border-spacing: 0; width: 100% !important; margin: 0 !important; }
         table.dataTable thead th { 
             background-color: #f8fafc !important; color: #475467; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
@@ -153,7 +153,31 @@
         }
         table.dataTable tbody td { padding: 12px 16px; color: #334155; font-size: 13px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         table.dataTable tbody tr:hover td { background-color: #f8fafc; }
-        table.dataTable tbody tr:last-child td { border-bottom: none; }
+        
+        /* --- FILTER ROW STYLING (NEW) --- */
+        .filter-row th {
+            background-color: #ffffff !important;
+            padding: 8px 16px !important;
+            border-bottom: 2px solid var(--border-color) !important;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 6px 8px;
+            font-size: 12px;
+            border: 1px solid #d0d5dd;
+            border-radius: 6px;
+            outline: none;
+            transition: all 0.2s;
+            background-color: #fcfcfd;
+        }
+
+        .filter-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(17, 105, 153, 0.1);
+        }
+
+        .no-filter input, .no-filter select { display: none; }
 
         /* Interactive Elements */
         .editable-price { 
@@ -183,13 +207,6 @@
         /* SweetAlert Override */
         .swal2-popup { border-radius: 16px !important; font-family: "Inter", sans-serif !important; z-index: 20002 !important; }
         .swal2-container { z-index: 20002 !important; }
-        .swal2-title { font-size: 18px !important; color: var(--text-main) !important; }
-        .swal2-html-container { font-size: 14px !important; color: var(--text-sub) !important; }
-        
-        /* Bootstrap Modal Override */
-        .modal-content { border-radius: 12px; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-        .modal-header { border-bottom: 1px solid var(--border-color); padding: 16px 24px; }
-        .modal-body { padding: 24px; }
         .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
         .btn-primary:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
     </style>
@@ -222,63 +239,9 @@
             </div>
             
             <nav class="aux-menu">
+                <div class="nav-item"><a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a></div>
                 <div class="nav-item">
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link">
-                        Penjualan 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Sales Orders</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="dropdown-item-aux">Order Penjualan</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Review%20Penjualan/review_penjualan.html" class="dropdown-item-aux">Review Penjualan</a>
-                    </div>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link">
-                        Pembelian 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Purchasing</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item-aux">Pemesanan Pembelian</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item-aux">Penerimaan Barang (Entry)</a>
-                        
-                        <div class="dropdown-divider-aux"></div>
-                        
-                        <div class="dropdown-header-aux">Finance</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item-aux">Daftar Tagihan (Bill)</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item-aux">Import Xero PO</a>
-                    </div>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link">
-                        Produksi 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Input Mesin</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item-aux">Back Order</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item-aux">General Order</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Pre%20Order/produksi_preorder.html" class="dropdown-item-aux">Pre Order</a>
-
-                        <div class="dropdown-divider-aux"></div>
-                        
-                        <div class="dropdown-header-aux">Hasil Produksi</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item-aux">Produksi Barang Jadi</a>
-                    </div>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link active">
-                        Persediaan 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
+                    <div class="aux-link active">Persediaan <i data-feather="chevron-down" class="chevron-down"></i></div>
                     <div class="dropdown-menu-aux">
                         <div class="dropdown-header-aux">Inventory</div>
                         <a href="#" class="dropdown-item-aux" style="color:var(--primary-color); font-weight:700; background:#f9fafb;">Master Item List</a>
@@ -298,6 +261,7 @@
                 </button>
             </div>
         </div>
+
         <div class="main-container">
             
             <div class="kpi-grid">
@@ -313,7 +277,7 @@
                     <div class="kpi-value" id="kpi-active">0</div>
                     <div class="kpi-trend positive"><i class="bi bi-graph-up-arrow"></i> <span>Siap Transaksi</span></div>
                 </div>
-                </div>
+            </div>
 
             <div class="card-table-wrapper">
                 <div class="table-header">
@@ -354,6 +318,8 @@
                                     <th class="text-center">Status</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
+                                <tr class="filter-row">
+                                    <th></th> <th></th> <th></th> <th></th> <th></th> <th></th> <th></th> <th></th> <th></th> <th></th> <th class="no-filter"></th> </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -429,13 +395,7 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzPV35i00thIZJgwSEqo54IYzOjOvgwmeoW4gf77hL3SnL9-_eZ4cIldx1Zgt2XJgnc/exec"; 
         
         let currentUser = "";
-        let perms = { 
-            editPrice: false, 
-            addComment: false, 
-            editStatus: false, 
-            addNewItem: false,
-            viewPrice: false // Default: Tidak bisa lihat harga
-        };
+        let perms = { editPrice: false, addComment: false, editStatus: false, addNewItem: false, viewPrice: false };
         let table;
 
         // === LOGIN LOGIC ===
@@ -456,13 +416,10 @@
             .then(resp => {
                 if(resp.result === "success") {
                     currentUser = resp.username;
-                    // Parsing Boolean from String
                     perms.editPrice = (String(resp.permissions.editPrice).toUpperCase() === "TRUE");
                     perms.addComment = (String(resp.permissions.addComment).toUpperCase() === "TRUE");
                     perms.editStatus = (String(resp.permissions.editStatus).toUpperCase() === "TRUE");
                     perms.addNewItem = (String(resp.permissions.addNewItem).toUpperCase() === "TRUE");
-                    
-                    // Permission Lihat Harga
                     perms.viewPrice = (String(resp.permissions.viewPrice).toUpperCase() === "TRUE");
                     
                     localStorage.setItem("appSession", JSON.stringify({ user: currentUser, permissions: perms }));
@@ -501,49 +458,89 @@
             }
         }
 
-        // === TABLE LOGIC ===
+        // === TABLE & FILTER LOGIC ===
         const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
         function loadData() {
             if ($.fn.DataTable.isDataTable('#mainTable')) return;
 
-            fetch(SCRIPT_URL + "?action=getProducts").then(r=>r.json()).then(data => {
+            fetch(SCRIPT_URL + "?action=getProducts").then(r => r.json()).then(data => {
                 // Update KPI Cards
                 document.getElementById('kpi-total').innerText = data.length;
-                const activeCount = data.filter(r => (r[17]||"").toString().toLowerCase().includes("active")).length;
+                const activeCount = data.filter(r => (r[17] || "").toString().toLowerCase().includes("active")).length;
                 document.getElementById('kpi-active').innerText = activeCount;
 
                 // Render Table
                 document.getElementById('skeletonLoader').classList.add('hidden');
                 document.getElementById('mainTable').classList.remove('hidden');
-                
+
+                // Setup Filter Cells di Header Row kedua
+                $('#mainTable thead tr.filter-row th').each(function(i) {
+                    // Skip kolom aksi (index terakhir 10)
+                    if (i === 10) { $(this).html(''); return; }
+
+                    // Logic: Kolom tertentu pakai Dropdown, sisanya Text Input
+                    // Index: 1=Vendor, 6=Tipe, 7=Merk, 9=Status
+                    if ([1, 6, 7, 9].includes(i)) {
+                        $(this).html('<select class="filter-input"><option value="">All</option></select>');
+                    } else {
+                        $(this).html('<input type="text" class="filter-input" placeholder="Cari..." />');
+                    }
+                });
+
                 table = $('#mainTable').DataTable({
                     data: data,
                     pageLength: 20,
                     responsive: true,
-                    dom: 't<"d-flex justify-content-between pt-3"ip>', // Custom layout hiding default search
+                    orderCellsTop: true, // Agar sorting header tidak tertutup filter
+                    dom: 't<"d-flex justify-content-between pt-3"ip>', 
                     language: { paginate: { next: ">", previous: "<" } },
+                    
+                    // --- LOGIKA FILTERING ---
+                    initComplete: function() {
+                        var api = this.api();
+                        api.columns().every(function(index) {
+                            var column = this;
+                            
+                            // Jika kolom Dropdown
+                            if ([1, 6, 7, 9].includes(index)) {
+                                var select = $('select', $('thead tr.filter-row th').eq(index));
+                                column.data().unique().sort().each(function(d, j) {
+                                    var val = d ? d.toString().replace(/<[^>]*>?/gm, '') : ''; 
+                                    if(val) select.append('<option value="' + val + '">' + val + '</option>');
+                                });
+                                select.on('change', function() {
+                                    var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                                    column.search(val ? '^' + val + '$' : '', true, false).draw();
+                                });
+                            } 
+                            // Jika kolom Text Input
+                            else {
+                                $('input', $('thead tr.filter-row th').eq(index)).on('keyup change', function() {
+                                    if (column.search() !== this.value) {
+                                        column.search(this.value).draw();
+                                    }
+                                });
+                            }
+                        });
+                    },
+
                     columns: [
-                        { data: 0, className: "fw-bold text-dark", width: "20%" },
-                        { data: 1 },
-                        { data: 2 },
-                        { data: 3 },
+                        { data: 0, className: "fw-bold text-dark", width: "20%" }, // Nama
+                        { data: 1 }, // Vendor
+                        { data: 2 }, // Sat Beli
+                        { data: 3 }, // Sat Jual
                         { 
-                            data: 4, 
-                            className: "text-end text-secondary", 
+                            data: 4, className: "text-end text-secondary", 
                             render: (d) => {
-                                // LOGIKA SENSOR HARGA BELI
                                 if(!perms.viewPrice) return '<span class="text-muted" style="letter-spacing:2px;">*****</span>';
                                 return formatRp(d);
                             }
                         },
                         { 
-                            data: 5, 
-                            className: "text-end",
+                            data: 5, className: "text-end",
                             render: function(data, type, row) {
-                                // LOGIKA SENSOR HARGA JUAL
                                 if(!perms.viewPrice) return '<span class="text-muted" style="letter-spacing:2px;">*****</span>';
-
                                 const txt = formatRp(data);
                                 if(perms.editPrice) {
                                     const safeName = row[0].replace(/["']/g, ""); 
@@ -553,14 +550,17 @@
                                 return `<span class="fw-bold text-dark">${txt}</span>`;
                             }
                         },
-                        { data: 10 },
-                        { data: 11 },
-                        { data: 16 },
+                        { data: 10 }, // Tipe
+                        { data: 11 }, // Merk
+                        { data: 16 }, // Machine
                         { 
-                            data: 17, 
-                            className: "text-center",
+                            data: 17, className: "text-center", // Status
                             render: function(d, type, row) {
                                 const s = (d||"").toString();
+                                
+                                // Return raw text untuk keperluan filter type='filter'
+                                if (type === 'filter') return s;
+
                                 const badgeClass = s.toLowerCase().includes('active') ? 'badge-active' : 'badge-archived';
                                 const icon = s.toLowerCase().includes('active') ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '<i class="bi bi-archive-fill text-secondary me-1"></i>';
                                 
@@ -572,7 +572,7 @@
                             }
                         },
                         { 
-                            data: null, className: "text-center",
+                            data: null, className: "text-center", orderable: false,
                             render: function(d,t,r) {
                                 return `<button class="btn-icon-soft" onclick="openCommentModal('${r[15]}', '${r[0].replace(/["']/g, "")}')" title="Komentar / Log"><i class="bi bi-chat-text"></i></button>`;
                             }
@@ -580,14 +580,12 @@
                     ]
                 });
 
-                // Link Custom Search
-                $('#customSearch').on('keyup', function() {
-                    table.search(this.value).draw();
-                });
+                // Link Custom Search Utama
+                $('#customSearch').on('keyup', function() { table.search(this.value).draw(); });
             });
         }
 
-        // === EDIT LOGIC ===
+        // === EDIT & HELPER LOGIC ===
         function openPriceModal(code, name, price) {
             document.getElementById('editPriceItemName').innerText = name;
             document.getElementById('editPriceItemCode').value = code;
@@ -607,23 +605,15 @@
                 method: "POST", 
                 body: JSON.stringify({ action: "updatePrice", user: currentUser, itemCode: code, newValue: newVal, oldValue: oldVal })
             }).then(r=>r.json()).then(res => {
-                if(res.result=="success") { 
-                    Swal.fire('Berhasil', 'Harga telah diperbarui.', 'success').then(() => location.reload()); 
-                } else { 
-                    Swal.fire('Gagal', res.message, 'error'); 
-                    btn.disabled=false; btn.innerText="Simpan Perubahan"; 
-                }
+                if(res.result=="success") { Swal.fire('Berhasil', 'Harga telah diperbarui.', 'success').then(() => location.reload()); } 
+                else { Swal.fire('Gagal', res.message, 'error'); btn.disabled=false; btn.innerText="Simpan Perubahan"; }
             });
         }
 
         function quickStatusUpdate(code, newStatus, oldStatus) {
             Swal.fire({
-                title: `Ubah status ke ${newStatus}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#116999',
-                confirmButtonText: 'Ya, Ubah',
-                cancelButtonText: 'Batal'
+                title: `Ubah status ke ${newStatus}?`, icon: 'question', showCancelButton: true,
+                confirmButtonColor: '#116999', confirmButtonText: 'Ya, Ubah', cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.showLoading();
@@ -643,11 +633,8 @@
             document.getElementById('modalItemNameHidden').value = name;
             new bootstrap.Modal(document.getElementById('commentModal')).show();
             
-            if(perms.addComment) {
-                document.getElementById('commentInputArea').classList.remove('hidden');
-            } else {
-                document.getElementById('commentInputArea').classList.add('hidden');
-            }
+            if(perms.addComment) { document.getElementById('commentInputArea').classList.remove('hidden'); } 
+            else { document.getElementById('commentInputArea').classList.add('hidden'); }
             loadComments(code);
         }
 
