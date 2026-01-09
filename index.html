@@ -19,7 +19,7 @@
         :root { 
             --primary-color: #116999; 
             --primary-hover: #0e5a85;
-            --bg-body: #f8fafc;
+            --bg-body: #f8fafc; /* Very light cool gray */
             --bg-card: #ffffff;
             --text-main: #1e293b;
             --text-sub: #64748b;
@@ -41,7 +41,7 @@
 
         .hidden { display: none !important; }
 
-        /* --- NAVIGATION BAR --- */
+        /* --- NAVIGATION BAR (Standard Auxilium) --- */
         .aux-navbar {
             background-color: #ffffff; height: 70px; display: flex; align-items: center; justify-content: space-between;
             padding: 0 40px; box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border-color);
@@ -97,7 +97,7 @@
 
         .main-container { max-width: 1600px; margin: 0 auto; padding: 30px 40px; }
         
-        /* KPI Cards */
+        /* KPI Cards (DSS Style) */
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .kpi-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: transform 0.2s; }
         .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
@@ -135,6 +135,7 @@
         .badge-active { background-color: var(--success-bg); color: var(--success-text); border: 1px solid #bbf7d0; }
         .badge-archived { background-color: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
         
+        /* Action Button */
         .btn-icon-soft { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: white; color: #64748b; transition: all 0.2s; }
         .btn-icon-soft:hover { background: #f8fafc; color: var(--primary-color); border-color: #b9e6fe; }
 
@@ -148,10 +149,17 @@
         .search-box input { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; transition: border 0.2s; }
         .search-box input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(17, 105, 153, 0.1); }
 
-        /* SweetAlert Override */
+        /* SweetAlert Override & FIX Z-INDEX */
         .swal2-popup { border-radius: 16px !important; font-family: "Inter", sans-serif !important; }
         .swal2-title { font-size: 18px !important; color: var(--text-main) !important; }
         .swal2-html-container { font-size: 14px !important; color: var(--text-sub) !important; }
+        
+        /* -----------------------------------------------------
+           FIX Z-INDEX: Memastikan Alert muncul di atas overlay
+           ----------------------------------------------------- */
+        .swal2-container {
+            z-index: 20000 !important;
+        }
     </style>
 </head>
 <body>
@@ -170,7 +178,7 @@
                 <input type="password" id="password" class="form-control" placeholder="Password" style="font-size:14px;">
                 <label>Password</label>
             </div>
-            <button type="button" onclick="performLogin()" id="btnLogin" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: var(--primary-color); border:none;">Masuk</button>
+            <button onclick="performLogin()" id="btnLogin" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: var(--primary-color); border:none;">Masuk</button>
         </div>
     </div>
 
@@ -365,25 +373,7 @@
         let perms = { editPrice: false, addComment: false, editStatus: false, addNewItem: false };
         let table;
 
-        // === STARTUP CHECK (Optimized) ===
-        document.addEventListener("DOMContentLoaded", function() {
-            const sess = localStorage.getItem("appSession");
-            if(sess) {
-                try {
-                    const data = JSON.parse(sess);
-                    if (data && data.user) {
-                        currentUser = data.user;
-                        perms = data.permissions || perms;
-                        // Langsung init dashboard jika sesi valid
-                        initDashboard(); 
-                    }
-                } catch (e) {
-                    localStorage.removeItem("appSession");
-                }
-            }
-        });
-
-        // === LOGIN LOGIC (Fixed Race Condition) ===
+        // === LOGIN LOGIC ===
         function performLogin() {
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value.trim();
@@ -399,34 +389,26 @@
             })
             .then(res => res.json())
             .then(resp => {
-                // Check case-insensitive success
-                if(resp.result && resp.result.toString().toLowerCase() === "success") {
+                if(resp.result === "success") {
                     currentUser = resp.username;
-                    
+                    // Parsing Boolean from String
                     perms.editPrice = (String(resp.permissions.editPrice).toUpperCase() === "TRUE");
                     perms.addComment = (String(resp.permissions.addComment).toUpperCase() === "TRUE");
                     perms.editStatus = (String(resp.permissions.editStatus).toUpperCase() === "TRUE");
                     perms.addNewItem = (String(resp.permissions.addNewItem).toUpperCase() === "TRUE");
                     
                     localStorage.setItem("appSession", JSON.stringify({ user: currentUser, permissions: perms }));
-                    
                     initDashboard();
                 } else {
                     Swal.fire('Gagal Login', 'Email atau Password Salah!', 'error');
                 }
             })
-            .catch(e => {
-                console.error(e);
-                Swal.fire('Error', 'Koneksi Gagal.', 'error');
-            })
+            .catch(e => Swal.fire('Error', 'Koneksi Gagal.', 'error'))
             .finally(() => { btn.innerText = "Masuk"; btn.disabled = false; });
         }
 
         function initDashboard() {
-            // Paksa sembunyikan login overlay
-            const overlay = document.getElementById('login-overlay');
-            if(overlay) overlay.classList.add('hidden');
-            
+            document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             
             const namePart = currentUser.split('@')[0];
@@ -436,14 +418,19 @@
             document.getElementById('display-role').innerText = perms.editPrice ? "Administrator" : "Viewer"; 
             document.getElementById('display-initial').innerText = formattedName.substring(0,2).toUpperCase();
 
-            if(typeof feather !== 'undefined') feather.replace();
-            
-            if(perms.addNewItem) {
-                const btnAdd = document.getElementById('btnAddItem');
-                if(btnAdd) btnAdd.classList.remove('hidden');
-            }
-            
+            feather.replace();
+            if(perms.addNewItem) document.getElementById('btnAddItem').classList.remove('hidden');
             loadData();
+        }
+
+        window.onload = function() {
+            const sess = localStorage.getItem("appSession");
+            if(sess) {
+                const data = JSON.parse(sess);
+                currentUser = data.user;
+                perms = data.permissions;
+                initDashboard();
+            }
         }
 
         // === TABLE LOGIC ===
@@ -453,14 +440,14 @@
             if ($.fn.DataTable.isDataTable('#mainTable')) return;
 
             fetch(SCRIPT_URL + "?action=getProducts").then(r=>r.json()).then(data => {
-                if (!Array.isArray(data)) return;
-
+                // Update KPI Cards
                 document.getElementById('kpi-total').innerText = data.length;
                 const activeCount = data.filter(r => (r[17]||"").toString().toLowerCase().includes("active")).length;
                 document.getElementById('kpi-active').innerText = activeCount;
                 const pricedCount = data.filter(r => r[5] > 0).length;
                 document.getElementById('kpi-priced').innerText = pricedCount;
 
+                // Render Table
                 document.getElementById('skeletonLoader').classList.add('hidden');
                 document.getElementById('mainTable').classList.remove('hidden');
                 
@@ -468,7 +455,7 @@
                     data: data,
                     pageLength: 20,
                     responsive: true,
-                    dom: 't<"d-flex justify-content-between pt-3"ip>', 
+                    dom: 't<"d-flex justify-content-between pt-3"ip>', // Custom layout hiding default search
                     language: { paginate: { next: ">", previous: "<" } },
                     columns: [
                         { data: 0, className: "fw-bold text-dark", width: "20%" },
@@ -501,6 +488,7 @@
                                 const icon = s.toLowerCase().includes('active') ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '<i class="bi bi-archive-fill text-secondary me-1"></i>';
                                 
                                 if(perms.editStatus) {
+                                    // Toggle Logic
                                     const newStatus = s.toLowerCase() === 'active' ? 'Archived' : 'Active';
                                     return `<div onclick="quickStatusUpdate('${row[15]}', '${newStatus}', '${s}')" style="cursor:pointer;" class="badge-dss ${badgeClass}">${icon} ${s}</div>`;
                                 }
@@ -516,10 +504,11 @@
                     ]
                 });
 
+                // Link Custom Search
                 $('#customSearch').on('keyup', function() {
                     table.search(this.value).draw();
                 });
-            }).catch(err => console.error("Gagal load data:", err));
+            });
         }
 
         // === EDIT LOGIC ===
