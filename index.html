@@ -437,6 +437,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
     
     <script>
         // === NAVBAR & LOGOUT ===
@@ -445,10 +447,12 @@
         function confirmLogout() { localStorage.removeItem("appSession"); location.reload(); }
 
         // === CONFIG ===
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyszIm6lItAyUNgkgfJrYUd_IawBMZH84mRIVvkmkTB2NtuH9jdC5Z_O0oEVTWpyU0I/exec"; 
+        // URL SCRIPT GOOGLE APPS SCRIPT ANDA
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpaH9pcRTzIw75uXiAAW8qPtMh9S1CgHgoOu7kq40WKXGxxnPjSrSmK7CAR9waOhX5/exec"; 
         
         let currentUser = "";
-        let perms = { editPrice: false, addComment: false, editStatus: false, addNewItem: false, viewPrice: false };
+        // Default Permission set
+        let perms = { editPrice: false, addComment: false, editStatus: false, addNewItem: false, viewPrice: false, canComplete: false };
         let table;
 
         // === LOGIN LOGIC ===
@@ -469,11 +473,13 @@
             .then(resp => {
                 if(resp.result === "success") {
                     currentUser = resp.username;
+                    // Mapping Permissions dari respon Login
                     perms.editPrice = (String(resp.permissions.editPrice).toUpperCase() === "TRUE");
                     perms.addComment = (String(resp.permissions.addComment).toUpperCase() === "TRUE");
                     perms.editStatus = (String(resp.permissions.editStatus).toUpperCase() === "TRUE");
                     perms.addNewItem = (String(resp.permissions.addNewItem).toUpperCase() === "TRUE");
                     perms.viewPrice = (String(resp.permissions.viewPrice).toUpperCase() === "TRUE");
+                    perms.canComplete = (String(resp.permissions.canComplete).toUpperCase() === "TRUE"); // Izin Complete
                     
                     localStorage.setItem("appSession", JSON.stringify({ user: currentUser, permissions: perms }));
                     initDashboard();
@@ -579,7 +585,19 @@
                         { 
                             data: null, className: "text-center", // 10 Aksi
                             render: function(d,t,r) {
-                                return `<button class="btn-icon-soft" onclick="openCommentModal('${r[15]}', '${r[0].replace(/["']/g, "")}')" title="Komentar / Log"><i class="bi bi-chat-text"></i></button>`;
+                                // r[r.length - 1] adalah data boolean "hasPending" (dikirim dari AppScript)
+                                const hasPending = r[r.length - 1]; 
+                                
+                                let btnClass = "btn-icon-soft";
+                                let iconHtml = '<i class="bi bi-chat-text"></i>';
+                                
+                                if (hasPending === true) {
+                                    // LOGIKA WARNA KUNING: Jika ada pending comment
+                                    btnClass = "btn btn-warning btn-sm text-white shadow-sm"; 
+                                    iconHtml = '<i class="bi bi-exclamation-circle-fill"></i>';
+                                }
+                                
+                                return `<button class="${btnClass}" onclick="openCommentModal('${r[15]}', '${r[0].replace(/["']/g, "")}')" title="Komentar / Log">${iconHtml}</button>`;
                             }
                         }
                     ]
@@ -591,8 +609,214 @@
             });
         }
 
+        // === EDIT LOGIC ===
+        function openPriceModal(code, name, price) {
+            document.getElementById('editPriceItemName').innerText = name;
+            document.getElementById('editPriceItemCode').value = code;
+            document.getElementById('inputNewPrice').value = price;
+            document.getElementById('editPriceOldValue').value = price; 
+            new bootstrap.Modal(document.getElementById('priceModal')).show();
+        }
+
+        function submitPriceUpdate() {
+            const code = document.getElementById('editPriceItemCode').value;
+            const newVal = document.getElementById('inputNewPrice').value;
+            const oldVal = document.getElementById('editPriceOldValue').value;
+            const btn = document.getElementById('btnSavePrice');
+            
+            btn.innerText = "Menyimpan..."; btn.disabled = true;
+            fetch(SCRIPT_URL, {
+                method: "POST", 
+                body: JSON.stringify({ action: "updatePrice", user: currentUser, itemCode: code, newValue: newVal, oldValue: oldVal })
+            }).then(r=>r.json()).then(res => {
+                if(res.result=="success") { 
+                    Swal.fire('Berhasil', 'Harga telah diperbarui.', 'success').then(() => location.reload()); 
+                } else { 
+                    Swal.fire('Gagal', res.message, 'error'); 
+                    btn.disabled=false; btn.innerText="Simpan Perubahan"; 
+                }
+            });
+        }
+
+        function quickStatusUpdate(code, newStatus, oldStatus) {
+            Swal.fire({
+                title: `Ubah status ke ${newStatus}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#116999',
+                confirmButtonText: 'Ya, Ubah',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.showLoading();
+                    fetch(SCRIPT_URL, {
+                        method: "POST", 
+                        body: JSON.stringify({ action: "updateStatus", user: currentUser, itemCode: code, newValue: newStatus, oldValue: oldStatus })
+                    }).then(r=>r.json()).then(res => {
+                        if(res.result=="success") { location.reload(); }
+                        else { Swal.fire('Gagal', 'Terjadi kesalahan.', 'error'); }
+                    });
+                }
+            });
+        }
+
+        function openCommentModal(code, name) {
+            document.getElementById('modalItemCode').value = code;
+            document.getElementById('modalItemNameHidden').value = name;
+            new bootstrap.Modal(document.getElementById('commentModal')).show();
+            
+            if(perms.addComment) {
+                document.getElementById('commentInputArea').classList.remove('hidden');
+            } else {
+                document.getElementById('commentInputArea').classList.add('hidden');
+            }
+            loadComments(code);
+        }
+
+        function loadComments(code) {
+            const box = document.getElementById('commentHistory');
+            box.innerHTML = "<div class='text-center py-3'><div class='spinner-border spinner-border-sm text-primary'></div></div>";
+            
+            fetch(SCRIPT_URL + "?action=getComments").then(r=>r.json()).then(data => {
+                box.innerHTML = "";
+                // Filter by ItemCode (index 2)
+                const chats = data.filter(r => r[2] == code);
+                
+                if(chats.length === 0) {
+                    box.innerHTML = "<div class='text-center py-4 text-muted small'><i class='bi bi-chat-square-text fs-4 d-block mb-2'></i>Belum ada catatan.</div>";
+                    return;
+                }
+                
+                chats.forEach(c => {
+                   // c[0]=Time, c[1]=User, c[2]=Code, c[3]=Type, c[4]=Content, c[5]=Status, c[6]=CompletedBy
+                   const timestamp = c[0];
+                   const user = c[1];
+                   const type = c[3]; // "SYSTEM LOG" or ItemName
+                   const content = c[4];
+                   const status = c[5]; // Pending/Complete
+                   const completedBy = c[6];
+                   
+                   const dateDisplay = new Date(timestamp).toLocaleString('id-ID');
+                   
+                   let itemHtml = '';
+                   
+                   if(type === "SYSTEM LOG") {
+                       // Tampilan Log System (Kecil/Abu-abu)
+                       itemHtml = `
+                        <div class="p-2 mb-2 border rounded bg-light">
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span><i class="bi bi-gear-fill me-1"></i> System Log</span>
+                                <span>${dateDisplay}</span>
+                            </div>
+                            <div class="small text-secondary mt-1 fst-italic">${content}</div>
+                        </div>
+                       `;
+                   } else {
+                       // Tampilan Komentar User Manual
+                       let actionBtn = '';
+                       let statusBadge = '';
+                       let cardStyle = 'border-left: 3px solid #116999; background: #fff;'; // Style Default (Pending)
+
+                       // Logic Tampilan Selesai vs Belum
+                       if (status === 'Complete') {
+                           statusBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle ms-2" style="font-size:10px;"><i class="bi bi-check-all"></i> Selesai oleh ${completedBy}</span>`;
+                           cardStyle = 'border-left: 3px solid #10b981; background: #f0fdf4; opacity: 0.9;';
+                       } else {
+                           statusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-2" style="font-size:10px;">Belum Selesai</span>`;
+                           
+                           // Cek Izin User: Apakah boleh Complete?
+                           if (perms.canComplete) {
+                               const safeTime = new Date(timestamp).toISOString().replace("T", " ").substring(0, 19);
+                               const safeContent = content.replace(/["']/g, "&quot;");
+                               
+                               actionBtn = `
+                                <button class="btn btn-sm btn-outline-success mt-2" style="font-size:11px;" onclick="markAsComplete('${safeTime}', '${code}', '${safeContent}')">
+                                    <i class="bi bi-check-circle"></i> Tandai Selesai
+                                </button>
+                               `;
+                           }
+                       }
+
+                       itemHtml = `
+                        <div class="p-3 mb-2 rounded shadow-sm" style="${cardStyle}">
+                            <div class="d-flex justify-content-between align-items-center small text-muted mb-1">
+                                <strong>${user}</strong>
+                                <span>${dateDisplay}</span>
+                            </div>
+                            <div style="color:#334155; font-size:13px;">
+                                ${content} ${statusBadge}
+                            </div>
+                            ${actionBtn}
+                        </div>
+                       `;
+                   }
+                   
+                   box.innerHTML += itemHtml;
+                });
+            });
+        }
+
+        // FUNGSI BARU: MARK COMPLETE
+        function markAsComplete(timeStr, code, content) {
+            Swal.fire({
+                title: 'Tandai Selesai?',
+                text: "Komentar ini akan ditandai sudah dikerjakan/dibaca.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Selesai',
+                confirmButtonColor: '#10b981'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('commentHistory').innerHTML = "<div class='text-center py-3'>Menyimpan...</div>";
+
+                    fetch(SCRIPT_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ 
+                            action: "markComplete", 
+                            userWhoClicked: currentUser, 
+                            itemCode: code, 
+                            timestamp: timeStr,
+                            commentContent: content 
+                        })
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if(res.result === "success") {
+                            // Refresh komentar
+                            loadComments(code);
+                            // Refresh tabel utama (supaya icon kuning hilang)
+                            $('#mainTable').DataTable().destroy();
+                            loadData(); 
+                        } else {
+                            Swal.fire('Gagal', res.message || 'Error updating', 'error');
+                            loadComments(code);
+                        }
+                    });
+                }
+            });
+        }
+
+        function sendComment() {
+            const txt = document.getElementById('commentInput').value;
+            const code = document.getElementById('modalItemCode').value;
+            const name = document.getElementById('modalItemNameHidden').value;
+            if(!txt) return;
+            
+            document.getElementById('btnSend').innerText = "...";
+            fetch(SCRIPT_URL, {
+                method: "POST", body: JSON.stringify({ action: "postComment", user: currentUser, itemCode: code, itemName: name, comment: txt })
+            }).then(() => {
+                document.getElementById('commentInput').value = "";
+                document.getElementById('btnSend').innerText = "Kirim";
+                loadComments(code);
+                // Refresh table agar icon kuning muncul
+                $('#mainTable').DataTable().destroy();
+                loadData();
+            });
+        }
+
         // =========================================
-        //    MULTI-SELECT FILTER LOGIC (UPDATED)
+        //    MULTI-SELECT FILTER LOGIC
         // =========================================
         const filterConfig = [
             { label: 'Vendor', idx: 1, type: 'dropdown' },
@@ -832,9 +1056,9 @@
                          const rawHtml = table.cell(dataIndex, colIdx).data();
                          
                          if(filterVal === 'has_comment') {
-                             if(!rawHtml.includes('text-primary') && !rawHtml.includes('btn-info')) allMatch = false;
+                             if(!rawHtml.includes('btn-warning') && !rawHtml.includes('text-white')) allMatch = false;
                          } else if (filterVal === 'no_comment') {
-                             if(rawHtml.includes('text-primary') || rawHtml.includes('btn-info')) allMatch = false;
+                             if(rawHtml.includes('btn-warning')) allMatch = false;
                          }
                     }
                 });
@@ -842,100 +1066,6 @@
                 return allMatch;
             }
         );
-
-        // === EDIT LOGIC ===
-        function openPriceModal(code, name, price) {
-            document.getElementById('editPriceItemName').innerText = name;
-            document.getElementById('editPriceItemCode').value = code;
-            document.getElementById('inputNewPrice').value = price;
-            document.getElementById('editPriceOldValue').value = price; 
-            new bootstrap.Modal(document.getElementById('priceModal')).show();
-        }
-
-        function submitPriceUpdate() {
-            const code = document.getElementById('editPriceItemCode').value;
-            const newVal = document.getElementById('inputNewPrice').value;
-            const oldVal = document.getElementById('editPriceOldValue').value;
-            const btn = document.getElementById('btnSavePrice');
-            
-            btn.innerText = "Menyimpan..."; btn.disabled = true;
-            fetch(SCRIPT_URL, {
-                method: "POST", 
-                body: JSON.stringify({ action: "updatePrice", user: currentUser, itemCode: code, newValue: newVal, oldValue: oldVal })
-            }).then(r=>r.json()).then(res => {
-                if(res.result=="success") { 
-                    Swal.fire('Berhasil', 'Harga telah diperbarui.', 'success').then(() => location.reload()); 
-                } else { 
-                    Swal.fire('Gagal', res.message, 'error'); 
-                    btn.disabled=false; btn.innerText="Simpan Perubahan"; 
-                }
-            });
-        }
-
-        function quickStatusUpdate(code, newStatus, oldStatus) {
-            Swal.fire({
-                title: `Ubah status ke ${newStatus}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#116999',
-                confirmButtonText: 'Ya, Ubah',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.showLoading();
-                    fetch(SCRIPT_URL, {
-                        method: "POST", 
-                        body: JSON.stringify({ action: "updateStatus", user: currentUser, itemCode: code, newValue: newStatus, oldValue: oldStatus })
-                    }).then(r=>r.json()).then(res => {
-                        if(res.result=="success") { location.reload(); }
-                        else { Swal.fire('Gagal', 'Terjadi kesalahan.', 'error'); }
-                    });
-                }
-            });
-        }
-
-        function openCommentModal(code, name) {
-            document.getElementById('modalItemCode').value = code;
-            document.getElementById('modalItemNameHidden').value = name;
-            new bootstrap.Modal(document.getElementById('commentModal')).show();
-            
-            if(perms.addComment) {
-                document.getElementById('commentInputArea').classList.remove('hidden');
-            } else {
-                document.getElementById('commentInputArea').classList.add('hidden');
-            }
-            loadComments(code);
-        }
-
-        function loadComments(code) {
-            const box = document.getElementById('commentHistory');
-            box.innerHTML = "<div class='text-center py-3'><div class='spinner-border spinner-border-sm text-primary'></div></div>";
-            fetch(SCRIPT_URL + "?action=getComments").then(r=>r.json()).then(data => {
-                box.innerHTML = "";
-                const chats = data.filter(r => r[2] == code);
-                if(chats.length === 0) box.innerHTML = "<div class='text-center py-4 text-muted small'><i class='bi bi-chat-square-text fs-4 d-block mb-2'></i>Belum ada catatan.</div>";
-                chats.forEach(c => {
-                   const date = new Date(c[0]).toLocaleString('id-ID');
-                   box.innerHTML += `<div class="chat-item"><div class="d-flex justify-content-between small text-muted mb-1"><strong>${c[1]}</strong><span>${date}</span></div><div style="color:#334155;">${c[4]}</div></div>`; 
-                });
-            });
-        }
-
-        function sendComment() {
-            const txt = document.getElementById('commentInput').value;
-            const code = document.getElementById('modalItemCode').value;
-            const name = document.getElementById('modalItemNameHidden').value;
-            if(!txt) return;
-            
-            document.getElementById('btnSend').innerText = "...";
-            fetch(SCRIPT_URL, {
-                method: "POST", body: JSON.stringify({ action: "postComment", user: currentUser, itemCode: code, itemName: name, comment: txt })
-            }).then(() => {
-                document.getElementById('commentInput').value = "";
-                document.getElementById('btnSend').innerText = "Kirim";
-                loadComments(code);
-            });
-        }
     </script>
 </body>
 </html>
