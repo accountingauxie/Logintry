@@ -140,8 +140,8 @@
         .kpi-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
 
         /* Advanced Table Card */
-        .card-table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; }
-        .table-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: white; }
+        .card-table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: visible; /* Changed to visible for filter dropdown */ }
+        .table-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: white; position: relative; z-index: 10; border-top-left-radius: 16px; border-top-right-radius: 16px;}
         .table-title h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-main); }
         .table-title p { margin: 4px 0 0; font-size: 13px; color: var(--text-sub); }
         
@@ -179,6 +179,36 @@
         .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         .search-box input { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; transition: border 0.2s; }
         .search-box input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(17, 105, 153, 0.1); }
+
+        /* =========================================
+           3. NEW FILTER STYLES
+           ========================================= */
+        .btn-filter-toggle {
+            height: 42px;
+            display: flex; align-items: center; gap: 8px;
+            background: #fff; border: 1px solid var(--border-color);
+            color: #475467; font-weight: 600; font-size: 13px;
+            padding: 0 16px; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-filter-toggle:hover { background-color: #f9fafb; border-color: #d0d5dd; }
+        .btn-filter-toggle.active { background-color: #eff8ff; border-color: var(--primary-color); color: var(--primary-color); }
+
+        .filter-popup {
+            position: absolute; right: 0; top: 115%; 
+            width: 500px; background: white; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px;
+            box-shadow: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
+            z-index: 50;
+            display: none; /* Toggled by JS */
+            padding: 16px;
+        }
+        .filter-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .filter-select { flex: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; }
+        .filter-input { flex: 1.5; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; }
+        .btn-remove-row { color: #991b1b; background: none; border: none; cursor: pointer; opacity: 0.6; padding: 4px; }
+        .btn-remove-row:hover { opacity: 1; background: #fee2e2; border-radius: 4px; }
 
         /* SweetAlert Override */
         .swal2-popup { border-radius: 16px !important; font-family: "Inter", sans-serif !important; z-index: 20002 !important; }
@@ -321,11 +351,35 @@
                         <h3>Inventory Database</h3>
                         <p>Kelola harga beli, harga jual, dan status ketersediaan item.</p>
                     </div>
-                    <div class="d-flex gap-3">
+                    
+                    <div class="d-flex gap-2 position-relative">
+                        
+                        <div class="position-relative">
+                            <button id="btnFilterToggle" class="btn-filter-toggle" onclick="toggleFilterPopup()">
+                                <i class="bi bi-funnel"></i> Filter
+                            </button>
+
+                            <div id="filterPopup" class="filter-popup">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="m-0 fw-bold">Filter Conditions</h6>
+                                    <button class="btn btn-sm text-primary fw-bold" onclick="addFilterRow()">+ Add Condition</button>
+                                </div>
+                                
+                                <div id="filterRowsContainer">
+                                    </div>
+
+                                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                                    <button class="btn btn-sm btn-light border" onclick="clearFilters()">Clear All</button>
+                                    <button class="btn btn-sm btn-primary" onclick="applyFilters()">Apply Filter</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="search-box">
                             <i class="bi bi-search"></i>
                             <input type="text" id="customSearch" placeholder="Cari Item, Vendor, atau Kode...">
                         </div>
+                        
                         <button id="btnAddItem" class="btn btn-primary d-flex align-items-center gap-2 hidden" onclick="Swal.fire('Info', 'Fitur Create Item akan segera hadir.', 'info')">
                             <i class="bi bi-plus-lg"></i> Item Baru
                         </button>
@@ -586,6 +640,132 @@
                 });
             });
         }
+
+        // === FILTER LOGIC START ===
+        const filterColumns = [
+            { name: "Nama Item", idx: 0 },
+            { name: "Vendor", idx: 1 },
+            { name: "Satuan Beli", idx: 2 },
+            { name: "Harga Beli", idx: 4 },
+            { name: "Harga Jual", idx: 5 },
+            { name: "Tipe", idx: 6 },
+            { name: "Merk", idx: 7 },
+            { name: "Status", idx: 9 } // Based on rendered column index
+        ];
+
+        function toggleFilterPopup() {
+            const popup = document.getElementById('filterPopup');
+            const btn = document.getElementById('btnFilterToggle');
+            const isHidden = popup.style.display === 'none' || popup.style.display === '';
+            
+            popup.style.display = isHidden ? 'block' : 'none';
+            if(isHidden) {
+                btn.classList.add('active');
+                if(document.getElementById('filterRowsContainer').children.length === 0) addFilterRow();
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+
+        function addFilterRow() {
+            const container = document.getElementById('filterRowsContainer');
+            const row = document.createElement('div');
+            row.className = 'filter-row';
+            
+            let optionsHTML = filterColumns.map(c => `<option value="${c.idx}">${c.name}</option>`).join('');
+            
+            row.innerHTML = `
+                <select class="filter-select col-selector">
+                    ${optionsHTML}
+                </select>
+                <select class="filter-select op-selector">
+                    <option value="contains">Contains</option>
+                    <option value="equals">Equals</option>
+                    <option value="greater">Greater Than (>)</option>
+                    <option value="less">Less Than (<)</option>
+                </select>
+                <input type="text" class="filter-input val-input" placeholder="Value...">
+                <button class="btn-remove-row" onclick="this.parentElement.remove()"><i class="bi bi-x-lg"></i></button>
+            `;
+            container.appendChild(row);
+        }
+
+        function clearFilters() {
+            document.getElementById('filterRowsContainer').innerHTML = '';
+            addFilterRow();
+            applyFilters(); // Reset table
+        }
+
+        function applyFilters() {
+            // Re-draw table which triggers the custom filter function below
+            table.draw();
+            document.getElementById('filterPopup').style.display = 'none';
+            document.getElementById('btnFilterToggle').classList.remove('active');
+            
+            // Check if any filter is active to keep button colored
+            const inputs = document.querySelectorAll('.val-input');
+            let hasActive = false;
+            inputs.forEach(i => { if(i.value) hasActive = true; });
+            if(hasActive) document.getElementById('btnFilterToggle').classList.add('active');
+        }
+
+        // Custom DataTables Filter Logic
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                const rows = document.querySelectorAll('.filter-row');
+                if (rows.length === 0) return true;
+
+                let allMatch = true;
+
+                rows.forEach(row => {
+                    const colIdx = parseInt(row.querySelector('.col-selector').value);
+                    const operator = row.querySelector('.op-selector').value;
+                    const filterVal = row.querySelector('.val-input').value.toLowerCase().trim();
+                    
+                    if (!filterVal) return; // Ignore empty inputs
+
+                    // Get Raw Data from Table
+                    let cellData = data[colIdx].toLowerCase();
+                    
+                    // Cleanup Data (Remove Rp, dots, HTML tags)
+                    // For status (col 9) or price, we might have HTML
+                    cellData = cellData.replace(/<[^>]*>?/gm, ''); // Strip HTML
+                    const isNumeric = (colIdx === 4 || colIdx === 5);
+                    
+                    let numCell = 0;
+                    let numFilter = 0;
+
+                    if (isNumeric) {
+                        // Remove non-numeric except comma/dot for parsing
+                        // Assuming ID Format: 100.000 (dots remove)
+                        numCell = parseFloat(cellData.replace(/[^0-9]/g, '')) || 0;
+                        numFilter = parseFloat(filterVal.replace(/[^0-9]/g, '')) || 0;
+                    }
+
+                    // Logic
+                    if (isNumeric) {
+                        if (operator === 'greater') {
+                            if (numCell <= numFilter) allMatch = false;
+                        } else if (operator === 'less') {
+                            if (numCell >= numFilter) allMatch = false;
+                        } else {
+                            // Default to equals for numeric if not range
+                            if (numCell !== numFilter) allMatch = false;
+                        }
+                    } else {
+                        // String Logic
+                        if (operator === 'contains') {
+                            if (!cellData.includes(filterVal)) allMatch = false;
+                        } else if (operator === 'equals') {
+                            if (cellData !== filterVal) allMatch = false;
+                        }
+                    }
+                });
+
+                return allMatch;
+            }
+        );
+        // === FILTER LOGIC END ===
 
         // === EDIT LOGIC ===
         function openPriceModal(code, name, price) {
