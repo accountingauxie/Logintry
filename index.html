@@ -313,13 +313,7 @@
                     <div class="kpi-value" id="kpi-active">0</div>
                     <div class="kpi-trend positive"><i class="bi bi-graph-up-arrow"></i> <span>Siap Transaksi</span></div>
                 </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon" style="background:#fff7ed; color:#c2410c;"><i class="bi bi-currency-dollar fs-5"></i></div>
-                    <div class="kpi-label">Item Bernilai</div>
-                    <div class="kpi-value" id="kpi-priced">0</div>
-                    <div class="kpi-trend neutral"><span>Harga Jual > 0</span></div>
                 </div>
-            </div>
 
             <div class="card-table-wrapper">
                 <div class="table-header">
@@ -509,8 +503,8 @@
                 document.getElementById('kpi-total').innerText = data.length;
                 const activeCount = data.filter(r => (r[17]||"").toString().toLowerCase().includes("active")).length;
                 document.getElementById('kpi-active').innerText = activeCount;
-                const pricedCount = data.filter(r => r[5] > 0).length;
-                document.getElementById('kpi-priced').innerText = pricedCount;
+
+                // LOGIKA ITEM BERNILAI SUDAH DIHAPUS
 
                 // Render Table
                 document.getElementById('skeletonLoader').classList.add('hidden');
