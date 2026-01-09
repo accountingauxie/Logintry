@@ -14,210 +14,113 @@
     
     <style>
         /* =========================================
-           1. SYSTEM STYLE (Unified Navbar)
+           1. SYSTEM STYLE 
            ========================================= */
         :root { 
             --primary-color: #116999; 
             --primary-hover: #0e5a85;
-            --bg-color: #f4f7f6; 
-            --text-color: #333; 
-            --red-bg: #fee2e2; 
-            --red-text: #991b1b;
-            --border-color: #eaecf0;
-            
-            /* DSS Specific Colors */
             --bg-body: #f8fafc;
             --text-main: #1e293b;
             --text-sub: #64748b;
             --success-bg: #dcfce7; --success-text: #166534;
-            --danger-bg: #fee2e2; --danger-text: #991b1b;
+            --border-color: #eaecf0;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         body { 
-            margin: 0; 
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            font-size: 13.5px; 
-            background: var(--bg-body); 
-            color: var(--text-main); 
-            -webkit-font-smoothing: antialiased; 
+            margin: 0; font-family: "Inter", sans-serif; font-size: 13.5px; 
+            background: var(--bg-body); color: var(--text-main); 
         }
 
         .hidden { display: none !important; }
 
-        /* --- NAVIGATION BAR --- */
+        /* --- NAVBAR --- */
         .aux-navbar {
-            background-color: #ffffff;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            position: sticky; top: 0; z-index: 1000;
+            background-color: #ffffff; height: 70px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 1000;
         }
-
-        .aux-logo { display: flex; align-items: center; gap: 10px; }
-        .aux-logo img { height: 45px; width: auto; object-fit: contain; }
-
+        .aux-logo img { height: 45px; width: auto; }
         .aux-menu { display: flex; gap: 8px; align-items: center; height: 100%; }
-        .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
-
         .aux-link { 
             text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; 
-            padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer;
-            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer; display: flex; gap: 6px;
         }
-
-        .aux-link:hover, .nav-item:hover .aux-link { background-color: #f2f4f7; color: #101828; }
+        .aux-link:hover { background-color: #f2f4f7; color: #101828; }
+        .aux-link.active { background-color: #eff8ff; color: var(--primary-color); font-weight: 700; }
         
-        .aux-link.active { 
-            background-color: #eff8ff; color: var(--primary-color); font-weight: 700; 
-        }
-
-        .chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
-        .nav-item:hover .chevron-down { transform: rotate(180deg); }
-
-        /* --- CUSTOM DROPDOWN (To avoid Bootstrap conflict) --- */
+        /* Dropdown Menu */
+        .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
         .dropdown-menu-aux {
-            visibility: hidden; opacity: 0; position: absolute; 
-            top: 85%; left: 0; background: white; min-width: 240px;
-            border: 1px solid var(--border-color); border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            padding: 8px; z-index: 9999; transform: translateY(10px);
-            transition: all 0.2s ease-in-out;
-            display: block; /* Override bootstrap display:none */
+            visibility: hidden; opacity: 0; position: absolute; top: 85%; left: 0; 
+            background: white; min-width: 240px; border: 1px solid var(--border-color); 
+            border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 8px; 
+            z-index: 9999; transform: translateY(10px); transition: all 0.2s; display: block;
         }
-        .dropdown-menu-aux::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
         .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateY(0); }
+        .dropdown-item-aux { display: flex; padding: 10px 12px; color: #344054; text-decoration: none; border-radius: 6px; }
+        .dropdown-item-aux:hover { background: #f9fafb; color: var(--primary-color); }
+        .dropdown-header-aux { font-size: 11px; font-weight: 600; color: #98a2b3; padding: 8px 12px 4px; text-transform: uppercase; }
 
-        .dropdown-item-aux {
-            display: flex; align-items: center; padding: 10px 12px; color: #344054;
-            text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s;
-        }
-        .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
-        .dropdown-divider-aux { height: 1px; background-color: #eaecf0; margin: 6px 0; }
-        .dropdown-header-aux {
-            font-size: 11px; text-transform: uppercase; color: #98a2b3;
-            font-weight: 600; padding: 8px 12px 4px; letter-spacing: 0.5px;
-        }
-
-        /* --- USER PANEL --- */
+        /* User Panel */
         .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border-color); }
-        .user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
-        .user-name { font-weight: 700; font-size: 13px; color: #101828; }
-        .user-role { font-size: 11px; color: #667085; }
-        .user-avatar { width: 36px; height: 36px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; user-select: none; }
-        .logout-btn { background: none; border: 1px solid var(--border-color); color: #666; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
+        .user-avatar { width: 36px; height: 36px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .logout-btn { background: none; border: 1px solid var(--border-color); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .logout-btn:hover { background: #fee2e2; color: #991b1b; border-color: #fee2e2; }
 
-        /* --- MODAL (Logout) --- */
-        .modal-logout { display: none; position: fixed; z-index: 20000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
-        .modal-logout-content { background-color: #fff; margin: 15% auto; padding: 32px; border-radius: 16px; width: 360px; text-align: center; }
-        .modal-buttons { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
-        .btn-modal { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1; }
-        .btn-yes { background-color: #d92d20; color: #fff; }
-        .btn-cancel { background-color: #f2f4f7; color: #344054; }
-
-        /* =========================================
-           2. DSS / EIS DASHBOARD STYLES
-           ========================================= */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-box { background: white; padding: 40px; border-radius: 20px; width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border: 1px solid var(--border-color); }
-
+        /* --- DASHBOARD --- */
         .main-container { max-width: 1600px; margin: 0 auto; padding: 30px 40px; }
-        
-        /* KPI Cards (DSS Style) */
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .kpi-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: transform 0.2s; }
-        .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .kpi-label { font-size: 12px; font-weight: 600; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-        .kpi-value { font-size: 28px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
-        .kpi-trend { font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-        .kpi-trend.positive { color: var(--success-text); }
-        .kpi-trend.neutral { color: var(--text-sub); }
-        .kpi-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+        .kpi-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .kpi-value { font-size: 28px; font-weight: 700; color: var(--text-main); }
+        .kpi-label { font-size: 12px; font-weight: 600; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
 
-        /* Advanced Table Card */
-        .card-table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: visible; /* Changed for Filter Dropdown */ }
+        /* --- TABLE --- */
+        .card-table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: visible; }
         .table-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: white; border-top-left-radius: 16px; border-top-right-radius: 16px; position: relative; z-index: 10; }
-        .table-title h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-main); }
-        .table-title p { margin: 4px 0 0; font-size: 13px; color: var(--text-sub); }
         
-        /* Custom Table Styling (Overrides Bootstrap & Datatables) */
-        table.dataTable { border-collapse: separate; border-spacing: 0; width: 100% !important; margin: 0 !important; }
-        table.dataTable thead th { 
-            background-color: #f8fafc !important; color: #475467; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
-            padding: 14px 16px; border-bottom: 1px solid var(--border-color) !important;
-        }
-        table.dataTable tbody td { padding: 12px 16px; color: #334155; font-size: 13px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        table.dataTable tbody tr:hover td { background-color: #f8fafc; }
-        table.dataTable tbody tr:last-child td { border-bottom: none; }
-
-        /* Interactive Elements */
-        .editable-price { 
-            cursor: pointer; color: var(--primary-color); font-weight: 600; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; 
-            border: 1px dashed transparent; 
-        }
-        .editable-price:hover { background-color: #f0f9ff; border-color: #b9e6fe; }
+        table.dataTable thead th { background: #f8fafc !important; color: #475467; font-size: 11px; text-transform: uppercase; padding: 14px 16px; border-bottom: 1px solid var(--border-color) !important; }
+        table.dataTable tbody td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         
-        .badge-dss { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; display: inline-flex; align-items: center; gap: 4px; }
-        .badge-active { background-color: var(--success-bg); color: var(--success-text); border: 1px solid #bbf7d0; }
-        .badge-archived { background-color: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-        
-        /* Action Button */
+        .badge-dss { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .badge-active { background: var(--success-bg); color: var(--success-text); border: 1px solid #bbf7d0; }
+        .badge-archived { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
         .btn-icon-soft { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: white; color: #64748b; transition: all 0.2s; }
         .btn-icon-soft:hover { background: #f8fafc; color: var(--primary-color); border-color: #b9e6fe; }
+        .editable-price { cursor: pointer; color: var(--primary-color); font-weight: 600; padding: 4px 8px; border-radius: 6px; }
+        .editable-price:hover { background: #f0f9ff; }
 
-        /* Skeleton Loading */
-        .skeleton { background: #e2e8f0; height: 20px; border-radius: 4px; width: 100%; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-        /* Custom Search Box */
-        .search-box { position: relative; width: 300px; }
-        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-        .search-box input { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; transition: border 0.2s; }
-        .search-box input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(17, 105, 153, 0.1); }
-
-        /* =========================================
-           3. NEW FILTER STYLES
-           ========================================= */
-        .btn-filter-toggle {
-            height: 42px; display: flex; align-items: center; gap: 8px;
-            background: #fff; border: 1px solid var(--border-color);
-            color: #475467; font-weight: 600; font-size: 13px;
-            padding: 0 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
-        }
-        .btn-filter-toggle:hover { background-color: #f9fafb; border-color: #d0d5dd; }
-        .btn-filter-toggle.active { background-color: #eff8ff; border-color: var(--primary-color); color: var(--primary-color); }
-
-        .filter-popup {
-            position: absolute; right: 0; top: 115%; 
-            width: 550px; background: white; 
-            border: 1px solid var(--border-color); 
-            border-radius: 12px;
-            box-shadow: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
-            z-index: 50; display: none; padding: 16px;
-        }
-        .filter-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; background: #f9fafb; padding: 8px; border-radius: 8px; border: 1px solid #f2f4f7;}
-        .filter-select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; background: white; }
-        .filter-input { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; flex: 1; }
-        .btn-remove-row { color: #991b1b; background: none; border: none; cursor: pointer; opacity: 0.6; padding: 4px; }
-        .btn-remove-row:hover { opacity: 1; background: #fee2e2; border-radius: 4px; }
-
-        /* SweetAlert Override */
-        .swal2-popup { border-radius: 16px !important; font-family: "Inter", sans-serif !important; z-index: 20002 !important; }
-        .swal2-container { z-index: 20002 !important; }
-        .swal2-title { font-size: 18px !important; color: var(--text-main) !important; }
-        .swal2-html-container { font-size: 14px !important; color: var(--text-sub) !important; }
+        /* --- FILTER STYLES (MULTI-SELECT) --- */
+        .btn-filter-toggle { height: 42px; display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border-color); color: #475467; font-weight: 600; font-size: 13px; padding: 0 16px; border-radius: 8px; cursor: pointer; }
+        .btn-filter-toggle.active { background: #eff8ff; border-color: var(--primary-color); color: var(--primary-color); }
         
-        /* Bootstrap Modal Override */
-        .modal-content { border-radius: 12px; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-        .modal-header { border-bottom: 1px solid var(--border-color); padding: 16px 24px; }
-        .modal-body { padding: 24px; }
-        .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
-        .btn-primary:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
+        .filter-popup { position: absolute; right: 0; top: 115%; width: 600px; background: white; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 12px 16px -4px rgba(16, 24, 40, 0.08); z-index: 50; display: none; padding: 16px; }
+        .filter-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; background: #f9fafb; padding: 10px; border-radius: 8px; border: 1px solid #f2f4f7; }
+        .filter-select { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; background: white; height: 38px; }
+        .filter-input { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; flex: 1; height: 38px; }
+
+        /* Multi-Select Custom Checkbox Style */
+        .ms-wrapper { position: relative; width: 100%; }
+        .ms-trigger { 
+            background: white; border: 1px solid var(--border-color); border-radius: 6px; 
+            padding: 8px 12px; font-size: 13px; cursor: pointer; display: flex; 
+            justify-content: space-between; align-items: center; min-height: 38px;
+        }
+        .ms-trigger:hover { background: #fcfcfd; border-color: #d0d5dd; }
+        .ms-dropdown {
+            position: absolute; top: 105%; left: 0; width: 100%; 
+            background: white; border: 1px solid var(--border-color); border-radius: 8px;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05); max-height: 200px; overflow-y: auto;
+            z-index: 100; display: none; padding: 5px;
+        }
+        .ms-option { display: flex; align-items: center; padding: 6px 8px; cursor: pointer; font-size: 13px; border-radius: 4px; }
+        .ms-option:hover { background-color: #f2f4f7; }
+        .ms-option input { margin-right: 8px; width: 14px; height: 14px; cursor: pointer; }
+        .ms-count { background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: auto; }
+
+        /* Login Overlay */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
     </style>
 </head>
 <body>
@@ -226,17 +129,15 @@
         <div class="login-box text-center">
             <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo.png" alt="Logo" style="height: 45px; margin-bottom: 24px;">
             <h4 style="font-weight: 700; color: #101828; margin-bottom: 8px;">Log in</h4>
-            <p style="color: #667085; margin-bottom: 24px; font-size: 14px;">Akses portal kelola daftar item & produk.</p>
-            
             <div class="form-floating mb-3 text-start">
-                <input type="email" id="email" class="form-control" placeholder="Email" style="font-size:14px;">
+                <input type="email" id="email" class="form-control" placeholder="Email">
                 <label>Email User</label>
             </div>
             <div class="form-floating mb-3 text-start">
-                <input type="password" id="password" class="form-control" placeholder="Password" style="font-size:14px;">
+                <input type="password" id="password" class="form-control" placeholder="Password">
                 <label>Password</label>
             </div>
-            <button onclick="performLogin()" id="btnLogin" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: var(--primary-color); border:none;">Masuk</button>
+            <button onclick="performLogin()" id="btnLogin" class="btn btn-primary w-100 fw-bold" style="background:var(--primary-color);">Masuk</button>
         </div>
     </div>
 
@@ -248,98 +149,37 @@
             </div>
             
             <nav class="aux-menu">
+                <div class="nav-item"><a href="#" class="aux-link">Home</a></div>
                 <div class="nav-item">
-                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link">
-                        Penjualan 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Sales Orders</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="dropdown-item-aux">Order Penjualan</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Review%20Penjualan/review_penjualan.html" class="dropdown-item-aux">Review Penjualan</a>
-                    </div>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link">
-                        Pembelian 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Purchasing</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item-aux">Pemesanan Pembelian</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item-aux">Penerimaan Barang (Entry)</a>
-                        
-                        <div class="dropdown-divider-aux"></div>
-                        
-                        <div class="dropdown-header-aux">Finance</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item-aux">Daftar Tagihan (Bill)</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item-aux">Import Xero PO</a>
-                    </div>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link">
-                        Produksi 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Input Mesin</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item-aux">Back Order</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item-aux">General Order</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Pre%20Order/produksi_preorder.html" class="dropdown-item-aux">Pre Order</a>
-
-                        <div class="dropdown-divider-aux"></div>
-                        
-                        <div class="dropdown-header-aux">Hasil Produksi</div>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item-aux">Produksi Barang Jadi</a>
-                    </div>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link active">
-                        Persediaan 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
+                    <div class="aux-link active">Persediaan <i data-feather="chevron-down" style="width:14px;"></i></div>
                     <div class="dropdown-menu-aux">
                         <div class="dropdown-header-aux">Inventory</div>
-                        <a href="#" class="dropdown-item-aux" style="color:var(--primary-color); font-weight:700; background:#f9fafb;">Master Item List</a>
-                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/inventory/index.html" class="dropdown-item-aux">Cek Stok Inventory</a>
+                        <a href="#" class="dropdown-item-aux fw-bold" style="color:var(--primary-color);">Master Item List</a>
                     </div>
                 </div>
             </nav>
 
             <div class="user-panel">
-                <div class="user-details">
-                    <span class="user-name" id="display-nama">User</span>
-                    <span class="user-role" id="display-role">Staff</span>
+                <div style="text-align:right; line-height:1.3;">
+                    <span class="d-block fw-bold" style="font-size:13px;" id="display-nama">User</span>
+                    <span class="d-block text-muted" style="font-size:11px;" id="display-role">Staff</span>
                 </div>
                 <div class="user-avatar" id="display-initial">U</div>
-                <button class="logout-btn" onclick="showLogoutModal()" title="Keluar Akun">
-                    <i data-feather="log-out" style="width:16px; height:16px;"></i>
-                </button>
+                <button class="logout-btn" onclick="showLogoutModal()"><i data-feather="log-out" style="width:16px;"></i></button>
             </div>
         </div>
+
         <div class="main-container">
-            
             <div class="kpi-grid">
                 <div class="kpi-card">
-                    <div class="kpi-icon" style="background:#eff6ff; color:#116999;"><i class="bi bi-box-seam fs-5"></i></div>
                     <div class="kpi-label">Total Item SKU</div>
                     <div class="kpi-value" id="kpi-total">0</div>
-                    <div class="kpi-trend neutral"><span>Database Terdaftar</span></div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-icon" style="background:#ecfdf5; color:#059669;"><i class="bi bi-check-circle fs-5"></i></div>
                     <div class="kpi-label">Status Active</div>
                     <div class="kpi-value" id="kpi-active">0</div>
-                    <div class="kpi-trend positive"><i class="bi bi-graph-up-arrow"></i> <span>Siap Transaksi</span></div>
                 </div>
-                </div>
+            </div>
 
             <div class="card-table-wrapper">
                 <div class="table-header">
@@ -349,7 +189,6 @@
                     </div>
                     
                     <div class="d-flex gap-2 position-relative">
-                        
                         <div class="position-relative">
                             <button id="btnFilterToggle" class="btn-filter-toggle" onclick="toggleFilterPopup()">
                                 <i class="bi bi-funnel"></i> Filter
@@ -360,31 +199,25 @@
                                     <h6 class="m-0 fw-bold">Filter Conditions</h6>
                                     <button class="btn btn-sm text-primary fw-bold" onclick="addFilterRow()">+ Add Condition</button>
                                 </div>
-                                
                                 <div id="filterRowsContainer"></div>
-
                                 <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                                    <button class="btn btn-sm btn-light border" onclick="clearFilters()">Clear All</button>
+                                    <button class="btn btn-sm btn-light border" onclick="clearFilters()">Reset</button>
                                     <button class="btn btn-sm btn-primary" onclick="applyFilters()">Apply Filter</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="search-box">
-                            <i class="bi bi-search"></i>
-                            <input type="text" id="customSearch" placeholder="Cari Item, Vendor, atau Kode...">
+                        <div style="position:relative; width:300px;">
+                            <i class="bi bi-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8;"></i>
+                            <input type="text" id="customSearch" class="form-control" style="padding-left:36px; font-size:13px;" placeholder="Cari Item, Vendor, atau Kode...">
                         </div>
-                        
-                        <button id="btnAddItem" class="btn btn-primary d-flex align-items-center gap-2 hidden" onclick="Swal.fire('Info', 'Fitur Create Item akan segera hadir.', 'info')">
-                            <i class="bi bi-plus-lg"></i> Item Baru
-                        </button>
                     </div>
                 </div>
 
                 <div class="card-body p-0">
                     <div id="skeletonLoader" class="p-4">
-                        <div class="d-flex gap-3 mb-3"><div class="skeleton" style="width:30%"></div><div class="skeleton" style="width:20%"></div><div class="skeleton" style="width:10%"></div></div>
-                        <div class="skeleton mb-2"></div><div class="skeleton mb-2"></div><div class="skeleton mb-2"></div>
+                        <div class="d-flex gap-3 mb-3"><div class="skeleton" style="width:30%"></div><div class="skeleton" style="width:20%"></div></div>
+                        <div class="skeleton mb-2"></div><div class="skeleton mb-2"></div>
                     </div>
 
                     <div class="table-responsive">
@@ -412,17 +245,13 @@
         </div>
     </div>
 
-    <div id="logoutModal" class="modal-logout">
-        <div class="modal-logout-content">
-          <div style="background:#fee2e2; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
-            <i data-feather="alert-circle" style="color:#d92d20;"></i>
-          </div>
-          <p style="font-size:18px; font-weight:600; color:#101828; margin-bottom:10px;">Konfirmasi Keluar</p>
-          <p style="color:#667085; font-size:14px; margin-bottom:24px;">Apakah Anda yakin ingin keluar dari sistem?</p>
-          <div class="modal-buttons">
-            <button class="btn-modal btn-cancel" onclick="closeLogoutModal()">Batal</button>
-            <button class="btn-modal btn-yes" onclick="confirmLogout()">Keluar</button>
-          </div>
+    <div id="logoutModal" class="modal-logout" style="display:none; position:fixed; z-index:20000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
+        <div class="modal-logout-content" style="background:#fff; margin:15% auto; padding:32px; border-radius:16px; width:360px; text-align:center;">
+             <p style="font-weight:bold;">Konfirmasi Keluar?</p>
+             <div class="d-flex justify-content-center gap-2 mt-3">
+                 <button class="btn btn-light" onclick="closeLogoutModal()">Batal</button>
+                 <button class="btn btn-danger" onclick="confirmLogout()">Keluar</button>
+             </div>
         </div>
     </div>
 
@@ -462,47 +291,30 @@
             </div>
         </div>
     </div>
-
+    
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
-        // === NAVBAR & LOGOUT ===
-        function showLogoutModal() { document.getElementById("logoutModal").style.display = "block"; }
-        function closeLogoutModal() { document.getElementById("logoutModal").style.display = "none"; }
-        function confirmLogout() { localStorage.removeItem("appSession"); location.reload(); }
-
-        // === CONFIG ===
+        // === CONFIG & AUTH ===
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzPV35i00thIZJgwSEqo54IYzOjOvgwmeoW4gf77hL3SnL9-_eZ4cIldx1Zgt2XJgnc/exec"; 
-        
         let currentUser = "";
         let perms = { 
-            editPrice: false, 
-            addComment: false, 
-            editStatus: false, 
-            addNewItem: false,
-            viewPrice: false 
+            editPrice: false, addComment: false, editStatus: false, 
+            addNewItem: false, viewPrice: false 
         };
         let table;
 
-        // === LOGIN LOGIC ===
         function performLogin() {
-            const email = document.getElementById('email').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const btn = document.getElementById('btnLogin');
-            
-            if(!email || !pass) { Swal.fire('Error','Email dan Password harus diisi','error'); return; }
-            
-            btn.innerText = "Memproses..."; btn.disabled = true;
-            
+            const email = $('#email').val(), pass = $('#password').val();
+            if(!email || !pass) return Swal.fire('Error','Isi semua data','error');
+            $('#btnLogin').text("Loading...").prop('disabled',true);
+
             fetch(SCRIPT_URL, {
-                method: "POST",
-                body: JSON.stringify({ action: "login", email: email, password: pass })
-            })
-            .then(res => res.json())
-            .then(resp => {
+                method: "POST", body: JSON.stringify({ action: "login", email: email, password: pass })
+            }).then(r=>r.json()).then(resp => {
                 if(resp.result === "success") {
                     currentUser = resp.username;
                     perms.editPrice = (String(resp.permissions.editPrice).toUpperCase() === "TRUE");
@@ -510,30 +322,19 @@
                     perms.editStatus = (String(resp.permissions.editStatus).toUpperCase() === "TRUE");
                     perms.addNewItem = (String(resp.permissions.addNewItem).toUpperCase() === "TRUE");
                     perms.viewPrice = (String(resp.permissions.viewPrice).toUpperCase() === "TRUE");
-                    
                     localStorage.setItem("appSession", JSON.stringify({ user: currentUser, permissions: perms }));
                     initDashboard();
-                } else {
-                    Swal.fire('Gagal Login', 'Email atau Password Salah!', 'error');
-                }
-            })
-            .catch(e => Swal.fire('Error', 'Koneksi Gagal.', 'error'))
-            .finally(() => { btn.innerText = "Masuk"; btn.disabled = false; });
+                } else { Swal.fire('Gagal', 'Login failed', 'error'); }
+            }).finally(()=> $('#btnLogin').text("Masuk").prop('disabled',false));
         }
 
         function initDashboard() {
-            document.getElementById('login-overlay').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            
-            const namePart = currentUser.split('@')[0];
-            const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-            
-            document.getElementById('display-nama').innerText = formattedName; 
-            document.getElementById('display-role').innerText = perms.editPrice ? "Administrator" : "Staff"; 
-            document.getElementById('display-initial').innerText = formattedName.substring(0,2).toUpperCase();
-
+            $('#login-overlay').addClass('hidden');
+            $('#dashboard').removeClass('hidden');
+            const name = currentUser.split('@')[0];
+            $('#display-nama').text(name.charAt(0).toUpperCase() + name.slice(1));
+            $('#display-role').text(perms.editPrice ? "Admin" : "Staff");
             feather.replace();
-            if(perms.addNewItem) document.getElementById('btnAddItem').classList.remove('hidden');
             loadData();
         }
 
@@ -541,223 +342,205 @@
             const sess = localStorage.getItem("appSession");
             if(sess) {
                 const data = JSON.parse(sess);
-                currentUser = data.user;
-                perms = data.permissions;
+                currentUser = data.user; perms = data.permissions;
                 initDashboard();
             }
         }
+        function showLogoutModal(){ $('#logoutModal').show(); }
+        function closeLogoutModal(){ $('#logoutModal').hide(); }
+        function confirmLogout(){ localStorage.removeItem("appSession"); location.reload(); }
 
-        // === TABLE LOGIC ===
+        // === TABLE & DATA ===
         const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
 
         function loadData() {
             if ($.fn.DataTable.isDataTable('#mainTable')) return;
-
             fetch(SCRIPT_URL + "?action=getProducts").then(r=>r.json()).then(data => {
-                document.getElementById('kpi-total').innerText = data.length;
-                const activeCount = data.filter(r => (r[17]||"").toString().toLowerCase().includes("active")).length;
-                document.getElementById('kpi-active').innerText = activeCount;
-
-                document.getElementById('skeletonLoader').classList.add('hidden');
-                document.getElementById('mainTable').classList.remove('hidden');
+                $('#kpi-total').text(data.length);
+                $('#kpi-active').text(data.filter(r=>(r[17]||"").toLowerCase().includes("active")).length);
+                $('#skeletonLoader').addClass('hidden');
+                $('#mainTable').removeClass('hidden');
                 
                 table = $('#mainTable').DataTable({
-                    data: data,
-                    pageLength: 20,
-                    responsive: true,
-                    dom: 't<"d-flex justify-content-between pt-3"ip>', 
-                    language: { paginate: { next: ">", previous: "<" } },
+                    data: data, pageLength: 20, responsive: true,
+                    dom: 't<"d-flex justify-content-between pt-3"ip>',
                     columns: [
-                        { data: 0, className: "fw-bold text-dark", width: "20%" }, // 0
-                        { data: 1 }, // 1 Vendor
-                        { data: 2 }, // 2 Sat Beli
-                        { data: 3 }, // 3 Sat Jual
-                        { 
-                            data: 4, // 4 Hrg Beli
-                            className: "text-end text-secondary", 
-                            render: (d) => {
-                                if(!perms.viewPrice) return '<span class="text-muted" style="letter-spacing:2px;">*****</span>';
-                                return formatRp(d);
+                        { data: 0, className: "fw-bold text-dark", width: "20%" },
+                        { data: 1 }, { data: 2 }, { data: 3 },
+                        { data: 4, className: "text-end", render: d => perms.viewPrice ? formatRp(d) : "*****" },
+                        { data: 5, className: "text-end", render: function(data, type, row) {
+                            if(!perms.viewPrice) return '<span class="text-muted">*****</span>';
+                            const txt = formatRp(data);
+                            if(perms.editPrice) {
+                                const safeName = row[0].replace(/["']/g, ""); 
+                                const safeCode = row[15]; 
+                                return `<div class="editable-price" onclick="openPriceModal('${safeCode}','${safeName}',${data})">${txt} <i class="bi bi-pencil-fill ms-1" style="font-size:9px; opacity:0.5;"></i></div>`;
                             }
-                        },
-                        { 
-                            data: 5, // 5 Hrg Jual
-                            className: "text-end",
-                            render: function(data, type, row) {
-                                if(!perms.viewPrice) return '<span class="text-muted" style="letter-spacing:2px;">*****</span>';
-                                const txt = formatRp(data);
-                                if(perms.editPrice) {
-                                    const safeName = row[0].replace(/["']/g, ""); 
-                                    const safeCode = row[15]; 
-                                    return `<div class="editable-price" onclick="openPriceModal('${safeCode}','${safeName}',${data})">${txt} <i class="bi bi-pencil-fill ms-1" style="font-size:9px; opacity:0.5;"></i></div>`;
-                                }
-                                return `<span class="fw-bold text-dark">${txt}</span>`;
-                            }
-                        },
-                        { data: 10 }, // 6 Tipe (data index 10)
-                        { data: 11 }, // 7 Merk (data index 11)
-                        { data: 16 }, // 8 Machine
-                        { 
-                            data: 17, // 9 Status (data index 17)
-                            className: "text-center",
-                            render: function(d, type, row) {
-                                const s = (d||"").toString();
-                                const badgeClass = s.toLowerCase().includes('active') ? 'badge-active' : 'badge-archived';
-                                const icon = s.toLowerCase().includes('active') ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '<i class="bi bi-archive-fill text-secondary me-1"></i>';
-                                
-                                if(perms.editStatus) {
-                                    const newStatus = s.toLowerCase() === 'active' ? 'Archived' : 'Active';
-                                    return `<div onclick="quickStatusUpdate('${row[15]}', '${newStatus}', '${s}')" style="cursor:pointer;" class="badge-dss ${badgeClass}">${icon} ${s}</div>`;
-                                }
-                                return `<span class="badge-dss ${badgeClass}">${icon} ${s}</span>`;
-                            }
-                        },
-                        { 
-                            data: null, className: "text-center", // 10 Aksi
-                            render: function(d,t,r) {
-                                return `<button class="btn-icon-soft" onclick="openCommentModal('${r[15]}', '${r[0].replace(/["']/g, "")}')" title="Komentar / Log"><i class="bi bi-chat-text"></i></button>`;
-                            }
-                        }
+                            return `<span class="fw-bold text-dark">${txt}</span>`;
+                        }},
+                        { data: 10 }, { data: 11 }, { data: 16 },
+                        { data: 17, className: "text-center", render: function(d, type, row) {
+                             const s = (d||"").toString();
+                             const cls = s.toLowerCase().includes('active') ? 'badge-active' : 'badge-archived';
+                             const icon = s.toLowerCase().includes('active') ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '<i class="bi bi-archive-fill text-secondary me-1"></i>';
+                             
+                             if(perms.editStatus) {
+                                const newStatus = s.toLowerCase() === 'active' ? 'Archived' : 'Active';
+                                return `<div onclick="quickStatusUpdate('${row[15]}', '${newStatus}', '${s}')" style="cursor:pointer;" class="badge-dss ${cls}">${icon} ${s}</div>`;
+                             }
+                             return `<span class="badge-dss ${cls}">${icon} ${s}</span>`;
+                        }},
+                        { data: null, className: "text-center", render: function(d,t,r) {
+                             return `<button class="btn-icon-soft" onclick="openCommentModal('${r[15]}', '${r[0].replace(/["']/g, "")}')"><i class="bi bi-chat-text"></i></button>`;
+                        }} 
                     ]
                 });
-
-                $('#customSearch').on('keyup', function() {
-                    table.search(this.value).draw();
-                });
+                $('#customSearch').on('keyup', function() { table.search(this.value).draw(); });
             });
         }
 
-        // === ADVANCED FILTER LOGIC START ===
+        // === MULTI-SELECT FILTER LOGIC ===
         const filterConfig = [
-            { label: 'Vendor', idx: 1, type: 'dropdown' },
-            { label: 'Satuan Beli', idx: 2, type: 'dropdown' },
-            { label: 'Satuan Jual', idx: 3, type: 'dropdown' },
-            { label: 'Harga Beli', idx: 4, type: 'number' },
+            { label: 'Vendor', idx: 1, type: 'multiselect' },
+            { label: 'Satuan Beli', idx: 2, type: 'multiselect' },
+            { label: 'Satuan Jual', idx: 3, type: 'multiselect' },
             { label: 'Harga Jual', idx: 5, type: 'number' },
-            { label: 'Tipe', idx: 6, type: 'dropdown' },
-            { label: 'Merk', idx: 7, type: 'dropdown' },
-            { label: 'Status', idx: 9, type: 'dropdown' },
-            { label: 'Status Komentar', idx: 10, type: 'actionColor' }
+            { label: 'Tipe', idx: 6, type: 'multiselect' },
+            { label: 'Merk', idx: 7, type: 'multiselect' },
+            { label: 'Status', idx: 9, type: 'multiselect' }
         ];
 
         function toggleFilterPopup() {
-            const popup = document.getElementById('filterPopup');
-            const btn = document.getElementById('btnFilterToggle');
-            const isHidden = popup.style.display === 'none' || popup.style.display === '';
-            
-            popup.style.display = isHidden ? 'block' : 'none';
-            if(isHidden) {
-                btn.classList.add('active');
-                if(document.getElementById('filterRowsContainer').children.length === 0) addFilterRow();
-            } else {
-                btn.classList.remove('active');
+            const popup = $('#filterPopup');
+            if(popup.is(':visible')) { popup.hide(); $('#btnFilterToggle').removeClass('active'); }
+            else { 
+                popup.show(); 
+                if($('#filterRowsContainer').children().length === 0) addFilterRow();
+                $('#btnFilterToggle').addClass('active');
             }
         }
 
         function getUniqueValues(colIdx) {
             return table.column(colIdx).data().unique().sort().toArray().map(d => {
-                // Strip HTML for cleaner values if needed
-                if(typeof d === 'string' && d.includes('<')) {
-                   return d.replace(/<[^>]*>?/gm, '').trim(); 
-                }
+                if(typeof d === 'string' && d.includes('<')) return d.replace(/<[^>]*>?/gm, '').trim();
                 return d;
             }).filter(v => v !== "");
         }
 
         function addFilterRow() {
-            const container = document.getElementById('filterRowsContainer');
+            const container = $('#filterRowsContainer');
             const rowId = 'row-' + Date.now();
-            const row = document.createElement('div');
-            row.className = 'filter-row';
-            row.id = rowId;
             
             let colOptions = filterConfig.map(c => `<option value="${c.idx}" data-type="${c.type}">${c.label}</option>`).join('');
             
-            row.innerHTML = `
-                <div class="d-flex gap-2 w-100 align-items-center">
+            const html = `
+                <div class="filter-row" id="${rowId}">
                     <select class="filter-select col-selector" style="width:140px;" onchange="renderInputControl('${rowId}')">
                         ${colOptions}
                     </select>
-                    <div class="control-container d-flex gap-2 flex-grow-1" id="${rowId}-control">
-                        </div>
-                    <button class="btn-remove-row" onclick="this.closest('.filter-row').remove()"><i class="bi bi-x-lg"></i></button>
+                    <div class="control-container flex-grow-1" id="${rowId}-control"></div>
+                    <button class="btn-remove-row" onclick="$(this).closest('.filter-row').remove()"><i class="bi bi-x-lg"></i></button>
                 </div>
             `;
-            container.appendChild(row);
-            renderInputControl(rowId); // Initialize first control
+            container.append(html);
+            renderInputControl(rowId);
         }
 
         function renderInputControl(rowId) {
-            const row = document.getElementById(rowId);
-            const colSelect = row.querySelector('.col-selector');
-            const container = document.getElementById(rowId + '-control');
-            const type = colSelect.options[colSelect.selectedIndex].getAttribute('data-type');
-            const colIdx = colSelect.value;
+            const row = $('#' + rowId);
+            const colSelect = row.find('.col-selector');
+            const container = row.find('.control-container');
+            const type = colSelect.find(':selected').data('type');
+            const colIdx = colSelect.val();
 
             let html = '';
 
-            if (type === 'dropdown') {
+            if (type === 'multiselect') {
                 const values = getUniqueValues(colIdx);
-                const opts = values.map(v => `<option value="${v}">${v}</option>`).join('');
-                html = `<select class="filter-select w-100 val-input"><option value="">Select...</option>${opts}</select>`;
+                let checkList = values.map(v => `
+                    <label class="ms-option">
+                        <input type="checkbox" value="${v}" onchange="updateMultiSelectText('${rowId}')"> ${v}
+                    </label>
+                `).join('');
+
+                html = `
+                    <div class="ms-wrapper">
+                        <div class="ms-trigger" onclick="toggleMsDropdown('${rowId}')">
+                            <span class="ms-text text-muted">Select Items...</span>
+                            <i class="bi bi-chevron-down small"></i>
+                        </div>
+                        <div class="ms-dropdown" id="${rowId}-dropdown">
+                            ${checkList}
+                        </div>
+                    </div>
+                `;
             } 
             else if (type === 'number') {
                 html = `
-                    <select class="filter-select op-selector" style="width:120px;" onchange="toggleNumberInputs('${rowId}')">
-                        <option value="gt">Greater Than ></option>
-                        <option value="lt">Less Than <</option>
-                        <option value="between">Between</option>
-                    </select>
-                    <input type="number" class="filter-input val-input val-1" placeholder="Value">
-                    <input type="number" class="filter-input val-input val-2 hidden" placeholder="Max Value">
+                    <div class="d-flex gap-2">
+                        <select class="filter-select op-selector" style="width:100px;">
+                            <option value="gt"> > </option><option value="lt"> < </option><option value="eq"> = </option>
+                        </select>
+                        <input type="number" class="filter-input val-input" placeholder="Rp Value">
+                    </div>
                 `;
             }
-            else if (type === 'actionColor') {
-                // Logic filter warna icon komentar
-                 html = `
-                    <select class="filter-select w-100 val-input">
-                        <option value="any">Semua</option>
-                        <option value="has_comment">Ada Komentar (Berwarna)</option>
-                        <option value="no_comment">Kosong (Grey)</option>
-                    </select>
-                `;
+            container.html(html);
+        }
+
+        window.toggleMsDropdown = function(rowId) {
+            const dropdown = $('#' + rowId + '-dropdown');
+            $('.ms-dropdown').not(dropdown).hide(); // Close others
+            dropdown.toggle();
+        }
+
+        window.updateMultiSelectText = function(rowId) {
+            const row = $('#' + rowId);
+            const checked = row.find('input[type="checkbox"]:checked');
+            const triggerText = row.find('.ms-text');
+            
+            if(checked.length === 0) {
+                triggerText.text("Select Items...");
+                triggerText.addClass("text-muted");
+            } else {
+                triggerText.text(`${checked.length} Selected`);
+                triggerText.removeClass("text-muted");
+                if(row.find('.ms-trigger .ms-count').length === 0) {
+                     row.find('.ms-trigger').append(`<span class="ms-count">${checked.length}</span>`);
+                } else {
+                     row.find('.ms-count').text(checked.length);
+                }
             }
-
-            container.innerHTML = html;
         }
 
-        function toggleNumberInputs(rowId) {
-            const row = document.getElementById(rowId);
-            const op = row.querySelector('.op-selector').value;
-            const input2 = row.querySelector('.val-2');
-            if (op === 'between') input2.classList.remove('hidden');
-            else input2.classList.add('hidden');
-        }
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.ms-wrapper').length) {
+                $('.ms-dropdown').hide();
+            }
+        });
 
         function clearFilters() {
-            document.getElementById('filterRowsContainer').innerHTML = '';
+            $('#filterRowsContainer').empty();
             addFilterRow();
             applyFilters();
         }
 
         function applyFilters() {
-            table.draw(); // Trigger Custom Search
-            document.getElementById('filterPopup').style.display = 'none';
+            table.draw();
+            $('#filterPopup').hide();
             
-            const inputs = document.querySelectorAll('.val-input');
-            let hasActive = false;
-            inputs.forEach(i => { if(i.value) hasActive = true; });
-            const btn = document.getElementById('btnFilterToggle');
-            if(hasActive) {
-                btn.classList.add('active');
-                btn.innerHTML = '<i class="bi bi-funnel-fill"></i> Filter Active';
+            let hasFilters = false;
+            $('.val-input').each(function(){ if($(this).val()) hasFilters=true; });
+            $('input[type="checkbox"]:checked').each(function(){ hasFilters=true; });
+            
+            if(hasFilters) {
+                $('#btnFilterToggle').addClass('active').html('<i class="bi bi-funnel-fill"></i> Active');
             } else {
-                btn.classList.remove('active');
-                btn.innerHTML = '<i class="bi bi-funnel"></i> Filter';
+                $('#btnFilterToggle').removeClass('active').html('<i class="bi bi-funnel"></i> Filter');
             }
         }
 
-        // === CORE DATATABLES FILTER FUNCTION ===
+        // === CORE SEARCH LOGIC ===
         $.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {
                 const rows = document.querySelectorAll('.filter-row');
@@ -766,77 +549,55 @@
                 let allMatch = true;
 
                 rows.forEach(row => {
-                    const colSelect = row.querySelector('.col-selector');
-                    const colIdx = parseInt(colSelect.value);
-                    const type = colSelect.options[colSelect.selectedIndex].getAttribute('data-type');
+                    const $row = $(row);
+                    const colIdx = $row.find('.col-selector').val();
+                    const type = $row.find('.col-selector :selected').data('type');
                     
-                    // Get Raw Data
-                    let cellData = data[colIdx].toLowerCase();
-                    // Clean HTML if exists
-                    cellData = cellData.replace(/<[^>]*>?/gm, '').trim();
+                    let cellData = data[colIdx].toLowerCase().replace(/<[^>]*>?/gm, '').trim();
 
-                    if (type === 'dropdown') {
-                        const filterVal = row.querySelector('.val-input').value.toLowerCase().trim();
-                        if (filterVal && cellData !== filterVal) allMatch = false;
+                    if (type === 'multiselect') {
+                        const checked = $row.find('input[type="checkbox"]:checked').map(function(){
+                            return this.value.toLowerCase();
+                        }).get();
+
+                        if (checked.length > 0) {
+                            // Logic OR inside category (e.g. Vendor A OR Vendor B)
+                            if (!checked.includes(cellData)) allMatch = false;
+                        }
                     } 
                     else if (type === 'number') {
-                        const op = row.querySelector('.op-selector').value;
-                        const v1 = parseFloat(row.querySelector('.val-1').value);
-                        const v2 = parseFloat(row.querySelector('.val-2').value);
-                        
-                        // Parse Cell Data (Remove Rp and dots)
-                        // data[colIdx] might contain "Rp 50.000" -> 50000
-                        let rawNum = data[colIdx].replace(/[^0-9]/g, '');
-                        let cellNum = parseFloat(rawNum) || 0;
+                        const op = $row.find('.op-selector').val();
+                        const val = parseFloat($row.find('.val-input').val());
+                        let cellNum = parseFloat(data[colIdx].replace(/[^0-9]/g, '')) || 0;
 
-                        if (!isNaN(v1)) {
-                            if (op === 'gt' && cellNum <= v1) allMatch = false;
-                            if (op === 'lt' && cellNum >= v1) allMatch = false;
-                            if (op === 'between') {
-                                if (cellNum < v1) allMatch = false;
-                                if (!isNaN(v2) && cellNum > v2) allMatch = false;
-                            }
+                        if (!isNaN(val)) {
+                            if (op === 'gt' && cellNum <= val) allMatch = false;
+                            if (op === 'lt' && cellNum >= val) allMatch = false;
+                            if (op === 'eq' && cellNum !== val) allMatch = false;
                         }
-                    }
-                    else if (type === 'actionColor') {
-                         const filterVal = row.querySelector('.val-input').value;
-                         // Karena data[10] (Aksi) itu HTML string, kita cek class didalam string itu
-                         // NOTE: Saat ini button masih statis 'btn-icon-soft'. 
-                         // Logic ini dipersiapkan jika nanti ada logic class 'text-primary' atau 'btn-active'
-                         const rawHtml = table.cell(dataIndex, colIdx).data(); // Get actual HTML content
-                         
-                         if(filterVal === 'has_comment') {
-                             // Logic sementara: cek jika ada class tertentu yang menandakan warna
-                             // Misalnya nanti anda set class="btn-icon-soft text-primary"
-                             if(!rawHtml.includes('text-primary') && !rawHtml.includes('btn-info')) allMatch = false;
-                         } else if (filterVal === 'no_comment') {
-                             if(rawHtml.includes('text-primary') || rawHtml.includes('btn-info')) allMatch = false;
-                         }
                     }
                 });
 
                 return allMatch;
             }
         );
-        // === ADVANCED FILTER LOGIC END ===
 
-
-        // === EDIT LOGIC ===
+        // === EDIT & FUNCTIONS ===
         function openPriceModal(code, name, price) {
-            document.getElementById('editPriceItemName').innerText = name;
-            document.getElementById('editPriceItemCode').value = code;
-            document.getElementById('inputNewPrice').value = price;
-            document.getElementById('editPriceOldValue').value = price; 
+            $('#editPriceItemName').text(name);
+            $('#editPriceItemCode').val(code);
+            $('#inputNewPrice').val(price);
+            $('#editPriceOldValue').val(price);
             new bootstrap.Modal(document.getElementById('priceModal')).show();
         }
 
         function submitPriceUpdate() {
-            const code = document.getElementById('editPriceItemCode').value;
-            const newVal = document.getElementById('inputNewPrice').value;
-            const oldVal = document.getElementById('editPriceOldValue').value;
-            const btn = document.getElementById('btnSavePrice');
+            const code = $('#editPriceItemCode').val();
+            const newVal = $('#inputNewPrice').val();
+            const oldVal = $('#editPriceOldValue').val();
+            const btn = $('#btnSavePrice');
             
-            btn.innerText = "Menyimpan..."; btn.disabled = true;
+            btn.text("Menyimpan...").prop('disabled',true);
             fetch(SCRIPT_URL, {
                 method: "POST", 
                 body: JSON.stringify({ action: "updatePrice", user: currentUser, itemCode: code, newValue: newVal, oldValue: oldVal })
@@ -845,19 +606,16 @@
                     Swal.fire('Berhasil', 'Harga telah diperbarui.', 'success').then(() => location.reload()); 
                 } else { 
                     Swal.fire('Gagal', res.message, 'error'); 
-                    btn.disabled=false; btn.innerText="Simpan Perubahan"; 
+                    btn.prop('disabled',false).text("Simpan Perubahan"); 
                 }
             });
         }
 
         function quickStatusUpdate(code, newStatus, oldStatus) {
             Swal.fire({
-                title: `Ubah status ke ${newStatus}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#116999',
-                confirmButtonText: 'Ya, Ubah',
-                cancelButtonText: 'Batal'
+                title: `Ubah status ke ${newStatus}?`, icon: 'question',
+                showCancelButton: true, confirmButtonColor: '#116999',
+                confirmButtonText: 'Ya, Ubah', cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.showLoading();
@@ -873,44 +631,40 @@
         }
 
         function openCommentModal(code, name) {
-            document.getElementById('modalItemCode').value = code;
-            document.getElementById('modalItemNameHidden').value = name;
+            $('#modalItemCode').val(code);
+            $('#modalItemNameHidden').val(name);
             new bootstrap.Modal(document.getElementById('commentModal')).show();
-            
-            if(perms.addComment) {
-                document.getElementById('commentInputArea').classList.remove('hidden');
-            } else {
-                document.getElementById('commentInputArea').classList.add('hidden');
-            }
+            if(perms.addComment) $('#commentInputArea').removeClass('hidden');
+            else $('#commentInputArea').addClass('hidden');
             loadComments(code);
         }
 
         function loadComments(code) {
-            const box = document.getElementById('commentHistory');
-            box.innerHTML = "<div class='text-center py-3'><div class='spinner-border spinner-border-sm text-primary'></div></div>";
+            const box = $('#commentHistory');
+            box.html("<div class='text-center py-3'><div class='spinner-border spinner-border-sm text-primary'></div></div>");
             fetch(SCRIPT_URL + "?action=getComments").then(r=>r.json()).then(data => {
-                box.innerHTML = "";
+                box.empty();
                 const chats = data.filter(r => r[2] == code);
-                if(chats.length === 0) box.innerHTML = "<div class='text-center py-4 text-muted small'><i class='bi bi-chat-square-text fs-4 d-block mb-2'></i>Belum ada catatan.</div>";
+                if(chats.length === 0) box.html("<div class='text-center py-4 text-muted small'>Belum ada catatan.</div>");
                 chats.forEach(c => {
                    const date = new Date(c[0]).toLocaleString('id-ID');
-                   box.innerHTML += `<div class="chat-item"><div class="d-flex justify-content-between small text-muted mb-1"><strong>${c[1]}</strong><span>${date}</span></div><div style="color:#334155;">${c[4]}</div></div>`; 
+                   box.append(`<div class="mb-2"><div class="d-flex justify-content-between small text-muted"><strong>${c[1]}</strong><span>${date}</span></div><div style="color:#334155;">${c[4]}</div></div>`); 
                 });
             });
         }
 
         function sendComment() {
-            const txt = document.getElementById('commentInput').value;
-            const code = document.getElementById('modalItemCode').value;
-            const name = document.getElementById('modalItemNameHidden').value;
+            const txt = $('#commentInput').val();
+            const code = $('#modalItemCode').val();
+            const name = $('#modalItemNameHidden').val();
             if(!txt) return;
             
-            document.getElementById('btnSend').innerText = "...";
+            $('#btnSend').text("...");
             fetch(SCRIPT_URL, {
                 method: "POST", body: JSON.stringify({ action: "postComment", user: currentUser, itemCode: code, itemName: name, comment: txt })
             }).then(() => {
-                document.getElementById('commentInput').value = "";
-                document.getElementById('btnSend').innerText = "Kirim";
+                $('#commentInput').val("");
+                $('#btnSend').text("Kirim");
                 loadComments(code);
             });
         }
