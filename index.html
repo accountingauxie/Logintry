@@ -14,16 +14,21 @@
     
     <style>
         /* =========================================
-           1. SYSTEM STYLE & VARIABLES
+           1. SYSTEM STYLE (Unified Navbar)
            ========================================= */
         :root { 
             --primary-color: #116999; 
             --primary-hover: #0e5a85;
-            --bg-body: #f8fafc; /* Very light cool gray */
-            --bg-card: #ffffff;
+            --bg-color: #f4f7f6; 
+            --text-color: #333; 
+            --red-bg: #fee2e2; 
+            --red-text: #991b1b;
+            --border-color: #eaecf0;
+            
+            /* DSS Specific Colors */
+            --bg-body: #f8fafc;
             --text-main: #1e293b;
             --text-sub: #64748b;
-            --border-color: #e2e8f0;
             --success-bg: #dcfce7; --success-text: #166534;
             --danger-bg: #fee2e2; --danger-text: #991b1b;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -32,8 +37,8 @@
 
         body { 
             margin: 0; 
-            font-family: "Inter", sans-serif; 
-            font-size: 13.5px; 
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-size: 13.5px; /* Sedikit dikecilkan agar lebih compact seperti DSS */
             background: var(--bg-body); 
             color: var(--text-main); 
             -webkit-font-smoothing: antialiased; 
@@ -41,48 +46,74 @@
 
         .hidden { display: none !important; }
 
-        /* --- NAVIGATION BAR (Standard Auxilium) --- */
+        /* --- NAVIGATION BAR --- */
         .aux-navbar {
-            background-color: #ffffff; height: 70px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 40px; box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border-color);
+            background-color: #ffffff;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             position: sticky; top: 0; z-index: 1000;
         }
+
+        .aux-logo { display: flex; align-items: center; gap: 10px; }
         .aux-logo img { height: 45px; width: auto; object-fit: contain; }
+
         .aux-menu { display: flex; gap: 8px; align-items: center; height: 100%; }
         .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
+
         .aux-link { 
-            text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; padding: 8px 16px; 
-            border-radius: 6px; transition: all 0.2s; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; 
+            padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
         }
+
         .aux-link:hover, .nav-item:hover .aux-link { background-color: #f2f4f7; color: #101828; }
-        .aux-link.active { background-color: #eff8ff; color: var(--primary-color); font-weight: 700; }
+        
+        .aux-link.active { 
+            background-color: #eff8ff; color: var(--primary-color); font-weight: 700; 
+        }
+
         .chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
         .nav-item:hover .chevron-down { transform: rotate(180deg); }
 
-        /* Dropdown */
+        /* --- CUSTOM DROPDOWN (To avoid Bootstrap conflict) --- */
         .dropdown-menu-aux {
-            visibility: hidden; opacity: 0; position: absolute; top: 85%; left: 0; background: white; min-width: 240px;
-            border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            padding: 8px; z-index: 9999; transform: translateY(10px); transition: all 0.2s ease-in-out; display: block;
+            visibility: hidden; opacity: 0; position: absolute; 
+            top: 85%; left: 0; background: white; min-width: 240px;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 8px; z-index: 9999; transform: translateY(10px);
+            transition: all 0.2s ease-in-out;
+            display: block; /* Override bootstrap display:none */
         }
         .dropdown-menu-aux::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
         .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateY(0); }
-        .dropdown-item-aux { display: flex; align-items: center; padding: 10px 12px; color: #344054; text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s; }
-        .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
-        .dropdown-header-aux { font-size: 11px; text-transform: uppercase; color: #98a2b3; font-weight: 600; padding: 8px 12px 4px; letter-spacing: 0.5px; }
-        .dropdown-divider-aux { height: 1px; background-color: #eaecf0; margin: 6px 0; }
 
-        /* User Panel */
+        .dropdown-item-aux {
+            display: flex; align-items: center; padding: 10px 12px; color: #344054;
+            text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s;
+        }
+        .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
+        .dropdown-divider-aux { height: 1px; background-color: #eaecf0; margin: 6px 0; }
+        .dropdown-header-aux {
+            font-size: 11px; text-transform: uppercase; color: #98a2b3;
+            font-weight: 600; padding: 8px 12px 4px; letter-spacing: 0.5px;
+        }
+
+        /* --- USER PANEL --- */
         .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border-color); }
         .user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
         .user-name { font-weight: 700; font-size: 13px; color: #101828; }
         .user-role { font-size: 11px; color: #667085; }
         .user-avatar { width: 36px; height: 36px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; user-select: none; }
         .logout-btn { background: none; border: 1px solid var(--border-color); color: #666; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .logout-btn:hover { background-color: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-bg); }
+        .logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
 
-        /* Modal Logout */
-        .modal-logout { display: none; position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+        /* --- MODAL (Logout) --- */
+        .modal-logout { display: none; position: fixed; z-index: 20000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
         .modal-logout-content { background-color: #fff; margin: 15% auto; padding: 32px; border-radius: 16px; width: 360px; text-align: center; }
         .modal-buttons { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
         .btn-modal { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1; }
@@ -114,7 +145,7 @@
         .table-title h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-main); }
         .table-title p { margin: 4px 0 0; font-size: 13px; color: var(--text-sub); }
         
-        /* Custom Table Styling */
+        /* Custom Table Styling (Overrides Bootstrap & Datatables) */
         table.dataTable { border-collapse: separate; border-spacing: 0; width: 100% !important; margin: 0 !important; }
         table.dataTable thead th { 
             background-color: #f8fafc !important; color: #475467; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
@@ -149,17 +180,18 @@
         .search-box input { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; transition: border 0.2s; }
         .search-box input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(17, 105, 153, 0.1); }
 
-        /* SweetAlert Override & FIX Z-INDEX */
-        .swal2-popup { border-radius: 16px !important; font-family: "Inter", sans-serif !important; }
+        /* SweetAlert Override */
+        .swal2-popup { border-radius: 16px !important; font-family: "Inter", sans-serif !important; z-index: 20002 !important; }
+        .swal2-container { z-index: 20002 !important; }
         .swal2-title { font-size: 18px !important; color: var(--text-main) !important; }
         .swal2-html-container { font-size: 14px !important; color: var(--text-sub) !important; }
         
-        /* -----------------------------------------------------
-           FIX Z-INDEX: Memastikan Alert muncul di atas overlay
-           ----------------------------------------------------- */
-        .swal2-container {
-            z-index: 20000 !important;
-        }
+        /* Bootstrap Modal Override */
+        .modal-content { border-radius: 12px; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .modal-header { border-bottom: 1px solid var(--border-color); padding: 16px 24px; }
+        .modal-body { padding: 24px; }
+        .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+        .btn-primary:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
     </style>
 </head>
 <body>
@@ -190,29 +222,63 @@
             </div>
             
             <nav class="aux-menu">
-                <div class="nav-item"><a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a></div>
                 <div class="nav-item">
-                    <div class="aux-link">Penjualan <i data-feather="chevron-down" class="chevron-down"></i></div>
+                    <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a>
+                </div>
+
+                <div class="nav-item">
+                    <div class="aux-link">
+                        Penjualan 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
                     <div class="dropdown-menu-aux">
                         <div class="dropdown-header-aux">Sales Orders</div>
-                        <a href="#" class="dropdown-item-aux">Order Penjualan</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="dropdown-item-aux">Order Penjualan</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Review%20Penjualan/review_penjualan.html" class="dropdown-item-aux">Review Penjualan</a>
                     </div>
                 </div>
+
                 <div class="nav-item">
-                    <div class="aux-link">Pembelian <i data-feather="chevron-down" class="chevron-down"></i></div>
+                    <div class="aux-link">
+                        Pembelian 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
                     <div class="dropdown-menu-aux">
                         <div class="dropdown-header-aux">Purchasing</div>
-                        <a href="#" class="dropdown-item-aux">Pemesanan Pembelian</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item-aux">Pemesanan Pembelian</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item-aux">Penerimaan Barang (Entry)</a>
+                        
+                        <div class="dropdown-divider-aux"></div>
+                        
+                        <div class="dropdown-header-aux">Finance</div>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item-aux">Daftar Tagihan (Bill)</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item-aux">Import Xero PO</a>
                     </div>
                 </div>
+
                 <div class="nav-item">
-                    <div class="aux-link">Produksi <i data-feather="chevron-down" class="chevron-down"></i></div>
+                    <div class="aux-link">
+                        Produksi 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
                     <div class="dropdown-menu-aux">
-                        <a href="#" class="dropdown-item-aux">Produksi Barang Jadi</a>
+                        <div class="dropdown-header-aux">Input Mesin</div>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item-aux">Back Order</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item-aux">General Order</a>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Pre%20Order/produksi_preorder.html" class="dropdown-item-aux">Pre Order</a>
+
+                        <div class="dropdown-divider-aux"></div>
+                        
+                        <div class="dropdown-header-aux">Hasil Produksi</div>
+                        <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item-aux">Produksi Barang Jadi</a>
                     </div>
                 </div>
+
                 <div class="nav-item">
-                    <div class="aux-link active">Persediaan <i data-feather="chevron-down" class="chevron-down"></i></div>
+                    <div class="aux-link active">
+                        Persediaan 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
                     <div class="dropdown-menu-aux">
                         <div class="dropdown-header-aux">Inventory</div>
                         <a href="#" class="dropdown-item-aux" style="color:var(--primary-color); font-weight:700; background:#f9fafb;">Master Item List</a>
@@ -232,7 +298,6 @@
                 </button>
             </div>
         </div>
-
         <div class="main-container">
             
             <div class="kpi-grid">
@@ -248,13 +313,19 @@
                     <div class="kpi-value" id="kpi-active">0</div>
                     <div class="kpi-trend positive"><i class="bi bi-graph-up-arrow"></i> <span>Siap Transaksi</span></div>
                 </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:#fff7ed; color:#c2410c;"><i class="bi bi-currency-dollar fs-5"></i></div>
+                    <div class="kpi-label">Item Bernilai</div>
+                    <div class="kpi-value" id="kpi-priced">0</div>
+                    <div class="kpi-trend neutral"><span>Harga Jual > 0</span></div>
                 </div>
+            </div>
 
             <div class="card-table-wrapper">
                 <div class="table-header">
                     <div class="table-title">
-                        <h3>Daftar Item</h3>
-                        <p>Kelola data item dan produk yang digunakan.</p>
+                        <h3>Inventory Database</h3>
+                        <p>Kelola harga beli, harga jual, dan status ketersediaan item.</p>
                     </div>
                     <div class="d-flex gap-3">
                         <div class="search-box">
@@ -438,8 +509,8 @@
                 document.getElementById('kpi-total').innerText = data.length;
                 const activeCount = data.filter(r => (r[17]||"").toString().toLowerCase().includes("active")).length;
                 document.getElementById('kpi-active').innerText = activeCount;
-
-                // LOGIKA ITEM BERNILAI SUDAH DIHAPUS AGAR TIDAK ERROR
+                const pricedCount = data.filter(r => r[5] > 0).length;
+                document.getElementById('kpi-priced').innerText = pricedCount;
 
                 // Render Table
                 document.getElementById('skeletonLoader').classList.add('hidden');
