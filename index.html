@@ -673,89 +673,96 @@
             loadComments(code);
         }
 
-        function loadComments(code) {
-            const box = document.getElementById('commentHistory');
-            box.innerHTML = "<div class='text-center py-3'><div class='spinner-border spinner-border-sm text-primary'></div></div>";
+       // Update Function loadComments untuk menampilkan Nama User di System Log
+    function loadComments(code) {
+        const box = document.getElementById('commentHistory');
+        box.innerHTML = "<div class='text-center py-3'><div class='spinner-border spinner-border-sm text-primary'></div></div>";
+        
+        fetch(SCRIPT_URL + "?action=getComments").then(r=>r.json()).then(data => {
+            box.innerHTML = "";
+            const chats = data.filter(r => r[2] == code);
             
-            fetch(SCRIPT_URL + "?action=getComments").then(r=>r.json()).then(data => {
-                box.innerHTML = "";
-                // Filter by ItemCode (index 2)
-                const chats = data.filter(r => r[2] == code);
-                
-                if(chats.length === 0) {
-                    box.innerHTML = "<div class='text-center py-4 text-muted small'><i class='bi bi-chat-square-text fs-4 d-block mb-2'></i>Belum ada catatan.</div>";
-                    return;
-                }
-                
-                chats.forEach(c => {
-                   // c[0]=Time, c[1]=User, c[2]=Code, c[3]=Type, c[4]=Content, c[5]=Status, c[6]=CompletedBy
-                   const timestamp = c[0];
-                   const user = c[1];
-                   const type = c[3]; // "SYSTEM LOG" or ItemName
-                   const content = c[4];
-                   const status = c[5]; // Pending/Complete
-                   const completedBy = c[6];
-                   
-                   const dateDisplay = new Date(timestamp).toLocaleString('id-ID');
-                   
-                   let itemHtml = '';
-                   
-                   if(type === "SYSTEM LOG") {
-                       // Tampilan Log System (Kecil/Abu-abu)
-                       itemHtml = `
-                        <div class="p-2 mb-2 border rounded bg-light">
-                            <div class="d-flex justify-content-between small text-muted">
-                                <span><i class="bi bi-gear-fill me-1"></i> System Log</span>
-                                <span>${dateDisplay}</span>
-                            </div>
-                            <div class="small text-secondary mt-1 fst-italic">${content}</div>
+            if(chats.length === 0) {
+                box.innerHTML = "<div class='text-center py-4 text-muted small'><i class='bi bi-chat-square-text fs-4 d-block mb-2'></i>Belum ada catatan.</div>";
+                return;
+            }
+            
+            chats.forEach(c => {
+               // Mapping data dari Spreadsheet
+               const timestamp = c[0];
+               const user = c[1];       // <--- INI NAMA USER (misal: Robi, Rifani)
+               const type = c[3];       // "SYSTEM LOG" atau Nama Item
+               const content = c[4];    // Isi Pesan (Update Harga...)
+               const status = c[5]; 
+               const completedBy = c[6];
+               
+               const dateDisplay = new Date(timestamp).toLocaleString('id-ID');
+               
+               let itemHtml = '';
+               
+               // === TAMPILAN SYSTEM LOG ===
+               if(type === "SYSTEM LOG") {
+                   // PERUBAHAN DISINI:
+                   // Dulu: <span>System Log</span>
+                   // Sekarang: <span>${user}</span> (Kita ambil nama user asli)
+                   itemHtml = `
+                    <div class="p-2 mb-2 border rounded bg-light">
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span class="fw-bold text-dark">
+                                <i class="bi bi-person-gear me-1"></i> ${user} 
+                                <span class="fw-normal text-secondary" style="font-size:10px;">(System Action)</span>
+                            </span>
+                            <span>${dateDisplay}</span>
                         </div>
-                       `;
+                        <div class="small text-secondary mt-1 fst-italic">${content}</div>
+                    </div>
+                   `;
+               } 
+               // === TAMPILAN MANUAL CHAT ===
+               else {
+                   let actionBtn = '';
+                   let statusBadge = '';
+                   let cardStyle = 'border-left: 3px solid #116999; background: #fff;'; 
+
+                   if (status === 'Complete') {
+                       statusBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle ms-2" style="font-size:10px;"><i class="bi bi-check-all"></i> Selesai oleh ${completedBy}</span>`;
+                       cardStyle = 'border-left: 3px solid #10b981; background: #f0fdf4; opacity: 0.9;';
                    } else {
-                       // Tampilan Komentar User Manual
-                       let actionBtn = '';
-                       let statusBadge = '';
-                       let cardStyle = 'border-left: 3px solid #116999; background: #fff;'; // Style Default (Pending)
-
-                       // Logic Tampilan Selesai vs Belum
-                       if (status === 'Complete') {
-                           statusBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle ms-2" style="font-size:10px;"><i class="bi bi-check-all"></i> Selesai oleh ${completedBy}</span>`;
-                           cardStyle = 'border-left: 3px solid #10b981; background: #f0fdf4; opacity: 0.9;';
-                       } else {
-                           statusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-2" style="font-size:10px;">Belum Selesai</span>`;
+                       statusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-2" style="font-size:10px;">Belum Selesai</span>`;
+                       
+                       if (perms.canComplete) {
+                           // Format Waktu & Encode Konten
+                           let d = new Date(timestamp);
+                           const z = (n) => ('0' + n).slice(-2);
+                           const safeTime = `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
+                           const safeContentEncoded = encodeURIComponent(content);
                            
-                           // Cek Izin User: Apakah boleh Complete?
-                           if (perms.canComplete) {
-                               const safeTime = new Date(timestamp).toISOString().replace("T", " ").substring(0, 19);
-                               const safeContent = content.replace(/["']/g, "&quot;");
-                               
-                               actionBtn = `
-                                <button class="btn btn-sm btn-outline-success mt-2" style="font-size:11px;" onclick="markAsComplete('${safeTime}', '${code}', '${safeContent}')">
-                                    <i class="bi bi-check-circle"></i> Tandai Selesai
-                                </button>
-                               `;
-                           }
+                           actionBtn = `
+                            <button class="btn btn-sm btn-outline-success mt-2" style="font-size:11px;" onclick="markAsComplete('${safeTime}', '${code}', '${safeContentEncoded}')">
+                                <i class="bi bi-check-circle"></i> Tandai Selesai
+                            </button>
+                           `;
                        }
-
-                       itemHtml = `
-                        <div class="p-3 mb-2 rounded shadow-sm" style="${cardStyle}">
-                            <div class="d-flex justify-content-between align-items-center small text-muted mb-1">
-                                <strong>${user}</strong>
-                                <span>${dateDisplay}</span>
-                            </div>
-                            <div style="color:#334155; font-size:13px;">
-                                ${content} ${statusBadge}
-                            </div>
-                            ${actionBtn}
-                        </div>
-                       `;
                    }
-                   
-                   box.innerHTML += itemHtml;
-                });
-            });
-        }
 
+                   itemHtml = `
+                    <div class="p-3 mb-2 rounded shadow-sm" style="${cardStyle}">
+                        <div class="d-flex justify-content-between align-items-center small text-muted mb-1">
+                            <strong>${user}</strong>
+                            <span>${dateDisplay}</span>
+                        </div>
+                        <div style="color:#334155; font-size:13px;">
+                            ${content} ${statusBadge}
+                        </div>
+                        ${actionBtn}
+                    </div>
+                   `;
+               }
+               
+               box.innerHTML += itemHtml;
+            });
+        });
+    }
         // FUNGSI BARU: MARK COMPLETE
         function markAsComplete(timeStr, code, content) {
             Swal.fire({
