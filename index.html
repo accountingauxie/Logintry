@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Item Dashboard - Auxilium Style</title>
+    <title>Master Item List - Auxilium</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -13,7 +13,7 @@
     
     <style>
         /* =========================================
-           1. STANDARD AUXILIUM NAVBAR STYLES
+           1. SYSTEM STYLE (Unified Navbar)
            ========================================= */
         :root { 
             --primary-color: #116999; 
@@ -67,7 +67,7 @@
         .chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
         .nav-item:hover .chevron-down { transform: rotate(180deg); }
 
-        /* --- DROPDOWN (Custom Class to avoid Bootstrap Conflict) --- */
+        /* --- CUSTOM DROPDOWN (To avoid Bootstrap conflict) --- */
         .dropdown-menu-aux {
             visibility: hidden; opacity: 0; position: absolute; 
             top: 85%; left: 0; background: white; min-width: 240px;
@@ -75,7 +75,7 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             padding: 8px; z-index: 9999; transform: translateY(10px);
             transition: all 0.2s ease-in-out;
-            display: block; /* Override Bootstrap display:none if accidentally applied */
+            display: block; /* Override bootstrap display:none */
         }
         .dropdown-menu-aux::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
         .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateY(0); }
@@ -85,7 +85,6 @@
             text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s;
         }
         .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
-        
         .dropdown-divider-aux { height: 1px; background-color: #eaecf0; margin: 6px 0; }
         .dropdown-header-aux {
             font-size: 11px; text-transform: uppercase; color: #98a2b3;
@@ -101,7 +100,7 @@
         .logout-btn { background: none; border: 1px solid var(--border-color); color: #666; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
 
-        /* --- STANDARD MODAL (Logout) --- */
+        /* --- MODAL (Logout) --- */
         .modal-logout { display: none; position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
         .modal-logout-content { background-color: #fff; margin: 15% auto; padding: 32px; border-radius: 16px; width: 360px; text-align: center; }
         .modal-buttons { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
@@ -110,40 +109,48 @@
         .btn-cancel { background-color: #f2f4f7; color: #344054; }
 
         /* =========================================
-           2. APP SPECIFIC STYLES
+           2. PAGE SPECIFIC STYLES
            ========================================= */
         .hidden { display: none !important; }
 
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f7f6; z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .login-box { background: white; padding: 40px; border-radius: 16px; width: 380px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--border-color); }
         
-        .main-container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+        .main-container { max-width: 1400px; margin: 0 auto; padding: 40px; }
         .card-table { border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; background: white; }
         
-        /* Table Tweaks */
-        #mainTable { width: 100% !important; }
-        #mainTable thead th { background-color: #f9fafb !important; color: #475467; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border-color); padding: 12px 16px; }
-        #mainTable tbody td { padding: 12px 16px; color: #101828; font-size: 13px; border-bottom: 1px solid #f2f4f7; vertical-align: middle; }
+        /* Table Tweaks (Bootstrap Override) */
+        #mainTable { width: 100% !important; margin-bottom: 0; }
+        #mainTable thead th { background-color: #f9fafb !important; color: #475467; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border-color); padding: 12px 16px; vertical-align: middle; }
+        #mainTable tbody td { padding: 10px 16px; color: #101828; font-size: 13px; border-bottom: 1px solid #f2f4f7; vertical-align: middle; }
         
         /* Badges & Editables */
-        .editable-price { cursor: pointer; color: var(--primary-color); font-weight: 600; border-bottom: 1px dashed var(--primary-color); }
-        .editable-price:hover { background-color: #eff8ff; }
-        .status-badge { padding: 4px 10px; border-radius: 16px; font-weight: 500; font-size: 12px; }
-        .badge-active { background-color: #ecfdf3; color: #027a48; } 
-        .badge-archived { background-color: #fef3f2; color: #b42318; }
+        .editable-price { cursor: pointer; color: var(--primary-color); font-weight: 600; border-bottom: 1px dashed var(--primary-color); transition: all 0.2s; }
+        .editable-price:hover { background-color: #eff8ff; border-bottom-style: solid; }
+        
+        .status-badge { padding: 4px 10px; border-radius: 16px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-active { background-color: #ecfdf3; color: #027a48; border: 1px solid #d1fadf; }
+        .badge-archived { background-color: #fef3f2; color: #b42318; border: 1px solid #fee4e2; }
 
-        /* Chat */
+        /* Chat Box */
         .chat-box { background: #f9fafb; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; max-height: 300px; overflow-y: auto; }
-        .chat-item { background: white; border-left: 3px solid var(--primary-color); padding: 10px; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .chat-item { background: white; border-left: 3px solid var(--primary-color); padding: 10px; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 13px; }
+        
+        /* Bootstrap Modal Override for Consistency */
+        .modal-content { border-radius: 12px; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .modal-header { border-bottom: 1px solid var(--border-color); padding: 16px 24px; }
+        .modal-body { padding: 24px; }
+        .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+        .btn-primary:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
     </style>
 </head>
 <body>
 
     <div id="login-overlay">
         <div class="login-box text-center">
-            <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo.png" alt="Logo" style="height: 40px; margin-bottom: 24px;">
+            <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo.png" alt="Logo" style="height: 45px; margin-bottom: 24px;">
             <h4 style="font-weight: 700; color: #101828; margin-bottom: 8px;">Log in</h4>
-            <p style="color: #667085; margin-bottom: 24px; font-size: 14px;">Akses portal data master item.</p>
+            <p style="color: #667085; margin-bottom: 24px; font-size: 14px;">Akses portal master data inventory.</p>
             
             <div class="form-floating mb-3 text-start">
                 <input type="email" id="email" class="form-control" placeholder="Email">
@@ -153,7 +160,7 @@
                 <input type="password" id="password" class="form-control" placeholder="Password">
                 <label>Password</label>
             </div>
-            <button onclick="performLogin()" id="btnLogin" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: var(--primary-color); border:none;">Masuk</button>
+            <button onclick="performLogin()" id="btnLogin" class="btn btn-primary w-100 py-2 fw-bold">Masuk</button>
             <p id="error-msg" class="text-danger mt-3 hidden small"></p>
         </div>
     </div>
@@ -191,9 +198,7 @@
                         <div class="dropdown-header-aux">Purchasing</div>
                         <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item-aux">Pemesanan Pembelian</a>
                         <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item-aux">Penerimaan Barang (Entry)</a>
-                        
                         <div class="dropdown-divider-aux"></div>
-                        
                         <div class="dropdown-header-aux">Finance</div>
                         <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item-aux">Daftar Tagihan (Bill)</a>
                         <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item-aux">Import Xero PO</a>
@@ -210,9 +215,7 @@
                         <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item-aux">Back Order</a>
                         <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item-aux">General Order</a>
                         <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Pre%20Order/produksi_preorder.html" class="dropdown-item-aux">Pre Order</a>
-
                         <div class="dropdown-divider-aux"></div>
-                        
                         <div class="dropdown-header-aux">Hasil Produksi</div>
                         <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item-aux">Produksi Barang Jadi</a>
                     </div>
@@ -479,7 +482,7 @@
                                 if(perms.editPrice) {
                                     const safeName = row[0].replace(/["']/g, ""); 
                                     const safeCode = row[15]; 
-                                    return `<span class="editable-price" onclick="openPriceModal('${safeCode}','${safeName}',${data})" title="Edit Harga">${txt}</span>`;
+                                    return `<span class="editable-price" onclick="openPriceModal('${safeCode}','${safeName}',${data})" title="Edit Harga">${txt} <i class="bi bi-pencil" style="font-size:0.7em"></i></span>`;
                                 }
                                 return txt;
                             }
