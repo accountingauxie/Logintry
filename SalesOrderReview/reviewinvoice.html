@@ -1169,13 +1169,12 @@ function generateReport() {
         filteredData.forEach(row => {
             exportData.push({
                 "Order ID": row.id,
-                "Status": row.status,
                 "Date": row.date,
                 "Due Date": row.dueDate,
                 "Customer": row.customer,
                 "Region": (row.kec || "") + ", " + (row.city || ""),
                 "Total Amount": targetVal === 'excel' ? (Number(row.grandTotal)||0) : fmtCcy(row.grandTotal),
-                "Notes": row.notes
+                "Status": row.status // Dipindah ke Akhir
             });
         });
     } else {
@@ -1186,13 +1185,10 @@ function generateReport() {
                     const net = item.net || 0;
                     exportData.push({
                         "Order ID": order.id,
-                        "Status": order.status,
                         "Date": order.date,
                         "Due Date": order.dueDate,
                         "Customer": order.customer,
                         "Address": (order.address || "") + " " + (order.kec || "") + " " + (order.city || ""),
-                        "CP": order.cp,
-                        "NPWP": order.npwp,
                         // Item Details
                         "Item Name": item.name,
                         "Type": item.type,
@@ -1205,17 +1201,16 @@ function generateReport() {
                         "Line Total": targetVal === 'excel' ? (Number(item.total)||0) : fmtCcy(item.total),
                         // Totals
                         "Grand Total": targetVal === 'excel' ? (Number(order.grandTotal)||0) : fmtCcy(order.grandTotal),
-                        "Notes": order.notes
+                        "Status": order.status // Dipindah ke Akhir
                     });
                 });
             } else {
                  // Empty Item Fields if no items
                  exportData.push({
                     "Order ID": order.id,
-                    "Status": order.status,
                     "Date": order.date,
                     "Grand Total": targetVal === 'excel' ? (Number(order.grandTotal)||0) : fmtCcy(order.grandTotal),
-                    "Notes": order.notes
+                    "Status": order.status // Dipindah ke Akhir
                 });
             }
         });
@@ -1226,6 +1221,24 @@ function generateReport() {
     if (targetVal === 'excel') {
         // --- EXPORT TO EXCEL (.xlsx) ---
         const ws = XLSX.utils.json_to_sheet(exportData);
+
+        // --- FITUR NO WRAP TEXT (AUTO WIDTH) ---
+        const colWidths = [];
+        // Ambil semua key dari baris pertama untuk header
+        const keys = Object.keys(exportData[0]);
+        keys.forEach(key => {
+             // Cari panjang teks maksimal di kolom tersebut
+             let maxLen = key.length;
+             exportData.forEach(row => {
+                 const cellVal = row[key] ? String(row[key]) : "";
+                 if(cellVal.length > maxLen) maxLen = cellVal.length;
+             });
+             // Set lebar kolom (tambah sedikit padding)
+             colWidths.push({ wch: maxLen + 2 });
+        });
+        // Terapkan lebar ke worksheet
+        ws['!cols'] = colWidths;
+
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
         XLSX.writeFile(wb, `Sales_Report_${formatVal}_${startVal}_to_${endVal}.xlsx`);
