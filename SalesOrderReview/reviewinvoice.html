@@ -1158,10 +1158,15 @@ function generateReport() {
         return;
     }
 
+    // Helper: dd/mm/yyyy converter
+    const fmtDateIndo = (isoStr) => {
+        if(!isoStr) return "";
+        const [y, m, d] = isoStr.split('-');
+        return `${d}/${m}/${y}`;
+    }
+
     // 2. Prepare Data for Export
     let exportData = [];
-    
-    // Helper untuk mata uang
     const fmtCcy = (n) => "Rp " + (Number(n)||0).toLocaleString('id-ID');
 
     if (formatVal === 'summary') {
@@ -1174,7 +1179,7 @@ function generateReport() {
                 "Customer": row.customer,
                 "Region": (row.kec || "") + ", " + (row.city || ""),
                 "Total Amount": targetVal === 'excel' ? (Number(row.grandTotal)||0) : fmtCcy(row.grandTotal),
-                "Status": row.status // Dipindah ke Akhir
+                "Status": row.status
             });
         });
     } else {
@@ -1189,7 +1194,6 @@ function generateReport() {
                         "Due Date": order.dueDate,
                         "Customer": order.customer,
                         "Address": (order.address || "") + " " + (order.kec || "") + " " + (order.city || ""),
-                        // Item Details
                         "Item Name": item.name,
                         "Type": item.type,
                         "Meter": item.meter,
@@ -1199,18 +1203,16 @@ function generateReport() {
                         "Disc": targetVal === 'excel' ? (Number(item.disc)||0) : fmtCcy(item.disc),
                         "Net": targetVal === 'excel' ? (Number(net)||0) : fmtCcy(net),
                         "Line Total": targetVal === 'excel' ? (Number(item.total)||0) : fmtCcy(item.total),
-                        // Totals
                         "Grand Total": targetVal === 'excel' ? (Number(order.grandTotal)||0) : fmtCcy(order.grandTotal),
-                        "Status": order.status // Dipindah ke Akhir
+                        "Status": order.status
                     });
                 });
             } else {
-                 // Empty Item Fields if no items
                  exportData.push({
                     "Order ID": order.id,
                     "Date": order.date,
                     "Grand Total": targetVal === 'excel' ? (Number(order.grandTotal)||0) : fmtCcy(order.grandTotal),
-                    "Status": order.status // Dipindah ke Akhir
+                    "Status": order.status
                 });
             }
         });
@@ -1219,24 +1221,18 @@ function generateReport() {
     // 3. GENERATE OUTPUT
 
     if (targetVal === 'excel') {
-        // --- EXPORT TO EXCEL (.xlsx) ---
         const ws = XLSX.utils.json_to_sheet(exportData);
-
-        // --- FITUR NO WRAP TEXT (AUTO WIDTH) ---
+        // Auto Width
         const colWidths = [];
-        // Ambil semua key dari baris pertama untuk header
         const keys = Object.keys(exportData[0]);
         keys.forEach(key => {
-             // Cari panjang teks maksimal di kolom tersebut
              let maxLen = key.length;
              exportData.forEach(row => {
                  const cellVal = row[key] ? String(row[key]) : "";
                  if(cellVal.length > maxLen) maxLen = cellVal.length;
              });
-             // Set lebar kolom (tambah sedikit padding)
              colWidths.push({ wch: maxLen + 2 });
         });
-        // Terapkan lebar ke worksheet
         ws['!cols'] = colWidths;
 
         const wb = XLSX.utils.book_new();
@@ -1246,27 +1242,64 @@ function generateReport() {
     } else {
         // --- EXPORT TO PDF (A4) ---
         const { jsPDF } = window.jspdf;
-        // Gunakan landscape jika Detail, Portrait jika Summary agar muat
         const orient = formatVal === 'detail' ? 'landscape' : 'portrait';
         const doc = new jsPDF({ orientation: orient });
 
-        // Judul PDF
+        // HEADER
+        doc.setFont("helvetica", "bold"); // Bold Title
         doc.setFontSize(14);
         doc.text(`Sales Report (${formatVal.toUpperCase()})`, 14, 15);
+        
+        doc.setFont("helvetica", "normal"); // Normal text
         doc.setFontSize(10);
-        doc.text(`Periode: ${startVal || 'Awal'} s/d ${endVal || 'Akhir'}`, 14, 22);
+        
+        // Format Tanggal Periode dd/mm/yyyy
+        const dStart = startVal ? startVal.split('-').reverse().join('/') : '...';
+        const dEnd = endVal ? endVal.split('-').reverse().join('/') : '...';
+        doc.text(`Periode: ${dStart} s/d ${dEnd}`, 14, 22);
 
-        // Siapkan Kolom & Body
+        // CONFIG AUTOTABLE
         const keys = Object.keys(exportData[0]);
         const head = [keys];
         const body = exportData.map(obj => Object.values(obj));
+
+        // Logic Column Styles untuk Detail View
+        let myColumnStyles = {};
+        if (formatVal === 'detail') {
+            // Index 3 (Customer), 4 (Address) => Allow Wrap
+            // Others => No Wrap (Auto)
+            // Note: AutoTable columns are 0-indexed based on the 'keys' array order
+            myColumnStyles = {
+                0: { cellWidth: 'auto' }, // ID
+                1: { cellWidth: 'auto' }, // Date
+                2: { cellWidth: 'auto' }, // Due
+                3: { cellWidth: 25, overflow: 'linebreak' }, // Customer (Yellow - Wrap)
+                4: { cellWidth: 35, overflow: 'linebreak' }, // Address (Yellow - Wrap)
+                5: { cellWidth: 'auto' }, // Item (Red - No Wrap preferred)
+                // Sisanya auto...
+            };
+        } else {
+             // Summary View
+             myColumnStyles = {
+                3: { cellWidth: 40, overflow: 'linebreak' }, // Customer
+                4: { cellWidth: 40, overflow: 'linebreak' }, // Region
+             };
+        }
 
         doc.autoTable({
             head: head,
             body: body,
             startY: 25,
-            styles: { fontSize: 8, cellPadding: 2 },
-            headStyles: { fillColor: [17, 105, 153] }, // Matches primary color
+            styles: { 
+                fontSize: 6, // Font diperkecil 
+                cellPadding: 1,
+                valign: 'middle'
+            },
+            headStyles: { 
+                fillColor: [17, 105, 153],
+                fontStyle: 'bold' 
+            },
+            columnStyles: myColumnStyles,
             theme: 'grid'
         });
 
