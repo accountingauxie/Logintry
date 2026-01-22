@@ -173,14 +173,14 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 
 .pdf-stamp { 
     font-family: Arial, sans-serif; 
-    font-size: 14px;      
-    font-weight: bold;       
-    font-style: italic;      
+    font-size: 14px;       
+    font-weight: bold;        
+    font-style: italic;       
     color: #000; 
     margin-top: 5px; 
     text-transform: uppercase;
     border: 3px solid #000; 
-    padding: 4px 10px;       
+    padding: 4px 10px;        
     display: inline-block;
     line-height: 1;
     letter-spacing: 1px;
@@ -188,11 +188,11 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 
 /* CSS BARU UNTUK NOMOR ORDER DI KANAN ATAS */
 .pdf-order-number-right {
-    text-align: right;      /* Rata Kanan */
-    font-size: 16px;        /* Ukuran Font Besar */
-    font-weight: 700;       /* Bold */
+    text-align: right;       /* Rata Kanan */
+    font-size: 16px;         /* Ukuran Font Besar */
+    font-weight: 700;        /* Bold */
     color: #000;            
-    margin-bottom: 8px;     /* Jarak ke Tanggal Faktur */
+    margin-bottom: 8px;      /* Jarak ke Tanggal Faktur */
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -282,8 +282,9 @@ table.pdf-table th {
     text-transform: uppercase; 
     padding: 6px 4px; 
     color: #000; 
-    border-top: 1px solid #000; 
-    border-bottom: 1px solid #000; 
+    /* --- UBAH BORDER DI SINI MENJADI 0.5PT --- */
+    border-top: 0.5pt solid #000; 
+    border-bottom: 0.5pt solid #000; 
     letter-spacing: 0.5px; 
 }
 
@@ -404,8 +405,8 @@ table.pdf-table td {
 .pdf-payment-title { 
     font-size: 10.5px; 
     font-weight: 700; 
-    margin-bottom: 3px;    
-    color: #000;           
+    margin-bottom: 3px;     
+    color: #000;            
     display: block; 
 }
 
@@ -418,7 +419,7 @@ table.pdf-table td {
 .pdf-bank-detail { 
     font-size: 9.5px; 
     line-height: 1.3; 
-    color: #000;           
+    color: #000;            
 }
 
 /* Nama Pemilik Rekening (Bold) */
@@ -1296,13 +1297,15 @@ function generateReport() {
                 fontSize: 7, 
                 cellPadding: 0.1,
                 valign: 'middle',
-                lineWidth: 0.035, // Border tipis 1pt
+                // --- UPDATE BORDER DISINI ---
+                lineWidth: 0.018, // 0.5 pt kira-kira 0.0176 cm
                 lineColor: [0, 0, 0] // Border hitam
             },
             headStyles: { 
                 fillColor: [17, 105, 153],
                 fontStyle: 'bold',
-                lineWidth: 0.035,
+                // --- UPDATE BORDER DISINI ---
+                lineWidth: 0.018,
                 lineColor: [0, 0, 0]
             },
             columnStyles: myColumnStyles,
