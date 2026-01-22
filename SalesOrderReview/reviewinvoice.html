@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Review Penjualan - Auxilium</title>
+<link rel="stylesheet" href="https://unpkg.com/choices.js/public/assets/styles/choices.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+
+<style>
+/* --- 1. SYSTEM STYLE (Web UI) --- */
+:root { 
+    --primary-color: #116999; 
+    --xero-blue: #116999; 
+    --bg-color: #f4f7f6; 
+    --text-color: #333; 
+    --red-bg: #fee2e2; 
+    --red-text: #991b1b; 
+    --border-color: #eaecf0;
+}
+
+* { box-sizing: border-box; }
+
+body { 
+    margin: 0; 
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    font-size: 14px; 
+    background: var(--bg-color); 
+    color: var(--text-color); 
+    -webkit-font-smoothing: antialiased; 
+}
+
+/* --- NAVIGATION BAR --- */
+.aux-navbar {
+    background-color: #ffffff;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    position: sticky; top: 0; z-index: 1000;
+}
+
+.aux-logo { display: flex; align-items: center; gap: 10px; }
+.aux-logo img { height: 45px; width: auto; object-fit: contain; }
+
+.aux-menu { display: flex; gap: 8px; align-items: center; height: 100%; }
+.nav-item { position: relative; height: 100%; display: flex; align-items: center; }
+
+.aux-link { 
+    text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; 
+    padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+}
+.aux-link:hover, .nav-item:hover .aux-link { background-color: #f2f4f7; color: #101828; }
+.aux-link.active { background-color: #eff8ff; color: var(--primary-color); font-weight: 700; }
+
+.chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
+.nav-item:hover .chevron-down { transform: rotate(180deg); }
+
+/* Dropdown Menu */
+.dropdown-menu {
+    visibility: hidden; opacity: 0; position: absolute; top: 85%; left: 0;
+    background: white; min-width: 240px; border: 1px solid var(--border-color);
+    border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 8px; z-index: 1001; transform: translateY(10px); transition: all 0.2s ease-in-out;
+}
+.dropdown-menu::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
+.nav-item:hover .dropdown-menu { visibility: visible; opacity: 1; transform: translateY(0); }
+
+.dropdown-item {
+    display: flex; align-items: center; padding: 10px 12px; color: #344054;
+    text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s;
+}
+.dropdown-item:hover { background-color: #f9fafb; color: var(--primary-color); }
+.dropdown-divider { height: 1px; background-color: #eaecf0; margin: 6px 0; }
+.dropdown-header { font-size: 11px; text-transform: uppercase; color: #98a2b3; font-weight: 600; padding: 8px 12px 4px; }
+
+/* User Panel */
+.user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border-color); }
+.user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
+.user-name { font-weight: 700; font-size: 13px; color: #101828; }
+.user-role { font-size: 11px; color: #667085; }
+.user-avatar { width: 36px; height: 36px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; user-select: none; }
+.logout-btn { background: none; border: 1px solid var(--border-color); color: #666; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
+
+/* --- PAGE CONTENT STYLE --- */
+.page-wrap { padding: 30px 40px; max-width: 1400px; margin: 0 auto; }
+.category-tabs { margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+.cat-btn { background: none; border: none; padding: 10px 20px; font-weight: 600; color: #666; cursor: pointer; border-bottom: 3px solid transparent; font-family: "Inter", sans-serif; }
+.cat-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+.filter-container { display: flex; gap: 15px; margin-bottom: 15px; align-items: center; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-label { font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; }
+.form-control { padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; outline: none; }
+.search-wrapper { flex: 1; }
+.search-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; }
+.table-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; min-height: 400px; }
+table.xero-table { width: 100%; border-collapse: collapse; }
+
+/* --- SORTING HEADER CSS --- */
+table.xero-table th { 
+    text-align: left; padding: 15px; background: #f8f9fa; border-bottom: 1px solid #eee; color: #555; 
+    font-size: 12px; text-transform: uppercase; font-weight: bold;
+    cursor: pointer; /* Clickable */
+    user-select: none;
+    position: relative;
+    padding-right: 20px;
+}
+table.xero-table th:hover { background-color: #eaeaea; color: var(--primary-color); }
+
+.sort-icon { margin-left: 5px; font-size: 10px; opacity: 0.5; }
+.sort-active { opacity: 1; color: var(--primary-color); }
+
+table.xero-table td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
+table.xero-table tr.data-row { cursor: pointer; transition: background-color 0.2s; }
+table.xero-table tr.data-row:hover { background-color: #e0f2fe; }
+
+/* UTILS */
+.t-left { text-align: left; } .t-center { text-align: center; } .t-right { text-align: right; }
+.currency-cell { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+
+/* BADGES */
+.badge { padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
+.badge-approve { background: #fff7e6; color: #b75900; border: 1px solid #ffe8cc; }
+.badge-success { background: #ecfdf5; color: #047857; border: 1px solid #d1fae5; }
+.badge-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+.type-badge { font-size: 10px; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; display: inline-block; white-space: nowrap; }
+.type-gen { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; } 
+.type-pre { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; } 
+.type-back { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; } 
+
+/* MODAL */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9000; backdrop-filter: blur(2px); }
+.modal-box { background: #fff; width: 1100px; max-width: 95%; height: 90vh; display: flex; flex-direction: column; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.modal-header { padding: 20px 30px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+.modal-body { flex: 1; overflow-y: auto; padding: 30px; background: #fff; }
+.web-info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin-bottom: 30px; border-bottom: 1px solid #f0f0f0; padding-bottom: 20px; }
+.web-label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 5px; }
+.web-value { font-size: 14px; color: #333; font-weight: bold; }
+table.web-items { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+table.web-items th { text-align: left; padding: 10px; background: #f9fafb; font-size: 11px; color: #555; text-transform: uppercase; border-bottom: 1px solid #eee; font-weight: bold; }
+table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.web-totals { display: flex; justify-content: flex-end; }
+.web-total-box { width: 300px; background: #f9fafb; padding: 15px; border-radius: 8px; }
+.web-total-row.grand { font-size: 20px; color: var(--primary-color); font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+.web-ppn-note { font-style: italic; font-size: 11px; color: #666; margin-top: 5px; text-align: right; }
+.modal-footer { padding: 15px 30px; background: #f9fafb; border-top: 1px solid #eee; text-align: right; }
+.btn-action { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; color: white; font-weight: bold; margin-left: 10px; transition: 0.2s; font-family: "Inter", sans-serif; }
+.btn-close { background: #fff; color: #333; border: 1px solid #ccc; }
+.btn-reject { background: #dc2626; }
+.btn-approve { background: #10b981; }
+.btn-pdf-cash { background: #0369a1; }
+.btn-pdf-kredit { background: #7e22ce; }
+
+/* --- PDF STYLE --- */
+#pdf-hidden-container { position: absolute; left: -9999px; top: 0; }
+#pdfContent { 
+    background: #fff; 
+    width: 194mm; 
+    padding: 0; 
+    font-family: "Arial", sans-serif; 
+    color: #000; 
+    overflow: hidden; 
+}
+
+.pdf-stamp { 
+    font-family: Arial, sans-serif; 
+    font-size: 14px; /* Naik +2 */       
+    font-weight: bold;      
+    font-style: italic;     
+    color: #000; 
+    margin-top: 5px; 
+    text-transform: uppercase;
+    border: 3px solid #000; 
+    padding: 4px 10px;      
+    display: inline-block;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+/* CSS BARU UNTUK NOMOR ORDER DI KANAN ATAS */
+.pdf-order-number-right {
+    text-align: right;      /* Rata Kanan */
+    font-size: 16px;        /* Ukuran Font Besar */
+    font-weight: 700;       /* Bold */
+    color: #000;            
+    margin-bottom: 8px;     /* Jarak ke Tanggal Faktur */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* WARNA STEMPEL */
+.stamp-merah { color: #dc2626; border-color: #dc2626; } 
+.stamp-orens { color: #FFCE1B; border-color: #FFCE1B; } 
+.stamp-hijau { color: #16a34a; border-color: #16a34a; }
+
+.pdf-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    margin-bottom: 15px; 
+    border-bottom: 2px solid #000; 
+    padding-bottom: 8px; 
+    position: relative; 
+}
+
+.pdf-header-left { display: flex; align-items: center; gap: 15px; }
+.pdf-logo { height: 60px; width: auto; object-fit: contain; }
+
+.pdf-title { 
+    font-size: 26px; /* Naik +2 */
+    font-weight: 700; 
+    letter-spacing: 1px; 
+    text-transform: uppercase; 
+    margin-top: 0; 
+    color:#000; 
+}
+
+.company-details { 
+    text-align: right; 
+    font-size: 10px; /* Naik +2 */
+    color: #333; 
+    line-height: 1.3; 
+}
+
+/* --- PERBAIKAN COMPANY NAME --- */
+.company-name { 
+    font-weight: 700; 
+    font-size: 13px; /* Naik +2 */
+    color: #000; 
+    text-transform: uppercase; 
+    margin-bottom: 2px;
+    white-space: nowrap; 
+}
+
+.pdf-logo-right { height: 50px; width: auto; object-fit: contain; margin-bottom: 5px; display: inline-block; }
+
+.pdf-info { display: flex; justify-content: space-between; margin-bottom: 15px; }
+.bill-to { width: 55%; }
+
+.pdf-bill-label { 
+    font-size: 10px; /* Naik +2 */
+    font-weight: 700; 
+    text-transform: uppercase; 
+    margin-bottom: 3px; 
+    color:#000; 
+}
+.pdf-cust-name { 
+    font-size: 14px; /* Naik +2 */
+    font-weight: 700; 
+    text-transform: uppercase; 
+    margin-bottom: 3px; 
+    color:#000; 
+}
+.pdf-cust-addr { 
+    font-size: 11px; /* Naik +2 */
+    line-height: 1.4; 
+    color: #444; 
+}
+
+.meta-data { width: 40%; }
+.pdf-meta-row { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 11px; /* Naik +2 */
+    margin-bottom: 3px; 
+    width: 100%; 
+}
+.pdf-meta-key { font-weight: 700; color:#000; }
+
+table.pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+table.pdf-table th { 
+    font-size: 10px; /* Naik +2 */
+    font-weight: 700; 
+    text-transform: uppercase; 
+    padding: 6px 4px; 
+    color: #000; 
+    border-top: 1px solid #000; 
+    border-bottom: 1px solid #000; 
+    letter-spacing: 0.5px; 
+}
+
+/* --- HANYA DI SINI LINE SPACING RAPAT (1) --- */
+table.pdf-table td { 
+    padding: 6px 4px; 
+    font-size: 11px; /* Naik +2 */
+    vertical-align: top; 
+    line-height: 1; /* Tetap rapat khusus tabel */
+}
+
+.item-name-main { 
+    font-weight: 700; 
+    color: #000; 
+    display:block; 
+    font-size: 12px; /* Naik +2 */
+}
+.item-sub { 
+    font-size: 10px; /* Naik +2 */
+    color: #666; 
+    font-weight: normal; 
+    margin-top: 2px; 
+    display: block; 
+}
+
+.pdf-middle-section { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    margin-top: 5px; 
+    page-break-inside: avoid; 
+    border-top: 1px solid #555; 
+    padding-top: 8px; 
+}
+
+.pdf-notes-box { width: 55%; padding-right: 15px; }
+.pdf-notes-label { 
+    font-size: 11px; /* Naik +2 */
+    font-weight: 700; 
+    margin-bottom: 2px; 
+    display:block; 
+}
+.pdf-notes-content { 
+    font-size: 11px; /* Naik +2 */
+    color: #555; 
+    line-height: 1.3; 
+    border: 1px dashed #ccc; 
+    padding: 5px; 
+    border-radius: 4px; 
+    min-height: 35px; 
+}
+
+.pdf-total-box { width: 40%; }
+.pdf-total-row.grand { 
+    font-size: 16px; /* Naik +2 */
+    font-weight: 700; 
+    color: #116999; 
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 0; 
+    padding-top: 0; 
+}
+.pdf-ppn-note { 
+    font-style: italic; 
+    font-size: 10px; /* Naik +2 */
+    color: #555; 
+    text-align: right; 
+    margin-top: 2px; 
+}
+.pdf-dp-note { 
+    font-size: 11px; /* Naik +2 */
+    color: #dc2626; 
+    font-weight: 700; 
+    text-align: right; 
+    margin-top: 4px; 
+    display: none; 
+} 
+
+.pdf-signature-wrapper { 
+    margin-top: 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    page-break-inside: avoid; 
+    padding-bottom: 5px; 
+}
+
+/* --- UPDATE CSS SIGNATURE --- */
+.sig-box { 
+    width: 250px; 
+    text-align: center; 
+}
+.sig-name { 
+    font-size: 12px; /* Naik +2 */
+    font-weight: 700; 
+    color: #000; 
+    border-top: 1px solid #333; 
+    display: inline-block; 
+    padding-top: 4px; 
+    min-width: 120px; 
+    white-space: nowrap; 
+}
+.sig-title { 
+    font-size: 12px; /* Naik +2 */
+    font-weight: 700; 
+    color: #000; 
+    margin-bottom: 40px; 
+}
+
+/* --- CSS PAYMENT INFO --- */
+.pdf-payment-wrapper { 
+    margin-top: 15px;            
+    border-top: 2px solid #000; 
+    padding-top: 10px; 
+    page-break-inside: avoid; 
+}
+
+/* Judul "Informasi Pembayaran" */
+.pdf-payment-title { 
+    font-size: 10.5px; /* Naik +2 */
+    font-weight: 700; 
+    margin-bottom: 3px;    
+    color: #000;          
+    display: block; 
+}
+
+.pdf-payment-container { 
+    display: flex; 
+    gap: 30px;            
+}
+
+/* Isi Detail Bank */
+.pdf-bank-detail { 
+    font-size: 9.5px; /* Naik +2 */
+    line-height: 1.3; 
+    color: #000;          
+}
+
+/* Nama Pemilik Rekening (Bold) */
+.bank-name { 
+    font-weight: 700; 
+    color: #000; 
+    white-space: nowrap; 
+}
+.skeleton { height: 20px; background: #eee; width: 100%; border-radius: 4px; animation: pulse 1s infinite; }
+@keyframes pulse { 0% {opacity: 0.6;} 50% {opacity: 1;} 100% {opacity: 0.6;} }
+</style>
+</head>
+<body>
+
+<div class="aux-navbar">
+    <div class="aux-logo">
+        <img src="https://raw.githubusercontent.com/accountingauxie/Asset/refs/heads/main/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
+    </div>
+    
+    <nav class="aux-menu">
+        <div class="nav-item">
+            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a>
+        </div>
+
+        <div class="nav-item">
+            <div class="aux-link active">
+                Penjualan 
+                <i data-feather="chevron-down" class="chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <div class="dropdown-header">Sales Orders</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="dropdown-item">Order Penjualan</a>
+                <a href="#" class="dropdown-item">Review Penjualan</a>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <div class="aux-link">
+                Pembelian
+                <i data-feather="chevron-down" class="chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <div class="dropdown-header">Purchasing</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item">Pemesanan Pembelian</a>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item">Penerimaan Barang (Entry)</a>
+                
+                <div class="dropdown-divider"></div>
+                
+                <div class="dropdown-header">Finance</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item">Daftar Tagihan (Bill)</a>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item">Import Xero PO</a>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <div class="aux-link">
+                Produksi
+                <i data-feather="chevron-down" class="chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <div class="dropdown-header">Input Mesin</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item">Back Order</a>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item">General Order</a>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Pre%20Order/produksi_preorder.html" class="dropdown-item">Pre Order</a>
+
+                <div class="dropdown-divider"></div>
+                
+                <div class="dropdown-header">Hasil Produksi</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item">Produksi Barang Jadi</a>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <div class="aux-link">
+                Persediaan
+                <i data-feather="chevron-down" class="chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/inventory/index.html" class="dropdown-item">Cek Stok Inventory</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="user-panel">
+        <div class="user-details">
+            <span class="user-name">Admin Gudang</span>
+            <span class="user-role">CV Sukses Jaya</span>
+        </div>
+        <div class="user-avatar">AG</div>
+        <button class="logout-btn" onclick="alert('Logout')" title="Keluar Akun">
+            <i data-feather="log-out" style="width:16px; height:16px;"></i>
+        </button>
+    </div>
+</div>
+
+<div class="page-wrap">
+    <h2>Review Penjualan </h2>
+    
+    <div class="category-tabs">
+        <button class="cat-btn active" onclick="setFilter('All')">All Order</button>
+        <button class="cat-btn" onclick="setFilter('Awaiting Approval')">Awaiting Approval</button>
+        <button class="cat-btn" onclick="setFilter('Approved Order')">Approved Order</button>
+        <button class="cat-btn" onclick="setFilter('Cancel Order')">Cancelled</button>
+    </div>
+
+    <div class="filter-container">
+        <div class="search-wrapper">
+            <span class="filter-label">Search</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="Cari No Order / Customer..." onkeyup="renderTable()">
+        </div>
+        
+        <div class="filter-group">
+            <span class="filter-label">Order Type</span>
+            <select id="typeFilter" class="form-control" onchange="renderTable()">
+                <option value="All">All Types</option>
+                <option value="General Order">General Order</option>
+                <option value="Pre Order">Pre Order</option>
+                <option value="Back Order">Back Order</option> </select>
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">Start Date</span>
+            <input type="date" id="startDate" class="form-control" onchange="renderTable()">
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">End Date</span>
+            <input type="date" id="endDate" class="form-control" onchange="renderTable()">
+        </div>
+        
+        <div class="filter-group" style="justify-content: flex-end;">
+            <button onclick="resetFilters()" style="padding: 10px; background: #eee; border:1px solid #ccc; border-radius:5px; cursor:pointer;">Reset</button>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table class="xero-table">
+            <thead>
+                <tr>
+                    <th onclick="handleSort('id')">Order # <span id="sort-id" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('type')" style="width:120px; text-align:center;">Type <span id="sort-type" class="sort-icon">⇅</span></th> 
+                    <th onclick="handleSort('customer')">Customer <span id="sort-customer" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('date')">Order Date <span id="sort-date" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('estDelivery')">Est. Delivery <span id="sort-estDelivery" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('dueDate')">Jatuh Tempo <span id="sort-dueDate" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('grandTotal')" style="text-align:right;">Total Amount <span id="sort-grandTotal" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('status')" style="text-align:center;">Status <span id="sort-status" class="sort-icon">⇅</span></th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div id="emptyState" style="display:none; text-align:center; padding:50px; color:#999;">Tidak ada data yang cocok dengan filter.</div>
+    </div>
+</div>
+
+<div id="orderModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="header-left">
+                <h3 style="margin:0; font-size: 18px; font-weight: bold;">Order #<span id="webOrderNo"></span></h3>
+                <span id="webStatusBadge" class="badge"></span>
+            </div>
+            <button class="btn-close" onclick="closeModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="web-info-grid">
+                <div><span class="web-label">Customer</span><div class="web-value" id="webCustomer">-</div><div style="font-size:12px; color:#666; margin-top:5px;" id="webAddress">-</div></div>
+                <div><span class="web-label">Order Details</span><div style="font-size:13px; margin-bottom:4px;">Date: <strong id="webDate">-</strong></div><div style="font-size:13px; margin-bottom:4px;">Est. Del: <strong id="webEst">-</strong></div><div style="font-size:13px;">Due/Term: <strong id="webDue">-</strong></div></div>
+                <div><span class="web-label">Additional Info</span><div style="font-size:13px; margin-bottom:4px;">CP: <span id="webCP">-</span></div><div style="font-size:13px; margin-bottom:4px;">NIK / NPWP: <span id="webNPWP">-</span></div></div>
+            </div>
+            <table class="web-items">
+                <thead><tr><th class="t-left" style="width:25%">ITEM NAME</th><th class="t-center" style="width:8%">METER</th><th class="t-center" style="width:8%">QTY</th><th class="t-center" style="width:10%">SATUAN</th><th class="t-left" style="width:15%">HARGA</th><th class="t-left" style="width:10%">DISC</th><th class="t-left" style="width:12%">NET</th><th class="t-left" style="width:12%">TOTAL</th></tr></thead>
+                <tbody id="webItemsBody"></tbody>
+            </table>
+            
+            <div class="web-totals">
+                <div class="web-total-box">
+                    <div class="web-total-row grand"><span>Total</span><span id="webTotal">0</span></div>
+                    <div class="web-ppn-note">Harga sudah termasuk PPN</div>
+                </div>
+            </div>
+            <div style="margin-top:20px; padding:10px; background:#fdfdfd; border:1px dashed #ddd; border-radius:4px;"><strong style="font-size:11px; color:#555;">NOTES:</strong><span id="webNotes" style="font-size:12px; color:#333; margin-left:5px;">-</span></div>
+        </div>
+        <div class="modal-footer" id="modalActions"></div>
+    </div>
+</div>
+
+<div id="pdf-hidden-container">
+    <div id="pdfContent">
+        <div class="pdf-header">
+            <div>
+                <div class="pdf-title">FAKTUR PENJUALAN</div>
+                <div class="pdf-stamp" id="pdfStamp">TUNAI</div>
+                </div>
+            <div class="company-details">
+                <img src="https://raw.githubusercontent.com/accountingauxie/Asset/refs/heads/main/Screenshot_2025-12-17_161250-removebg-preview.png"
+                     class="pdf-logo-right"
+                     alt="Logo Sukses Jaya"
+                     crossorigin="anonymous" >
+                <div class="company-name">CV. SUKSES JAYA MAKMUR LESTARI</div>
+                <div>JL. D.I Panjaitan, RT/RW. 008/003<br>Kel. Wundudopi, Kec. Baruga, Kendari<br>Sulawesi Tenggara | Telp. 0822 4708 4908</div>
+            </div>
+        </div>
+        <div class="pdf-info">
+            <div class="bill-to">
+                <div class="pdf-bill-label">KEPADA YTH.</div>
+                <div class="pdf-cust-name" id="pdfCustName">CUSTOMER NAME</div>
+                <div class="pdf-cust-addr"><span id="pdfAddr">Alamat...</span><br><span id="pdfRegion">Kota, Kec</span><br>Attn: <span id="pdfCP">-</span> | NIK / NPWP: <span id="pdfNPWP">-</span></div>
+            </div>
+            
+            <div class="meta-data">
+                <div class="pdf-order-number-right">
+                    <span id="pdfOrderNo">-</span>
+                </div>
+
+                <div class="pdf-meta-row"><span class="pdf-meta-key">Tanggal Faktur</span><span id="pdfDate">-</span></div>
+                <div class="pdf-meta-row"><span class="pdf-meta-key">Est. Pengiriman</span><span id="pdfEst">-</span></div>
+                <div class="pdf-meta-row"><span class="pdf-meta-key">Jatuh Tempo</span><span id="pdfDue">-</span></div>
+            </div>
+        </div>
+        <table class="pdf-table">
+            <thead><tr><th class="t-left" style="width:25%;">NAMA BARANG</th><th class="t-center" style="width:8%;">METER</th><th class="t-center" style="width:8%;">QTY</th><th class="t-center" style="width:10%;">SATUAN</th><th class="t-right" style="width:13%;">HARGA SATUAN</th><th class="t-right" style="width:12%;">DISKON</th><th class="t-right" style="width:12%;">HARGA NET</th><th class="t-right" style="width:12%;">TOTAL</th></tr></thead>
+            <tbody id="pdfItemsBody"></tbody>
+        </table>
+        
+        <div class="pdf-middle-section">
+            <div class="pdf-notes-box">
+                <span class="pdf-notes-label">CATATAN:</span>
+                <div class="pdf-notes-content" id="pdfNotes">-</div>
+            </div>
+            <div class="pdf-total-box">
+                <div class="pdf-total-row grand"><span>Total</span><span id="pdfTotal">0</span></div>
+                <div class="pdf-ppn-note">Harga sudah termasuk PPN</div>
+                <div id="pdfDPNote" class="pdf-dp-note"></div> 
+            </div>
+        </div>
+
+        <div class="pdf-signature-wrapper">
+            <div class="sig-box">
+                <div class="sig-title">Penerima</div>
+                <div class="sig-name" id="pdfSigCustName"></div>
+            </div>
+            <div class="sig-box">
+                <div class="sig-title">Hormat Kami</div>
+                <div class="sig-name">CV. SUKSES JAYA MAKMUR LESTARI</div>
+            </div>
+        </div>
+
+        <div class="pdf-payment-wrapper">
+            <span class="pdf-payment-title">Informasi Pembayaran</span>
+            <div class="pdf-payment-container">
+                <div class="pdf-bank-detail">
+                    <div><span class="bank-name">CV Sukses Jaya Makmur Lestari</span></div>
+                    <div>Bank: BCA</div>
+                    <div>No. Rek: 79 1088 9880</div>
+                </div>
+                <div class="pdf-bank-detail">
+                    <div><span class="bank-name">CV Sukses Jaya Makmur Lestari</span></div>
+                    <div>Bank: BRI</div>
+                    <div>No. Rek: 0646 01000 656568</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- Initialize Feather Icons ---
+feather.replace();
+
+// --- URL API SCRIPT LANGSUNG ---
+const API_URL = "https://script.google.com/macros/s/AKfycbzCRxwzbgOAQzSKrg7Y-wtce4lBMYGwkLH89L5jrbu1coFiHL2EPxPOCA5H-FMKb_L2bQ/exec";
+
+// --- GLOBAL VARIABLES ---
+let allOrders = [];
+let currentFilter = 'All';
+
+// State untuk Sorting
+let sortCol = 'id';      // Default sort berdasarkan ID
+let sortAsc = false;     // Default Descending (Terbaru di atas)
+
+window.onload = fetchData;
+
+// --- FUNGSI SORTING HANDLER ---
+function handleSort(colName) {
+    if (sortCol === colName) {
+        sortAsc = !sortAsc; // Toggle Asc/Desc
+    } else {
+        sortCol = colName;
+        sortAsc = true;
+    }
+    renderTable(); 
+}
+
+function updateSortIcons() {
+    document.querySelectorAll('.sort-icon').forEach(el => el.innerHTML = '⇅');
+    document.querySelectorAll('.sort-icon').forEach(el => el.classList.remove('sort-active'));
+
+    const activeIcon = document.getElementById('sort-' + sortCol);
+    if(activeIcon) {
+        activeIcon.innerHTML = sortAsc ? '▲' : '▼';
+        activeIcon.classList.add('sort-active');
+    }
+}
+
+async function fetchData() {
+    if(typeof feather !== 'undefined') feather.replace();
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '<tr><td colspan="8"><div class="skeleton"></div></td></tr>';
+    try {
+        const res = await fetch(API_URL + "?action=getorders");
+        const data = await res.json();
+        if(Array.isArray(data)) { allOrders = data; renderTable(); } else { alert("Data Error"); }
+    } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="8" style="color:red; text-align:center;">Failed to fetch data. Pastikan Script sudah "New Deployment".</td></tr>'; }
+}
+
+function parseDateStr(str) {
+    if(!str) return null;
+    if (str instanceof Date) return str;
+    const s = String(str);
+    if(s.includes('/')) {
+        const parts = s.split('/');
+        if(parts.length === 3) {
+            return new Date(parts[2], parts[1]-1, parts[0]);
+        }
+    }
+    return new Date(str);
+}
+
+function renderTable() {
+    updateSortIcons();
+
+    const tbody = document.getElementById('tableBody');
+    const searchVal = document.getElementById('searchInput').value.toLowerCase();
+    const typeVal = document.getElementById('typeFilter').value;
+    const startVal = document.getElementById('startDate').value; 
+    const endVal = document.getElementById('endDate').value; 
+
+    tbody.innerHTML = '';
+
+    // 1. Filtering
+    let filtered = allOrders.filter(o => {
+        if (currentFilter !== 'All') {
+            if (currentFilter === 'Approved Order') {
+                if (o.status === 'Awaiting Approval' || o.status === 'Cancel Order') return false;
+            } else if (o.status !== currentFilter) return false;
+        }
+
+        const searchStr = JSON.stringify(o).toLowerCase();
+        if (searchVal && !searchStr.includes(searchVal)) return false;
+
+        if (typeVal !== 'All') {
+            const oType = (o.type || "").toLowerCase();
+            const filterType = typeVal.toLowerCase();
+            if (filterType === 'pre order' && !oType.includes('pre')) return false;
+            if (filterType === 'back order' && !oType.includes('back')) return false; 
+            if (filterType === 'general order' && (oType.includes('pre') || oType.includes('back'))) return false; 
+        }
+
+        if (startVal || endVal) {
+            const orderDate = parseDateStr(o.date);
+            if(orderDate) {
+                if(startVal) {
+                    const s = new Date(startVal); s.setHours(0,0,0,0); orderDate.setHours(0,0,0,0);
+                    if(orderDate < s) return false;
+                }
+                if(endVal) {
+                    const e = new Date(endVal); e.setHours(0,0,0,0); orderDate.setHours(0,0,0,0);
+                    if(orderDate > e) return false;
+                }
+            }
+        }
+        return true;
+    });
+
+    // 2. Sorting
+    filtered.sort((a, b) => {
+        let valA = a[sortCol];
+        let valB = b[sortCol];
+
+        if (valA === null || valA === undefined) valA = "";
+        if (valB === null || valB === undefined) valB = "";
+
+        // Check types
+        if (['date', 'estDelivery', 'dueDate'].includes(sortCol)) {
+            valA = parseDateStr(valA) || new Date(0);
+            valB = parseDateStr(valB) || new Date(0);
+        } else if (sortCol === 'grandTotal') {
+            valA = Number(valA) || 0;
+            valB = Number(valB) || 0;
+        } else {
+            valA = String(valA).toLowerCase();
+            valB = String(valB).toLowerCase();
+        }
+
+        if (valA < valB) return sortAsc ? -1 : 1;
+        if (valA > valB) return sortAsc ? 1 : -1;
+        return 0;
+    });
+
+    // 3. Rendering
+    if(filtered.length === 0) { document.getElementById('emptyState').style.display = 'block'; return; }
+    document.getElementById('emptyState').style.display = 'none';
+
+    filtered.forEach(o => {
+        let badge = 'badge-approve';
+        if(o.status.includes('Cancel')) badge = 'badge-danger';
+        if(o.status.includes('Completed') || o.status.includes('Production') || o.status.includes('Process')) badge = 'badge-success';
+        
+        let typeBadgeClass = 'type-gen'; 
+        let t = (o.type || "").toLowerCase();
+        if (t.includes('pre')) typeBadgeClass = 'type-pre';
+        else if (t.includes('back')) typeBadgeClass = 'type-back';
+
+        let typeHtml = `<span class="type-badge ${typeBadgeClass}">${o.type || 'General'}</span>`;
+
+        let tr = document.createElement('tr');
+        tr.className = 'data-row';
+        tr.onclick = function() { openModal(o.id); };
+        
+        tr.innerHTML = `<td><strong>${o.id}</strong></td><td style="text-align:center;">${typeHtml}</td><td>${o.customer}</td><td>${o.date}</td><td>${o.estDelivery}</td><td>${o.dueDate}</td><td style="text-align:right;"><strong>${fmtMoneySimple(o.grandTotal)}</strong></td><td style="text-align:center;"><span class="badge ${badge}">${o.status}</span></td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('typeFilter').value = 'All';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    renderTable();
+}
+
+function setTxt(id, val) { const el = document.getElementById(id); if(el) el.textContent = val || "-"; }
+
+function openModal(id) {
+    try {
+        const o = allOrders.find(x => String(x.id) === String(id));
+        if(!o) { alert("Data tidak ditemukan"); return; }
+        const fullOrderId = o.id;
+
+        // ... (KODE LOGIC PENGISIAN DATA LAINNYA BIARKAN SAMA) ...
+        
+        // UPDATE BAGIAN INI SAJA (PENGISIAN DATA KE ELEMEN HTML)
+        setTxt('webOrderNo', fullOrderId);
+        setTxt('webStatusBadge', o.status);
+        const badgeEl = document.getElementById('webStatusBadge');
+        if(badgeEl) badgeEl.className = 'badge ' + (o.status.includes('Cancel') ? 'badge-danger' : (o.status.includes('Awaiting Approval') ? 'badge-approve' : 'badge-success'));
+        
+        ['web','pdf'].forEach(prefix => {
+            setTxt(prefix+'Customer', o.customer); setTxt(prefix+'CustName', o.customer);
+            setTxt(prefix+'Address', (o.address||"") + " " + (o.kec||"") + " " + (o.city||"")); setTxt(prefix+'Addr', o.address||""); setTxt(prefix+'Region', (o.kec||"") + ", " + (o.city||""));
+            setTxt(prefix+'Date', o.date); setTxt(prefix+'Est', o.estDelivery); setTxt(prefix+'Due', o.dueDate);
+            setTxt(prefix+'CP', o.cp); setTxt(prefix+'NPWP', o.npwp); setTxt(prefix+'Notes', o.notes); 
+            setTxt(prefix+'OrderNo', fullOrderId);
+        });
+        setTxt('pdfSigCustName', o.customer);
+
+        const webTbody = document.getElementById('webItemsBody');
+        const pdfTbody = document.getElementById('pdfItemsBody');
+        webTbody.innerHTML = ''; pdfTbody.innerHTML = '';
+
+        o.items.forEach(item => {
+            let net = item.net || 0;
+            webTbody.innerHTML += `<tr><td class="t-left"><strong>${item.name}</strong><br><small style="color:#888;">${item.type}</small></td><td class="t-center">${item.meter || '-'}</td><td class="t-center">${item.qty}</td><td class="t-center">${item.unit || '-'}</td><td><div class="currency-cell"><span>Rp</span><span>${fmtNum(item.price)}</span></div></td><td><div class="currency-cell"><span>Rp</span><span>${fmtNum(item.disc)}</span></div></td><td><div class="currency-cell"><span>Rp</span><span>${fmtNum(net)}</span></div></td><td><div class="currency-cell"><span>Rp</span><span>${fmtNum(item.total)}</span></div></td></tr>`;
+            pdfTbody.innerHTML += `<tr><td class="t-left"><span class="item-name-main">${item.name}</span><span class="item-sub">${item.type}</span></td><td class="t-center">${item.meter || '-'}</td><td class="t-center">${item.qty}</td><td class="t-center">${item.unit || '-'}</td><td><div class="currency-cell"><span>Rp</span><span>${fmtNum(item.price)}</span></div></td><td><div class="currency-cell"><span>Rp</span><span>${fmtNum(item.disc)}</span></div></td><td><div class="currency-cell"><span>Rp</span><span>${fmtNum(net)}</span></div></td><td><div class="currency-cell"><span>Rp</span><span>${fmtNum(item.total)}</span></div></td></tr>`;
+        });
+
+        ['web','pdf'].forEach(prefix => { setTxt(prefix+'Total', fmtMoneySimple(o.grandTotal)); });
+
+        const dpContainer = document.getElementById('pdfDPNote');
+        const orderType = (o.type || "").toLowerCase();
+        if(orderType.includes('back')) {
+            const totalAmount = Number(o.grandTotal) || 0; 
+            const dpVal = totalAmount * 0.30; 
+            dpContainer.innerHTML = `*Harus melakukan pembayaran DP 30% sebesar ${fmtMoneySimple(dpVal)}`;
+            dpContainer.style.display = 'block';
+        } else {
+            dpContainer.style.display = 'none';
+        }
+
+        // --- BUTTONS & DROPDOWN ---
+        let controlsHtml = `<div style="display:flex; align-items:center; justify-content:flex-end; gap:10px;">`;
+
+        if (o.status !== 'Cancel Order' && o.status !== 'Awaiting Approval') {
+            controlsHtml += `
+            <div style="display:flex; align-items:center; gap:5px; margin-right:10px; border-right:1px solid #ddd; padding-right:15px;">
+                <label for="pdfSizeSelect" style="font-size:12px; font-weight:bold; color:#555;">Kertas:</label>
+                <select id="pdfSizeSelect" class="form-control" style="padding:5px; height:36px; cursor:pointer;">
+                    <option value="a4" selected>A4 (Portrait)</option>
+                    <option value="a5">A5 (Landscape)</option>
+                </select>
+            </div>`;
+        }
+
+        controlsHtml += `<button class="btn-action btn-close" onclick="closeModal()">Close</button>`;
+        
+        if(o.status === 'Awaiting Approval') {
+            controlsHtml += `<button class="btn-action btn-reject" onclick="updateStatus('${o.id}', 'Cancel Order')">Reject</button>
+                             <button class="btn-action btn-approve" onclick="updateStatus('${o.id}', 'Awaiting Production')">Approve</button>`;
+        } else if (o.status !== 'Cancel Order') {
+            controlsHtml += `<button class="btn-action btn-pdf-cash" onclick="dlPDF('cash', '${fullOrderId}')">PDF Cash</button>`;
+            controlsHtml += `<button class="btn-action btn-pdf-kredit" onclick="dlPDF('kredit', '${fullOrderId}')">PDF Kredit</button>`;
+        }
+        
+        controlsHtml += `</div>`; 
+
+        document.getElementById('modalActions').innerHTML = controlsHtml;
+        document.getElementById('orderModal').style.display = 'flex';
+    } catch(err) { console.error(err); alert("Error opening modal"); }
+}
+
+function closeModal() { document.getElementById('orderModal').style.display = 'none'; }
+function setFilter(f) { currentFilter = f; document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); renderTable(); }
+function fmtNum(n) { return (Number(n)||0).toLocaleString('id-ID', {minimumFractionDigits:0}); }
+function fmtMoneySimple(n) { return (Number(n)||0).toLocaleString('id-ID', {style:'currency', currency:'IDR', minimumFractionDigits:0}); }
+
+async function updateStatus(id, stat) {
+    let actionText = (stat === 'Awaiting Production') ? 'APPROVE' : 'REJECT';
+    if(!confirm(`Are you sure you want to ${actionText} order ${id}?`)) return;
+    
+    document.getElementById('modalActions').innerHTML = 'Processing...';
+    try {
+        const payload = { action: 'updatestatus', id: id, status: stat };
+        const response = await fetch(API_URL, {
+            method: 'POST', 
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        if (result.result === 'success') {
+            alert("Status berhasil diupdate!");
+            fetchData(); 
+            closeModal();
+        } else {
+            alert("Gagal update status: " + result.message);
+            closeModal(); 
+        }
+    } catch (e) {
+        alert("Error connecting to server: " + e);
+        closeModal();
+    }
+}
+
+function dlPDF(mode, filenameId) {
+    const el = document.getElementById('pdfContent');
+    const stampEl = document.getElementById('pdfStamp');
+    
+    // Ambil nilai dari Dropdown, jika tidak ada/error, default ke 'a4'
+    const sizeSelect = document.getElementById('pdfSizeSelect');
+    const paperSize = sizeSelect ? sizeSelect.value : 'a4'; 
+    
+    // Default Format: A4 Portrait
+    let pdfFormat = 'a4';
+    let pdfOrientation = 'portrait';
+    
+    // Jika user memilih A5 secara eksplisit
+    if (paperSize === 'a5') {
+        pdfFormat = 'a5';
+        pdfOrientation = 'landscape';
+    }
+
+    const opt = { 
+        margin: [1, 0.7, 1, 0.7], 
+        filename: `Faktur_${mode}_${filenameId}.pdf`, 
+        image: { type: 'jpeg', quality: 0.98 }, 
+        html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
+        jsPDF: { unit: 'cm', format: pdfFormat, orientation: pdfOrientation } 
+    };
+
+    if (mode === 'cash') {
+        stampEl.innerText = "TUNAI";
+        stampEl.className = "pdf-stamp stamp-hijau"; 
+
+        const btn = document.querySelector('.btn-pdf-cash'); 
+        if(btn) btn.textContent = "Generating...";
+        
+        html2pdf().set(opt).from(el).save().then(() => { 
+            if(btn) btn.textContent = "PDF Cash"; 
+            stampEl.className = "pdf-stamp";
+        });
+
+    } else if (mode === 'kredit') {
+        const btn = document.querySelector('.btn-pdf-kredit'); 
+        if(btn) btn.textContent = "Generating...";
+        
+        const wrapper = document.createElement('div');
+        const labels = ["ASLI", "COPY", "KREDIT"];
+        
+        labels.forEach((lbl, idx) => {
+            const clone = el.cloneNode(true);
+            const cloneStamp = clone.querySelector('.pdf-stamp');
+            
+            if(cloneStamp) {
+                cloneStamp.innerText = lbl;
+                cloneStamp.className = "pdf-stamp"; 
+                if (lbl === "COPY") {
+                    cloneStamp.classList.add("stamp-merah"); 
+                } else if (lbl === "KREDIT") {
+                    cloneStamp.classList.add("stamp-orens"); 
+                } 
+            }
+            
+            wrapper.appendChild(clone);
+            
+            if (idx < labels.length - 1) {
+                const breakEl = document.createElement('div');
+                breakEl.className = 'html2pdf__page-break';
+                wrapper.appendChild(breakEl);
+            }
+        });
+        
+        html2pdf().set(opt).from(wrapper).save().then(() => { if(btn) btn.textContent = "PDF Kredit"; });
+    }
+}
+</script>
+</body>
+</html>
