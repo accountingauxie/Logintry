@@ -1242,21 +1242,24 @@ function generateReport() {
     } else {
         // --- EXPORT TO PDF (A4) ---
         const { jsPDF } = window.jspdf;
+        // Gunakan landscape jika Detail, Portrait jika Summary
         const orient = formatVal === 'detail' ? 'landscape' : 'portrait';
-        const doc = new jsPDF({ orientation: orient });
+        // Set unit ke 'cm' agar margin 0.7cm presisi
+        const doc = new jsPDF({ orientation: orient, unit: 'cm', format: 'a4' });
 
         // HEADER
-        doc.setFont("helvetica", "bold"); // Bold Title
+        doc.setFont("helvetica", "bold"); 
         doc.setFontSize(14);
-        doc.text(`Sales Report (${formatVal.toUpperCase()})`, 14, 15);
+        // Posisi Y disesuaikan dengan satuan cm
+        doc.text(`Sales Report (${formatVal.toUpperCase()})`, 0.7, 1.0);
         
-        doc.setFont("helvetica", "normal"); // Normal text
+        doc.setFont("helvetica", "normal"); 
         doc.setFontSize(10);
         
         // Format Tanggal Periode dd/mm/yyyy
         const dStart = startVal ? startVal.split('-').reverse().join('/') : '...';
         const dEnd = endVal ? endVal.split('-').reverse().join('/') : '...';
-        doc.text(`Periode: ${dStart} s/d ${dEnd}`, 14, 22);
+        doc.text(`Periode: ${dStart} s/d ${dEnd}`, 0.7, 1.5);
 
         // CONFIG AUTOTABLE
         const keys = Object.keys(exportData[0]);
@@ -1266,33 +1269,32 @@ function generateReport() {
         // Logic Column Styles untuk Detail View
         let myColumnStyles = {};
         if (formatVal === 'detail') {
-            // Index 3 (Customer), 4 (Address) => Allow Wrap
-            // Others => No Wrap (Auto)
-            // Note: AutoTable columns are 0-indexed based on the 'keys' array order
             myColumnStyles = {
                 0: { cellWidth: 'auto' }, // ID
                 1: { cellWidth: 'auto' }, // Date
                 2: { cellWidth: 'auto' }, // Due
-                3: { cellWidth: 25, overflow: 'linebreak' }, // Customer (Yellow - Wrap)
-                4: { cellWidth: 35, overflow: 'linebreak' }, // Address (Yellow - Wrap)
-                5: { cellWidth: 'auto' }, // Item (Red - No Wrap preferred)
+                3: { cellWidth: 3.5, overflow: 'linebreak' }, // Customer (Wrap ~3.5cm)
+                4: { cellWidth: 4.5, overflow: 'linebreak' }, // Address (Wrap ~4.5cm)
+                5: { cellWidth: 'auto' }, // Item (Auto)
                 // Sisanya auto...
             };
         } else {
              // Summary View
              myColumnStyles = {
-                3: { cellWidth: 40, overflow: 'linebreak' }, // Customer
-                4: { cellWidth: 40, overflow: 'linebreak' }, // Region
+                3: { cellWidth: 4.0, overflow: 'linebreak' }, // Customer
+                4: { cellWidth: 4.0, overflow: 'linebreak' }, // Region
              };
         }
 
         doc.autoTable({
             head: head,
             body: body,
-            startY: 25,
+            startY: 2.0, // Mulai di 2cm dari atas
+            // Set Margin Kiri Kanan 0.7cm
+            margin: { top: 2.0, left: 0.7, right: 0.7 },
             styles: { 
-                fontSize: 6, // Font diperkecil 
-                cellPadding: 1,
+                fontSize: 7, // Ukuran font diperbesar dari 6 ke 7 agar tidak kekecilan
+                cellPadding: 0.1,
                 valign: 'middle'
             },
             headStyles: { 
