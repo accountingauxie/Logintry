@@ -6,8 +6,11 @@
 <link rel="stylesheet" href="https://unpkg.com/choices.js/public/assets/styles/choices.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/choices.js/public/assets/scripts/choices.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://unpkg.com/feather-icons"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
 <style>
 /* --- 1. SYSTEM STYLE (Web UI) --- */
@@ -170,7 +173,7 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 
 .pdf-stamp { 
     font-family: Arial, sans-serif; 
-    font-size: 14px; /* Naik +2 */        
+    font-size: 14px;      
     font-weight: bold;       
     font-style: italic;      
     color: #000; 
@@ -213,7 +216,7 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 .pdf-logo { height: 60px; width: auto; object-fit: contain; }
 
 .pdf-title { 
-    font-size: 26px; /* Naik +2 */
+    font-size: 26px; 
     font-weight: 700; 
     letter-spacing: 1px; 
     text-transform: uppercase; 
@@ -223,15 +226,14 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 
 .company-details { 
     text-align: right; 
-    font-size: 10px; /* Naik +2 */
+    font-size: 10px; 
     color: #333; 
     line-height: 1.3; 
 }
 
-/* --- PERBAIKAN COMPANY NAME --- */
 .company-name { 
     font-weight: 700; 
-    font-size: 13px; /* Naik +2 */
+    font-size: 13px; 
     color: #000; 
     text-transform: uppercase; 
     margin-bottom: 2px;
@@ -244,21 +246,21 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 .bill-to { width: 55%; }
 
 .pdf-bill-label { 
-    font-size: 10px; /* Naik +2 */
+    font-size: 10px; 
     font-weight: 700; 
     text-transform: uppercase; 
     margin-bottom: 3px; 
     color:#000; 
 }
 .pdf-cust-name { 
-    font-size: 14px; /* Naik +2 */
+    font-size: 14px; 
     font-weight: 700; 
     text-transform: uppercase; 
     margin-bottom: 3px; 
     color:#000; 
 }
 .pdf-cust-addr { 
-    font-size: 11px; /* Naik +2 */
+    font-size: 11px; 
     line-height: 1.4; 
     color: #444; 
 }
@@ -267,7 +269,7 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 .pdf-meta-row { 
     display: flex; 
     justify-content: space-between; 
-    font-size: 11px; /* Naik +2 */
+    font-size: 11px; 
     margin-bottom: 3px; 
     width: 100%; 
 }
@@ -275,7 +277,7 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 
 table.pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
 table.pdf-table th { 
-    font-size: 10px; /* Naik +2 */
+    font-size: 10px; 
     font-weight: 700; 
     text-transform: uppercase; 
     padding: 6px 4px; 
@@ -288,7 +290,7 @@ table.pdf-table th {
 /* --- HANYA DI SINI LINE SPACING RAPAT (1) --- */
 table.pdf-table td { 
     padding: 6px 4px; 
-    font-size: 11px; /* Naik +2 */
+    font-size: 11px; 
     vertical-align: top; 
     line-height: 1; /* Tetap rapat khusus tabel */
 }
@@ -297,10 +299,10 @@ table.pdf-table td {
     font-weight: 700; 
     color: #000; 
     display:block; 
-    font-size: 12px; /* Naik +2 */
+    font-size: 12px; 
 }
 .item-sub { 
-    font-size: 10px; /* Naik +2 */
+    font-size: 10px; 
     color: #666; 
     font-weight: normal; 
     margin-top: 2px; 
@@ -319,13 +321,13 @@ table.pdf-table td {
 
 .pdf-notes-box { width: 55%; padding-right: 15px; }
 .pdf-notes-label { 
-    font-size: 11px; /* Naik +2 */
+    font-size: 11px; 
     font-weight: 700; 
     margin-bottom: 2px; 
     display:block; 
 }
 .pdf-notes-content { 
-    font-size: 11px; /* Naik +2 */
+    font-size: 11px; 
     color: #555; 
     line-height: 1.3; 
     border: 1px dashed #ccc; 
@@ -336,7 +338,7 @@ table.pdf-table td {
 
 .pdf-total-box { width: 40%; }
 .pdf-total-row.grand { 
-    font-size: 16px; /* Naik +2 */
+    font-size: 16px; 
     font-weight: 700; 
     color: #116999; 
     display: flex; 
@@ -346,13 +348,13 @@ table.pdf-table td {
 }
 .pdf-ppn-note { 
     font-style: italic; 
-    font-size: 10px; /* Naik +2 */
+    font-size: 10px; 
     color: #555; 
     text-align: right; 
     margin-top: 2px; 
 }
 .pdf-dp-note { 
-    font-size: 11px; /* Naik +2 */
+    font-size: 11px; 
     color: #dc2626; 
     font-weight: 700; 
     text-align: right; 
@@ -374,7 +376,7 @@ table.pdf-table td {
     text-align: center; 
 }
 .sig-name { 
-    font-size: 12px; /* Naik +2 */
+    font-size: 12px; 
     font-weight: 700; 
     color: #000; 
     border-top: 1px solid #333; 
@@ -384,7 +386,7 @@ table.pdf-table td {
     white-space: nowrap; 
 }
 .sig-title { 
-    font-size: 12px; /* Naik +2 */
+    font-size: 12px; 
     font-weight: 700; 
     color: #000; 
     margin-bottom: 40px; 
@@ -400,7 +402,7 @@ table.pdf-table td {
 
 /* Judul "Informasi Pembayaran" */
 .pdf-payment-title { 
-    font-size: 10.5px; /* Naik +2 */
+    font-size: 10.5px; 
     font-weight: 700; 
     margin-bottom: 3px;    
     color: #000;           
@@ -414,7 +416,7 @@ table.pdf-table td {
 
 /* Isi Detail Bank */
 .pdf-bank-detail { 
-    font-size: 9.5px; /* Naik +2 */
+    font-size: 9.5px; 
     line-height: 1.3; 
     color: #000;           
 }
@@ -625,6 +627,14 @@ table.pdf-table td {
                 </div>
 
                 <div>
+                    <label class="web-label">Export To</label>
+                    <select id="exportTarget" class="form-control">
+                        <option value="excel" selected>Excel (.xlsx)</option>
+                        <option value="pdf">PDF Report (A4)</option>
+                    </select>
+                </div>
+
+                <div>
                     <label class="web-label">Date Range (Order Date)</label>
                     <div style="display:flex; gap:10px;">
                         <input type="date" id="reportStartDate" class="form-control" style="width:50%">
@@ -659,7 +669,7 @@ table.pdf-table td {
         </div>
         <div class="modal-footer">
             <button class="btn-action btn-close" onclick="closeReportModal()">Cancel</button>
-            <button class="btn-action" style="background: #10b981;" onclick="generateCSV()">Download CSV</button>
+            <button class="btn-action" style="background: #10b981;" onclick="generateReport()">Download</button>
         </div>
     </div>
 </div>
@@ -1091,7 +1101,7 @@ function dlPDF(mode, filenameId) {
     }
 }
 
-// --- FUNGSI SALES REPORT (EXPORT CSV) ---
+// --- FUNGSI SALES REPORT (EXPORT EXCEL & PDF) ---
 
 function openReportModal() {
     if(!document.getElementById('reportStartDate').value) {
@@ -1107,12 +1117,13 @@ function closeReportModal() {
     document.getElementById('reportModal').style.display = 'none';
 }
 
-function generateCSV() {
+function generateReport() {
     const startVal = document.getElementById('reportStartDate').value;
     const endVal = document.getElementById('reportEndDate').value;
     const typeVal = document.getElementById('reportType').value;
     const statusVal = document.getElementById('reportStatus').value;
     const formatVal = document.getElementById('reportFormat').value; // 'summary' or 'detail'
+    const targetVal = document.getElementById('exportTarget').value; // 'excel' or 'pdf'
 
     // 1. Filter Data
     let filteredData = allOrders.filter(o => {
@@ -1147,93 +1158,107 @@ function generateCSV() {
         return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-    const clean = (text) => text ? `"${String(text).replace(/"/g, '""')}"` : '""';
+    // 2. Prepare Data for Export
+    let exportData = [];
+    
+    // Helper untuk mata uang
+    const fmtCcy = (n) => "Rp " + (Number(n)||0).toLocaleString('id-ID');
 
-    // 2. Branch Logic based on Format
     if (formatVal === 'summary') {
         // --- SUMMARY REPORT ---
-        csvContent += "Order ID,Status,Date,Due Date,Customer,Region,Total Amount,Notes\n";
-
         filteredData.forEach(row => {
-            const rowStr = [
-                clean(row.id),
-                clean(row.status),
-                clean(row.date),
-                clean(row.dueDate),
-                clean(row.customer),
-                clean((row.kec || "") + ", " + (row.city || "")),
-                clean(row.grandTotal), 
-                clean(row.notes)
-            ].join(",");
-            csvContent += rowStr + "\n";
+            exportData.push({
+                "Order ID": row.id,
+                "Status": row.status,
+                "Date": row.date,
+                "Due Date": row.dueDate,
+                "Customer": row.customer,
+                "Region": (row.kec || "") + ", " + (row.city || ""),
+                "Total Amount": targetVal === 'excel' ? (Number(row.grandTotal)||0) : fmtCcy(row.grandTotal),
+                "Notes": row.notes
+            });
         });
-
     } else {
         // --- DETAIL REPORT (ITEM LEVEL) ---
-        // Header sesuai permintaan gambar (detail item)
-        csvContent += "Order ID,Status,Date,Due Date,Customer,Address,CP,NPWP,Item Name,Item Type,Meter,Qty,Unit,Price,Disc,Net,Line Total,Grand Total,Notes\n";
-
         filteredData.forEach(order => {
             if (order.items && order.items.length > 0) {
                 order.items.forEach(item => {
                     const net = item.net || 0;
-                    const rowStr = [
-                        clean(order.id),
-                        clean(order.status),
-                        clean(order.date),
-                        clean(order.dueDate),
-                        clean(order.customer),
-                        clean((order.address || "") + " " + (order.kec || "") + " " + (order.city || "")),
-                        clean(order.cp),
-                        clean(order.npwp),
+                    exportData.push({
+                        "Order ID": order.id,
+                        "Status": order.status,
+                        "Date": order.date,
+                        "Due Date": order.dueDate,
+                        "Customer": order.customer,
+                        "Address": (order.address || "") + " " + (order.kec || "") + " " + (order.city || ""),
+                        "CP": order.cp,
+                        "NPWP": order.npwp,
                         // Item Details
-                        clean(item.name),
-                        clean(item.type),
-                        clean(item.meter),
-                        clean(item.qty),
-                        clean(item.unit),
-                        clean(item.price), // Raw Number for Excel calculation
-                        clean(item.disc),
-                        clean(net),
-                        clean(item.total),
-                        // Info tambahan
-                        clean(order.grandTotal),
-                        clean(order.notes)
-                    ].join(",");
-                    csvContent += rowStr + "\n";
+                        "Item Name": item.name,
+                        "Type": item.type,
+                        "Meter": item.meter,
+                        "Qty": Number(item.qty),
+                        "Unit": item.unit,
+                        "Price": targetVal === 'excel' ? (Number(item.price)||0) : fmtCcy(item.price),
+                        "Disc": targetVal === 'excel' ? (Number(item.disc)||0) : fmtCcy(item.disc),
+                        "Net": targetVal === 'excel' ? (Number(net)||0) : fmtCcy(net),
+                        "Line Total": targetVal === 'excel' ? (Number(item.total)||0) : fmtCcy(item.total),
+                        // Totals
+                        "Grand Total": targetVal === 'excel' ? (Number(order.grandTotal)||0) : fmtCcy(order.grandTotal),
+                        "Notes": order.notes
+                    });
                 });
             } else {
-                // Jika order tidak punya item (jarang terjadi, tapi untuk safety)
-                 const rowStr = [
-                    clean(order.id),
-                    clean(order.status),
-                    clean(order.date),
-                    clean(order.dueDate),
-                    clean(order.customer),
-                    clean(order.address),
-                    clean(order.cp),
-                    clean(order.npwp),
-                    "","","","","","","","","", // Empty Item Fields
-                    clean(order.grandTotal),
-                    clean(order.notes)
-                ].join(",");
-                csvContent += rowStr + "\n";
+                 // Empty Item Fields if no items
+                 exportData.push({
+                    "Order ID": order.id,
+                    "Status": order.status,
+                    "Date": order.date,
+                    "Grand Total": targetVal === 'excel' ? (Number(order.grandTotal)||0) : fmtCcy(order.grandTotal),
+                    "Notes": order.notes
+                });
             }
         });
     }
 
-    // 3. Download Process
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    // 3. GENERATE OUTPUT
+
+    if (targetVal === 'excel') {
+        // --- EXPORT TO EXCEL (.xlsx) ---
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+        XLSX.writeFile(wb, `Sales_Report_${formatVal}_${startVal}_to_${endVal}.xlsx`);
     
-    // Nama file dinamis
-    const fileName = `Sales_Report_${formatVal}_${startVal}_to_${endVal}.csv`;
-    link.setAttribute("download", fileName);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    } else {
+        // --- EXPORT TO PDF (A4) ---
+        const { jsPDF } = window.jspdf;
+        // Gunakan landscape jika Detail, Portrait jika Summary agar muat
+        const orient = formatVal === 'detail' ? 'landscape' : 'portrait';
+        const doc = new jsPDF({ orientation: orient });
+
+        // Judul PDF
+        doc.setFontSize(14);
+        doc.text(`Sales Report (${formatVal.toUpperCase()})`, 14, 15);
+        doc.setFontSize(10);
+        doc.text(`Periode: ${startVal || 'Awal'} s/d ${endVal || 'Akhir'}`, 14, 22);
+
+        // Siapkan Kolom & Body
+        const keys = Object.keys(exportData[0]);
+        const head = [keys];
+        const body = exportData.map(obj => Object.values(obj));
+
+        doc.autoTable({
+            head: head,
+            body: body,
+            startY: 25,
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [17, 105, 153] }, // Matches primary color
+            theme: 'grid'
+        });
+
+        doc.save(`Sales_Report_${formatVal}_${startVal}_to_${endVal}.pdf`);
+    }
 
     closeReportModal();
 }
