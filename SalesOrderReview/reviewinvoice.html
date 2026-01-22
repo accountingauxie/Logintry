@@ -617,6 +617,14 @@ table.pdf-table td {
             <div style="display:flex; flex-direction:column; gap:15px;">
                 
                 <div>
+                    <label class="web-label">Report Format</label>
+                    <select id="reportFormat" class="form-control" style="background:#f0f9ff; border-color:#bae6fd; font-weight:bold; color:#0284c7;">
+                        <option value="summary">Summary (One row per Order)</option>
+                        <option value="detail">Detail (One row per Item)</option>
+                    </select>
+                </div>
+
+                <div>
                     <label class="web-label">Date Range (Order Date)</label>
                     <div style="display:flex; gap:10px;">
                         <input type="date" id="reportStartDate" class="form-control" style="width:50%">
@@ -1104,8 +1112,9 @@ function generateCSV() {
     const endVal = document.getElementById('reportEndDate').value;
     const typeVal = document.getElementById('reportType').value;
     const statusVal = document.getElementById('reportStatus').value;
+    const formatVal = document.getElementById('reportFormat').value; // 'summary' or 'detail'
 
-    // Filter Data (Logic sama dengan renderTable)
+    // 1. Filter Data
     let filteredData = allOrders.filter(o => {
         if (statusVal !== 'All' && o.status !== statusVal) return false;
 
@@ -1138,29 +1147,89 @@ function generateCSV() {
         return;
     }
 
-    // Convert ke CSV
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Order ID,Date,Type,Customer,Region,Total Amount,Status,Notes\n";
+    const clean = (text) => text ? `"${String(text).replace(/"/g, '""')}"` : '""';
 
-    filteredData.forEach(row => {
-        const clean = (text) => text ? `"${String(text).replace(/"/g, '""')}"` : '""';
-        const rowStr = [
-            clean(row.id),
-            clean(row.date),
-            clean(row.type),
-            clean(row.customer),
-            clean((row.kec || "") + ", " + (row.city || "")),
-            clean(row.grandTotal), 
-            clean(row.status),
-            clean(row.notes)
-        ].join(",");
-        csvContent += rowStr + "\n";
-    });
+    // 2. Branch Logic based on Format
+    if (formatVal === 'summary') {
+        // --- SUMMARY REPORT ---
+        csvContent += "Order ID,Status,Date,Due Date,Customer,Region,Total Amount,Notes\n";
 
+        filteredData.forEach(row => {
+            const rowStr = [
+                clean(row.id),
+                clean(row.status),
+                clean(row.date),
+                clean(row.dueDate),
+                clean(row.customer),
+                clean((row.kec || "") + ", " + (row.city || "")),
+                clean(row.grandTotal), 
+                clean(row.notes)
+            ].join(",");
+            csvContent += rowStr + "\n";
+        });
+
+    } else {
+        // --- DETAIL REPORT (ITEM LEVEL) ---
+        // Header sesuai permintaan gambar (detail item)
+        csvContent += "Order ID,Status,Date,Due Date,Customer,Address,CP,NPWP,Item Name,Item Type,Meter,Qty,Unit,Price,Disc,Net,Line Total,Grand Total,Notes\n";
+
+        filteredData.forEach(order => {
+            if (order.items && order.items.length > 0) {
+                order.items.forEach(item => {
+                    const net = item.net || 0;
+                    const rowStr = [
+                        clean(order.id),
+                        clean(order.status),
+                        clean(order.date),
+                        clean(order.dueDate),
+                        clean(order.customer),
+                        clean((order.address || "") + " " + (order.kec || "") + " " + (order.city || "")),
+                        clean(order.cp),
+                        clean(order.npwp),
+                        // Item Details
+                        clean(item.name),
+                        clean(item.type),
+                        clean(item.meter),
+                        clean(item.qty),
+                        clean(item.unit),
+                        clean(item.price), // Raw Number for Excel calculation
+                        clean(item.disc),
+                        clean(net),
+                        clean(item.total),
+                        // Info tambahan
+                        clean(order.grandTotal),
+                        clean(order.notes)
+                    ].join(",");
+                    csvContent += rowStr + "\n";
+                });
+            } else {
+                // Jika order tidak punya item (jarang terjadi, tapi untuk safety)
+                 const rowStr = [
+                    clean(order.id),
+                    clean(order.status),
+                    clean(order.date),
+                    clean(order.dueDate),
+                    clean(order.customer),
+                    clean(order.address),
+                    clean(order.cp),
+                    clean(order.npwp),
+                    "","","","","","","","","", // Empty Item Fields
+                    clean(order.grandTotal),
+                    clean(order.notes)
+                ].join(",");
+                csvContent += rowStr + "\n";
+            }
+        });
+    }
+
+    // 3. Download Process
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    const fileName = `Sales_Report_${startVal}_to_${endVal}.csv`;
+    
+    // Nama file dinamis
+    const fileName = `Sales_Report_${formatVal}_${startVal}_to_${endVal}.csv`;
     link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();
