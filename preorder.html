@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<title>Preorder Production System</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+
+<style>
+/* --- 1. SYSTEM STYLE (Web UI) --- */
+:root { 
+    --primary-color: #116999; 
+    --xero-blue: #116999; 
+    --bg-color: #f4f7f6; 
+    --text-color: #333; 
+    --red-bg: #fee2e2; --red-text: #991b1b; 
+    --border-color: #eaecf0;
+
+    /* Legacy Variables for Logic */
+    --primary: #116999; 
+    --bg: #f4f7f6; 
+    --text: #333; 
+    --red: #b91c1c; 
+    --green: #047857; 
+    --orange: #b75900; 
+}
+
+* { box-sizing: border-box; }
+
+body { 
+    margin: 0; 
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    font-size: 13px; 
+    background: var(--bg); 
+    color: var(--text); 
+    -webkit-font-smoothing: antialiased; 
+}
+
+/* --- NAVIGATION BAR --- */
+.aux-navbar {
+    background-color: #ffffff;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    position: sticky; top: 0; z-index: 1000;
+}
+
+.aux-logo { display: flex; align-items: center; gap: 10px; }
+.aux-logo img { height: 45px; width: auto; object-fit: contain; }
+
+.aux-menu { display: flex; gap: 8px; align-items: center; height: 100%; }
+.nav-item { position: relative; height: 100%; display: flex; align-items: center; }
+
+.aux-link { 
+    text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; 
+    padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+}
+.aux-link:hover, .nav-item:hover .aux-link { background-color: #f2f4f7; color: #101828; }
+.aux-link.active { background-color: #eff8ff; color: var(--primary-color); font-weight: 700; }
+
+.chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
+.nav-item:hover .chevron-down { transform: rotate(180deg); }
+
+/* Dropdown Menu */
+.dropdown-menu {
+    visibility: hidden; opacity: 0; position: absolute; top: 85%; left: 0;
+    background: white; min-width: 240px; border: 1px solid var(--border-color);
+    border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 8px; z-index: 1001; transform: translateY(10px); transition: all 0.2s ease-in-out;
+}
+.dropdown-menu::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
+.nav-item:hover .dropdown-menu { visibility: visible; opacity: 1; transform: translateY(0); }
+
+.dropdown-item {
+    display: flex; align-items: center; padding: 10px 12px; color: #344054;
+    text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s;
+}
+.dropdown-item:hover { background-color: #f9fafb; color: var(--primary-color); }
+.dropdown-divider { height: 1px; background-color: #eaecf0; margin: 6px 0; }
+.dropdown-header { font-size: 11px; text-transform: uppercase; color: #98a2b3; font-weight: 600; padding: 8px 12px 4px; }
+
+/* User Panel */
+.user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border-color); }
+.user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
+.user-name { font-weight: 700; font-size: 13px; color: #101828; }
+.user-role { font-size: 11px; color: #667085; }
+.user-avatar { width: 36px; height: 36px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; user-select: none; }
+.logout-btn { background: none; border: 1px solid var(--border-color); color: #666; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
+
+/* --- PAGE CONTENT --- */
+.page-wrap { padding: 30px 40px; max-width: 98%; margin: 0 auto; }
+.header-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.action-buttons { display: flex; gap: 10px; }
+.category-tabs { margin-bottom: 20px; border-bottom: 2px solid #ddd; display: flex; }
+.cat-btn { background: none; border: none; padding: 10px 20px; font-weight: 600; color: #666; cursor: pointer; border-bottom: 3px solid transparent; font-family: "Inter", sans-serif; }
+.cat-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* --- FILTER CONTAINER (NEW) --- */
+.filter-container { display: flex; gap: 15px; margin-bottom: 15px; align-items: center; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-label { font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; }
+.form-control { padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; outline: none; }
+.search-wrapper { flex: 1; }
+.search-input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; }
+
+/* TABLE & SORTING */
+.table-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; min-height: 400px; }
+table.xero-table { width: 100%; border-collapse: collapse; }
+table.xero-table th { 
+    text-align: left; padding: 15px; background: #f8f9fa; border-bottom: 1px solid #eee; 
+    color: #555; font-size: 12px; font-weight: bold; text-transform: uppercase;
+    cursor: pointer; user-select: none; position: relative; padding-right: 20px;
+}
+table.xero-table th:hover { background-color: #eaeaea; color: var(--primary-color); }
+table.xero-table td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
+
+.sort-icon { margin-left: 5px; font-size: 10px; opacity: 0.5; }
+.sort-active { opacity: 1; color: var(--primary-color); }
+
+.order-link { color: var(--primary); font-weight: bold; text-decoration: none; cursor: pointer; }
+.badge { padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: inline-block; }
+.bg-open { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.badge-awaiting { background: #fff7e6; color: var(--orange); border: 1px solid #ffe8cc; }
+.badge-process { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.badge-completed { background: #ecfdf5; color: var(--green); border: 1px solid #a7f3d0; }
+.badge-delivery { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+.badge-cancel { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+.btn { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; color: white; display: inline-flex; align-items: center; gap: 5px; font-family: "Inter", sans-serif; }
+.btn-sm { padding: 4px 8px; font-size: 11px; }
+.btn-primary { background: var(--primary); }
+.btn-process { background: #0891b2; }
+.btn-complete { background: var(--green); }
+.btn-deliver { background: #4f46e5; }
+.btn-cancel { background: var(--red); }
+.btn-split { background: #d8b4fe; color: #6b21a8; }
+.btn-remove { background: #fee2e2; color: #991b1b; }
+.btn-secondary { background: #fff; border: 1px solid #ccc; color: #333; }
+.btn-report { background: #7c3aed; color: white; }
+.btn-add-line { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; font-size: 11px; margin-top: 5px; padding: 4px 10px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.btn-add-line:hover { background: #bbf7d0; }
+.progress-bar { background: #e5e7eb; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 5px; width: 100%; }
+.progress-fill { height: 100%; background: #10b981; width: 0%; transition: width 0.5s; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: flex-start; justify-content: center; z-index: 10000; padding-top: 50px; overflow-y: auto; backdrop-filter: blur(2px); }
+.modal-box { background: #fff; width: 1350px; max-width: 98%; height: auto; max-height: 90vh; display: flex; flex-direction: column; border-radius: 8px; margin-bottom: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.modal-header, .modal-footer { padding: 20px 30px; background: #fff; border-bottom: 1px solid #eee; }
+.modal-footer { background: #f9fafb; text-align: right; border-top: 1px solid #eee; }
+.modal-body { flex: 1; overflow-y: auto; padding: 20px; }
+.prod-input, .prod-select { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; }
+.split-row { background-color: #fffde7; }
+.disabled-row { background-color: #f9fafb; color: #9ca3af; }
+.disabled-row input, .disabled-row select { background: #e5e7eb; border-color: #d1d5db; pointer-events: none; }
+.check-production { width: 18px; height: 18px; cursor: pointer; accent-color: var(--green); }
+.request-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+.request-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; align-items: center; }
+.rows-container { display: flex; flex-direction: column; gap: 8px; }
+.input-row { display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0; }
+.input-row label { width: 50px; font-weight: bold; color: #555; }
+.item-summary { margin-top: 10px; text-align: right; font-weight: bold; font-size: 12px; color: #555; padding-top: 5px; border-top: 1px dashed #ddd; }
+.balance-text { font-size: 13px; font-weight: bold; color: var(--primary); }
+.over-limit { color: var(--red); }
+.row-remove-btn { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+table.report-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+table.report-table th { background: #f3f4f6; padding: 10px; border: 1px solid #ddd; text-align: left; font-size: 12px; }
+table.report-table td { padding: 8px 10px; border: 1px solid #ddd; font-size: 12px; }
+.group-header { background-color: #e0f2fe; font-weight: bold; color: #0c4a6e; }
+.sub-row td { background-color: #fff; color: #555; font-style: italic; padding-left: 30px; }
+
+/* --- PDF GENERATION STYLES (A5 Landscape) --- */
+#pdf-hidden-container { position: fixed; left: -5000px; top: 0; width: 700px; background: white; z-index: -9999; visibility: hidden; }
+#pdf-hidden-container * { visibility: visible; }
+#pdfContent { background: #fff; width: 100%; padding: 20px; font-family: "Arial", sans-serif; color: #000; }
+.pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+.pdf-title { font-size: 24px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-top: 5px; color:#000; }
+.company-details { text-align: right; font-size: 9px; color: #333; line-height: 1.4; }
+.company-name { font-weight: 700; font-size: 11px; color: #F59E0B; text-transform: uppercase; margin-bottom: 2px; }
+.pdf-info { display: flex; justify-content: space-between; margin-bottom: 15px; }
+.bill-to { width: 60%; }
+.pdf-bill-label { font-size: 9px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; color:#000; }
+.pdf-cust-name { font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; color:#000; }
+.pdf-cust-addr { font-size: 9px; line-height: 1.5; color: #444; }
+.meta-data { width: 35%; }
+.pdf-meta-row { display: flex; justify-content: space-between; font-size: 9px; margin-bottom: 4px; width: 100%; }
+.pdf-meta-key { font-weight: 700; color:#000; }
+table.pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+table.pdf-table th { font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 6px 4px; color: #000; border-top: 1px solid #000; border-bottom: 1px solid #000; letter-spacing: 0.5px; text-align: left; }
+table.pdf-table td { padding: 6px 4px; font-size: 10px; vertical-align: top; border-bottom: 1px solid #eee; }
+.pdf-signature-wrapper { margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; padding-bottom: 10px; }
+.sig-box { text-align: center; flex: 1; }
+.sig-title { font-size: 10px; font-weight: 700; color: #000; margin-bottom: 45px; }
+.sig-name { font-size: 10px; font-weight: 700; color: #000; border-top: 1px solid #333; display: inline-block; padding-top: 4px; min-width: 120px; }
+.t-center { text-align: center !important; } .t-right { text-align: right !important; } .t-left { text-align: left !important; }
+</style>
+</head>
+<body>
+
+<div class="aux-navbar">
+    <div class="aux-logo">
+        <img src="https://raw.githubusercontent.com/accountingauxie/Auxilium-Portal-Sukses-Jaya/refs/heads/main/assets/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
+    </div>
+    
+    <nav class="aux-menu">
+        <div class="nav-item">
+            <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/" class="aux-link">Home</a>
+        </div>
+
+        <div class="nav-item">
+            <div class="aux-link">
+                Penjualan 
+                <i data-feather="chevron-down" class="chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <div class="dropdown-header">Sales Orders</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Order%20Penjualan/index.html" class="dropdown-item">Order Penjualan</a>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Penjualan/Review%20Penjualan/review_penjualan.html" class="dropdown-item">Review Penjualan</a>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <div class="aux-link">
+                Pembelian
+                <i data-feather="chevron-down" class="chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <div class="dropdown-header">Purchasing</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/PurchaseOrder/index.html" class="dropdown-item">Pemesanan Pembelian</a>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/entry/index.html" class="dropdown-item">Penerimaan Barang (Entry)</a>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-header">Finance</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/CreateBill/index.html" class="dropdown-item">Daftar Tagihan (Bill)</a>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/receiving/ImportXeroPO/index.html" class="dropdown-item">Import Xero PO</a>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <div class="aux-link active">
+                Produksi
+                <i data-feather="chevron-down" class="chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <div class="dropdown-header">Input Mesin</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20Back%20Order/produksi_backorder.html" class="dropdown-item">Back Order</a>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/Produksi/Produksi%20-%20General%20Order/produksi_general.html" class="dropdown-item">General Order</a>
+                <a href="#" class="dropdown-item" style="color:var(--primary-color); font-weight:600; background:#f9fafb;">Pre Order</a>
+
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-header">Hasil Produksi</div>
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/production/daftarproduksi/index.html" class="dropdown-item">Produksi Barang Jadi</a>
+            </div>
+        </div>
+
+        <div class="nav-item">
+            <div class="aux-link">
+                Persediaan
+                <i data-feather="chevron-down" class="chevron-down"></i>
+            </div>
+            <div class="dropdown-menu">
+                <a href="https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/inventory/index.html" class="dropdown-item">Cek Stok Inventory</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="user-panel">
+        <div class="user-details">
+            <span class="user-name">Admin Gudang</span>
+            <span class="user-role">CV Sukses Jaya</span>
+        </div>
+        <div class="user-avatar">AG</div>
+        <button class="logout-btn" onclick="alert('Logout')" title="Keluar Akun">
+            <i data-feather="log-out" style="width:16px; height:16px;"></i>
+        </button>
+    </div>
+</div>
+
+<div class="page-wrap">
+    <div class="header-action">
+        <h2>Preorder Production Dashboard </h2>
+        <div class="action-buttons">
+            <button class="btn btn-report" onclick="openReportModal()"><i class="fas fa-file-alt"></i> Saldo Report</button>
+            <button class="btn btn-process" onclick="openCreateModal()"><i class="fas fa-plus-circle"></i> Create Request Production</button>
+        </div>
+    </div>
+
+    <div class="category-tabs">
+        <button class="cat-btn" id="tab-master" onclick="loadData('Master')">Master List</button>
+        <button class="cat-btn active" id="tab-remaining" onclick="loadData('Remaining')">Remaining</button>
+        <button class="cat-btn" id="tab-awaiting" onclick="loadData('Awaiting')">Awaiting</button>
+        <button class="cat-btn" id="tab-process" onclick="loadData('In Process')">In Process</button>
+        <button class="cat-btn" id="tab-completed" onclick="loadData('Completed')">Completed</button>
+        <button class="cat-btn" id="tab-delivery" onclick="loadData('Delivered')">Delivered</button>
+        <button class="cat-btn" id="tab-cancel" onclick="loadData('Cancel')">Cancelled</button>
+    </div>
+
+    <div class="filter-container">
+        <div class="search-wrapper">
+            <span class="filter-label">Search</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="Cari No Order / Customer..." onkeyup="applyFiltersAndRender()">
+        </div>
+        
+        <div class="filter-group">
+            <span class="filter-label">Start Date</span>
+            <input type="date" id="startDate" class="form-control" onchange="applyFiltersAndRender()">
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">End Date</span>
+            <input type="date" id="endDate" class="form-control" onchange="applyFiltersAndRender()">
+        </div>
+        
+        <div class="filter-group" style="justify-content: flex-end;">
+            <button onclick="resetFilters()" style="padding: 8px 12px; background: #eee; border:1px solid #ccc; border-radius:5px; cursor:pointer; font-weight:bold; color:#555;">Reset</button>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table class="xero-table">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"><tr><td colspan="7" style="text-align:center; padding:30px;">Loading...</td></tr></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="createModal" class="modal-overlay">
+    <div class="modal-box" style="width: 900px;">
+        <div class="modal-header">
+            <div style="display:flex; flex-direction:column;">
+                <h3>Buat Request Produksi</h3>
+                <small style="color:#666; font-weight:normal;">
+                    Next ID: <span id="labelNextPRT" style="font-weight:bold; color:#116999;">Loading...</span>
+                </small>
+            </div>
+            <button onclick="closeModal('createModal')" style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex; gap:20px; margin-bottom:20px;">
+                <div style="flex:1;">
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">Customer:</label>
+                    <select id="selCustomer" onchange="loadCustomerItemsAggregated(this.value)" class="prod-select">
+                        <option value="">-- Pilih Customer --</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">Est. Delivery Date:</label>
+                    <input type="date" id="inpDate" class="prod-input">
+                </div>
+            </div>
+            <div id="createItemsContainer"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('createModal')">Batal</button>
+            <button class="btn btn-primary" id="btnSubmitRequest" onclick="submitRequestAggregated()">Submit Request</button>
+        </div>
+    </div>
+</div>
+
+<div id="reportModal" class="modal-overlay">
+    <div class="modal-box" style="width: 900px;">
+        <div class="modal-header">
+            <h3>Laporan Saldo Customer</h3>
+            <button onclick="closeModal('reportModal')" style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+                <label style="font-weight:bold; margin-right:10px;">Pilih Customer:</label>
+                <select id="selReportCustomer" onchange="generateCustomerReport(this.value)" class="prod-select" style="width:300px;">
+                    <option value="">-- Pilih Customer --</option>
+                </select>
+                <button class="btn btn-secondary" onclick="printReportDiv()" style="margin-left:10px;"><i class="fas fa-print"></i> Print View</button>
+            </div>
+            <div id="reportContentArea">
+                <div style="text-align:center; color:#888; margin-top:50px;">Silakan pilih customer untuk melihat laporan.</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('reportModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="setupModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Order: <span id="modalOrderNo" style="color:#116999;"></span></h3>
+            <button onclick="closeModal('setupModal')" style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="modalAlert" class="alert" style="background:#e0f2fe; color:#0c4a6e; padding:10px; border-radius:6px; margin-bottom:15px; font-size:12px;"></div>
+            <table class="xero-table">
+                <thead><tr id="tableHeaderRow"></tr></thead>
+                <tbody id="setupBody"></tbody>
+            </table>
+            <div id="validationMsg" style="color:red; font-weight:bold; margin-top:10px; display:none;"></div>
+        </div>
+        <div class="modal-footer">
+            <div id="footerLeft" style="float:left;"></div>
+            <div id="footerRight" style="display:flex; gap:10px; justify-content:flex-end;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="confirmModal" class="modal-overlay" style="z-index: 10001;">
+    <div class="modal-box" style="width: 400px; margin-top: 150px;">
+        <div class="modal-header" style="justify-content: center; border-bottom: none;"><h4>Konfirmasi</h4></div>
+        <div class="modal-body" style="text-align: center;"><p id="confirmMessage" style="font-size:16px;">Yakin?</p></div>
+        <div class="modal-footer" style="justify-content: center;">
+            <button class="btn btn-secondary" onclick="closeConfirm(false)">Tidak</button>
+            <button class="btn btn-primary" id="confirmYesBtn">Ya</button>
+        </div>
+    </div>
+</div>
+
+<div id="pdf-hidden-container">
+    <div id="pdfContent">
+        <div class="pdf-header">
+            <div class="pdf-title" id="pdfDocTitle">SURAT</div>
+            <div class="company-details">
+                <div class="company-name">CV. SUKSES JAYA MAKMUR LESTARI</div>
+                <div>JL. D.I Panjaitan, RT/RW. 008/003<br>Kel. Wundudopi, Kec. Baruga, Kendari<br>Sulawesi Tenggara | Telp. 0822 4708 4908</div>
+            </div>
+        </div>
+        <div class="pdf-info">
+            <div class="bill-to">
+                <div class="pdf-bill-label">KEPADA YTH.</div>
+                <div class="pdf-cust-name" id="pdfCustName">-</div>
+                <div class="pdf-cust-addr" id="pdfCustAddr">Kendari</div>
+            </div>
+            <div class="meta-data">
+                <div class="pdf-meta-row"><span class="pdf-meta-key">No Order</span><span id="pdfOrderNo">-</span></div>
+                <div class="pdf-meta-row"><span class="pdf-meta-key">Tanggal</span><span id="pdfDate">-</span></div>
+                <div class="pdf-meta-row"><span class="pdf-meta-key">Tipe Order</span><span id="pdfType">General Order</span></div>
+            </div>
+        </div>
+        
+        <table class="pdf-table">
+            <thead>
+                <tr id="pdfTableHead">
+                </tr>
+            </thead>
+            <tbody id="pdfItemsBody">
+                </tbody>
+        </table>
+        
+        <div id="pdfSignatureRow" class="pdf-signature-wrapper">
+            </div>
+    </div>
+</div>
+
+<script>
+// --- Initialize Icons ---
+feather.replace();
+
+// --- KONFIGURASI API ---
+const API_URL = "https://script.google.com/macros/s/AKfycbyS_eTy1U1EunFOR6RwEBttVIH04w2Zp4lGh_wnf1XZGaZSjx8aE6gYvC2nZdyYM1b9UA/exec";
+const INVENTORY_API = "https://script.google.com/macros/s/AKfycby5172vlCkKmMQn1c_HdyNNJWfzz7ByDaLN-mJ1zOVoDJxknGWkI3yTugV2cVMIuRG5/exec";
+const TYPE_CODES = { 'Custom': 'CS', 'Plat': 'PL' };
+
+let currentView = 'Remaining';
+let globalRemainingData = []; 
+let currentOrders = {}; // Object untuk modal lookup
+let ordersArray = []; // Array untuk fitur Sort & Filter
+let inventoryData = []; 
+let aggregatedItemsMap = {};
+let activeOrderId = null;
+let confirmCallback = null;
+
+// SORTING STATE
+let sortCol = '';
+let sortAsc = false;
+
+window.onload = async () => {
+    if(typeof feather !== 'undefined') feather.replace();
+    await loadInventory();
+    loadData('Remaining');
+};
+
+// --- SORTING & FILTERING HANDLERS ---
+function handleSort(colName) {
+    if (sortCol === colName) {
+        sortAsc = !sortAsc; 
+    } else {
+        sortCol = colName;
+        sortAsc = true;
+    }
+    applyFiltersAndRender();
+}
+
+function updateSortIcons() {
+    document.querySelectorAll('.sort-icon').forEach(el => el.innerHTML = '⇅');
+    document.querySelectorAll('.sort-icon').forEach(el => el.classList.remove('sort-active'));
+
+    const activeIcon = document.getElementById('sort-' + sortCol);
+    if(activeIcon) {
+        activeIcon.innerHTML = sortAsc ? '▲' : '▼';
+        activeIcon.classList.add('sort-active');
+    }
+}
+
+function parseDateStr(str) {
+    if(!str) return null;
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    applyFiltersAndRender();
+}
+
+function applyFiltersAndRender() {
+    updateSortIcons();
+    const searchVal = document.getElementById('searchInput').value.toLowerCase();
+    const startVal = document.getElementById('startDate').value; 
+    const endVal = document.getElementById('endDate').value; 
+
+    // 1. FILTERING
+    let filtered = ordersArray.filter(o => {
+        // Search Filter
+        const searchStr = JSON.stringify(o).toLowerCase();
+        if (searchVal && !searchStr.includes(searchVal)) return false;
+
+        // Date Filter
+        if (startVal || endVal) {
+            // Field tanggal berbeda tergantung View
+            const dateField = (currentView === 'Master' || currentView === 'Remaining') ? o.date : o.date; 
+            const orderDate = parseDateStr(dateField);
+            
+            if(orderDate) {
+                if(startVal) {
+                    const s = new Date(startVal); s.setHours(0,0,0,0); orderDate.setHours(0,0,0,0);
+                    if(orderDate < s) return false;
+                }
+                if(endVal) {
+                    const e = new Date(endVal); e.setHours(0,0,0,0); orderDate.setHours(0,0,0,0);
+                    if(orderDate > e) return false;
+                }
+            }
+        }
+        return true;
+    });
+
+    // 2. SORTING
+    if(sortCol) {
+        filtered.sort((a, b) => {
+            let valA = a[sortCol];
+            let valB = b[sortCol];
+
+            if (valA === null || valA === undefined) valA = "";
+            if (valB === null || valB === undefined) valB = "";
+
+            if (colIsDate(sortCol)) {
+                valA = parseDateStr(valA) || new Date(0);
+                valB = parseDateStr(valB) || new Date(0);
+            } else {
+                valA = String(valA).toLowerCase();
+                valB = String(valB).toLowerCase();
+            }
+
+            if (valA < valB) return sortAsc ? -1 : 1;
+            if (valA > valB) return sortAsc ? 1 : -1;
+            return 0;
+        });
+    }
+
+    // 3. RENDERING
+    if(currentView === 'Master' || currentView === 'Remaining') {
+        renderPreOrders(filtered);
+    } else {
+        renderProduction(filtered);
+    }
+}
+
+function colIsDate(col) {
+    return ['date', 'delivery'].includes(col);
+}
+
+// --- INVENTORY LOGIC ---
+async function loadInventory() {
+    try {
+        console.log("Fetching Inventory from:", INVENTORY_API);
+        const response = await fetch(INVENTORY_API + "?action=getAllStock"); 
+        const data = await response.json();
+        inventoryData = data; 
+        console.log("Inventory Loaded:", inventoryData.length, "items");
+    } catch (err) {
+        console.error("Gagal load inventory:", err);
+        inventoryData = [];
+    }
+}
+
+function getKPCOptionsHTML(orderItemName, orderItemType, requiredMeter) {
+    let optionsHtml = '<option value="">- Pilih KPC -</option>';
+    const searchKey = (orderItemName + " " + orderItemType).toLowerCase();
+    
+    // Filter Inventory
+    const matchedCoils = inventoryData.filter(row => {
+        const invName = (row["Nama Barang"] || "").toString().toLowerCase();
+        if (invName === "") return false;
+        if (invName.includes(orderItemName.toLowerCase())) return true;
+        if (orderItemName.toLowerCase().includes(invName)) return true;
+        if (searchKey.includes('spandek') && (invName.includes('coil') || invName.includes('spandek'))) return true;
+        if (searchKey.includes('c75') && invName.includes('c75')) return true; 
+        if (searchKey.includes('reng') && invName.includes('reng')) return true;
+        return false; 
+    });
+
+    matchedCoils.sort((a, b) => (parseFloat(b["Stok"])||0) - (parseFloat(a["Stok"])||0));
+
+    if (matchedCoils.length === 0) {
+        optionsHtml += `<option value="" disabled>Tidak ada stok yang cocok dengan nama "${orderItemName}"</option>`;
+    } else {
+        matchedCoils.forEach(row => {
+            const kodeKPC = row["Kode / KPC"];
+            const stok = parseFloat(row["Stok"] || 0); 
+            const namaBarang = row["Nama Barang"];
+            const req = parseFloat(requiredMeter || 0);
+
+            let label = `${kodeKPC} | Stok: ${stok.toLocaleString()}m`;
+            let disabledAttr = '';
+            let style = 'color: #047857; font-weight:bold;'; 
+
+            if (req > 0 && stok < req) {
+                disabledAttr = 'disabled';
+                label += ` (Kurang! Butuh: ${req})`;
+                style = 'color: #b91c1c; background: #fee2e2;'; 
+            }
+            optionsHtml += `<option value="${kodeKPC}" ${disabledAttr} style="${style}" title="${namaBarang}">${label}</option>`;
+        });
+    }
+    return optionsHtml;
+}
+
+
+// --- NAVIGATION & LOAD DATA ---
+async function loadData(view) {
+    currentView = view;
+    // Reset Sort when changing tabs
+    sortCol = ''; sortAsc = false; 
+
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    let btnId = 'tab-remaining';
+    if(view === 'Master') btnId = 'tab-master';
+    if(view === 'Awaiting') btnId = 'tab-awaiting';
+    if(view === 'In Process') btnId = 'tab-process';
+    if(view === 'Completed') btnId = 'tab-completed';
+    if(view === 'Delivered') btnId = 'tab-delivery';
+    if(view === 'Cancel') btnId = 'tab-cancel';
+    
+    document.getElementById(btnId).classList.add('active');
+    
+    if(view === 'Awaiting' || view === 'In Process') {
+        loadInventory(); 
+    }
+
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px;">Loading...</td></tr>';
+    const thead = document.getElementById('tableHead');
+    
+    // Reset Data Arrays
+    ordersArray = [];
+    currentOrders = {};
+
+    try {
+        let url = API_URL + "?dummy=" + new Date().getTime(); 
+        if(view === 'Master' || view === 'Remaining') {
+            thead.innerHTML = `
+                <tr>
+                    <th onclick="handleSort('poId')">PO ID <span id="sort-poId" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('customer')">Customer <span id="sort-customer" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('date')">Date <span id="sort-date" class="sort-icon">⇅</span></th>
+                    <th style="width:40%;">Items Progress</th>
+                    <th onclick="handleSort('status')">Status <span id="sort-status" class="sort-icon">⇅</span></th>
+                </tr>`;
+            url += "&action=getPreOrdersMaster&viewType=" + view;
+            const req = await fetch(url);
+            const data = await req.json();
+            
+            // Simpan ke ordersArray untuk filter/sort
+            ordersArray = data;
+            // Simpan ke global jika Remaining untuk Create Request
+            if(view === 'Remaining') globalRemainingData = data;
+
+            applyFiltersAndRender();
+        } else {
+            thead.innerHTML = `
+                <tr>
+                    <th onclick="handleSort('orderNo')">Order # <span id="sort-orderNo" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('type')">Type <span id="sort-type" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('customer')">Customer <span id="sort-customer" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('date')">Order Date <span id="sort-date" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('delivery')">Est. Delivery <span id="sort-delivery" class="sort-icon">⇅</span></th>
+                    <th onclick="handleSort('status')">Status <span id="sort-status" class="sort-icon">⇅</span></th>
+                    <th>Items</th>
+                </tr>`;
+            url += "&action=getProductionOrders&status=" + encodeURIComponent(view) + "&category=preorder";
+            const req = await fetch(url);
+            const data = await req.json();
+            
+            currentOrders = data; // Untuk Lookup Modal
+            ordersArray = Object.values(data); // Untuk Filter/Sort
+
+            applyFiltersAndRender();
+        }
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:red;">Error: ${error.message}</td></tr>`;
+    }
+}
+
+function renderPreOrders(data) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No Data Found.</td></tr>'; return; }
+
+    data.forEach(po => {
+        let itemsHtml = '';
+        po.items.forEach(item => {
+            let pct = item.totalMeter > 0 ? (item.processedMeter / item.totalMeter) * 100 : 0;
+            if(pct > 100) pct = 100;
+            itemsHtml += `<div style="margin-bottom:5px;"><div style="display:flex; justify-content:space-between; font-size:11px;"><strong>${item.name}</strong><span>${item.processedMeter.toFixed(2)} / ${item.totalMeter.toFixed(2)}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%; background:${item.isLineClosed?'#999':'#10b981'};"></div></div></div>`;
+        });
+        tbody.innerHTML += `<tr><td style="font-weight:bold; color:#116999;">${po.poId}</td><td>${po.customer}</td><td>${po.date}</td><td>${itemsHtml}</td><td><span class="badge bg-open">${po.status}</span></td></tr>`;
+    });
+}
+
+function renderProduction(data) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No Orders.</td></tr>'; return; }
+
+    data.forEach(o => {
+        let badgeClass = 'badge-awaiting';
+        if (o.status === 'In Process') badgeClass = 'badge-process';
+        if (o.status === 'Completed Production') badgeClass = 'badge-completed';
+        if (o.status === 'Delivered') badgeClass = 'badge-delivery';
+        if (o.status === 'Cancel Production') badgeClass = 'badge-cancel';
+
+        tbody.innerHTML += `<tr><td><a class="order-link" onclick="openSetup('${o.orderNo}')">${o.orderNo}</a></td><td>${o.type}</td><td>${o.customer}</td><td>${o.date}</td><td>${o.delivery}</td><td><span class="badge ${badgeClass}">${o.status}</span></td><td>${o.items.length} Items</td></tr>`;
+    });
+}
+
+// --- REPORT LOGIC ---
+function openReportModal() {
+    if(globalRemainingData.length === 0) { alert("Data belum siap, mohon tunggu loading selesai."); return; }
+    document.getElementById('reportModal').style.display = 'flex';
+    document.getElementById('reportContentArea').innerHTML = '<div style="text-align:center; color:#888; margin-top:50px;">Silakan pilih customer untuk melihat laporan.</div>';
+    
+    const sel = document.getElementById('selReportCustomer');
+    sel.innerHTML = '<option value="">-- Pilih Customer --</option>';
+    [...new Set(globalRemainingData.map(d=>d.customer))].sort().forEach(c => {
+        let opt = document.createElement('option'); opt.value=c; opt.innerText=c; sel.appendChild(opt);
+    });
+}
+
+function generateCustomerReport(cust) {
+    const box = document.getElementById('reportContentArea');
+    if(!cust) { box.innerHTML = ''; return; }
+    let reportMap = {};
+    globalRemainingData.filter(d => d.customer === cust).forEach(po => {
+        po.items.forEach(item => {
+            let isQtyBased = item.isQtyBased; 
+            let hasBalance = isQtyBased ? (item.remainingMeter > 0) : (item.remainingMeter > 0.1);
+            if(!item.isLineClosed && hasBalance) {
+                if(!reportMap[item.name]) reportMap[item.name] = { name: item.name, totalBalance: 0, details: [] };
+                reportMap[item.name].totalBalance += item.remainingMeter;
+                reportMap[item.name].details.push({ 
+                    inv: po.poId, date: po.date, balance: item.remainingMeter, 
+                    type: item.type, unit: item.unit, isQtyBased: item.isQtyBased 
+                });
+            }
+        });
+    });
+
+    if(Object.keys(reportMap).length === 0) { box.innerHTML = '<div style="text-align:center; padding:20px; color:red;">Tidak ada saldo tersisa untuk customer ini.</div>'; return; }
+
+    let html = `<h4 style="border-bottom:2px solid #ddd; padding-bottom:5px;">Laporan Saldo: ${cust}</h4>`;
+    html += `<table class="report-table"><thead><tr><th>Nama Barang</th><th>Invoice / PO</th><th>Tanggal PO</th><th>Satuan</th><th style="text-align:right;">Sisa</th></tr></thead><tbody>`;
+    Object.values(reportMap).forEach(group => {
+        let det0 = group.details[0];
+        let unitLabel = (det0.isQtyBased) ? (det0.unit || "Pcs") : "Meter";
+        html += `<tr class="group-header"><td colspan="4">${group.name} <small>(${det0.type})</small></td><td style="text-align:right; font-size:13px;">Total: ${group.totalBalance.toFixed(2)}</td></tr>`;
+        group.details.forEach(det => {
+            let rowUnit = det.unit || "-";
+            if (!det.isQtyBased && det.type && det.type.toLowerCase().includes("spandek")) rowUnit = "Meter";
+            html += `<tr class="sub-row"><td></td><td>${det.inv}</td><td>${det.date}</td><td>${rowUnit}</td><td style="text-align:right;">${det.balance.toFixed(2)}</td></tr>`;
+        });
+    });
+    html += `</tbody></table>`;
+    box.innerHTML = html;
+}
+
+function printReportDiv() {
+    const content = document.getElementById('reportContentArea').innerHTML;
+    const win = window.open('', '', 'height=700,width=900');
+    win.document.write('<html><head><title>Print Report</title><style>body{font-family:Arial, sans-serif;} table{width:100%; border-collapse:collapse;} th,td{border:1px solid #ccc; padding:8px; font-size:12px;} .group-header{background:#eee; font-weight:bold;}</style></head><body>');
+    win.document.write(content);
+    win.document.write('</body></html>');
+    win.document.close();
+    win.print();
+}
+
+// --- SETUP & PRODUCTION LOGIC ---
+function openSetup(orderId) {
+    activeOrderId = orderId;
+    const order = currentOrders[orderId];
+    document.getElementById('modalOrderNo').innerText = orderId;
+    
+    const headerRow = document.getElementById('tableHeaderRow');
+    let headers = `<th style="width:20%">Item</th><th style="width:5%; text-align:center;">M</th><th style="width:5%; text-align:center;">Qty</th><th style="width:8%; text-align:center;">Set Qty</th><th style="width:8%; text-align:center;">Tot M'</th><th style="width:12%">Mesin</th><th style="width:14%">KPC (Stock)</th><th style="width:8%">Type</th><th style="width:14%">WE Code</th><th style="width:5%; text-align:center;">Act</th>`;
+    if (currentView === 'In Process') headers += `<th style="width:5%; text-align:center;">Selesai?</th>`;
+    headerRow.innerHTML = headers;
+
+    const alertBox = document.getElementById('modalAlert');
+    if (currentView === 'In Process') {
+        alertBox.innerHTML = '<i class="fas fa-check-circle"></i> <strong>Produksi:</strong> Centang barang yang sudah selesai. Jangan lupa klik <strong>Update</strong> untuk menyimpan progres.';
+        alertBox.style.display = 'block';
+    } else if (['Completed', 'Delivered', 'Cancel'].includes(currentView)) {
+        alertBox.style.display = 'none';
+    } else {
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = '<strong>Instruksi:</strong> Gunakan tombol (+) untuk split jika stok kurang. Total Qty harus sama dengan target.';
+    }
+
+    const tbody = document.getElementById('setupBody');
+    tbody.innerHTML = '';
+
+    order.items.forEach((item, idx) => {
+        const isSpandek = (item.type && item.type.toLowerCase().includes('spandek') && !item.type.toLowerCase().includes('non'));
+        const tr = document.createElement('tr');
+        tr.className = 'main-row';
+        tr.dataset.id = idx;
+        tr.dataset.type = isSpandek ? 'spandek' : 'non-spandek';
+        tr.dataset.original = item.fullRowData;
+        
+        const initialTotalM = (parseFloat(item.meter) * parseInt(item.qty)).toFixed(2);
+        let nameHtml = `<strong>${item.item}</strong><br><small style="color:#888;">${item.type}</small>`;
+        let isEditable = (currentView === 'Awaiting' || currentView === 'In Process');
+        let spandekClass = isSpandek ? 'prod-input' : 'prod-input non-spandek-input';
+        let readonlyAttr = isSpandek && isEditable ? '' : 'disabled';
+        
+        let valMesin = item.machine || "";
+        let valKPC = item.kpc || "";
+        let valType = "Custom";
+        if(item.we && item.we.includes('_PL_')) valType = "Plat";
+
+        // --- GENERATE DYNAMIC KPC ---
+        let kpcOptions = "";
+        if (isSpandek) {
+            kpcOptions = getKPCOptionsHTML(item.item, item.type, initialTotalM);
+            // Pertahankan nilai lama jika ada
+            if (valKPC && !kpcOptions.includes(`value="${valKPC}"`)) {
+                 kpcOptions = `<option value="${valKPC}" selected>${valKPC} (Current)</option>` + kpcOptions;
+            } else {
+                 kpcOptions = kpcOptions.replace(`value="${valKPC}"`, `value="${valKPC}" selected`);
+            }
+        } else {
+            kpcOptions = `<option value="">-</option>`;
+        }
+
+        let inputs = `
+            <td><input type="number" class="${spandekClass} qty-input" value="${item.qty}" min="0" oninput="validity.valid||(value='');" ${readonlyAttr} onchange="updateCalc(this)"></td>
+            <td style="text-align:center;"><span class="total-m">${initialTotalM}</span></td>
+            <td><select class="${spandekClass} machine-select" ${readonlyAttr} onchange="generateWE(this)"><option value="">-</option><option value="PM08" ${valMesin==='PM08'?'selected':''}>PM08</option><option value="PM14" ${valMesin==='PM14'?'selected':''}>PM14</option></select></td>
+            <td>
+                <select class="${spandekClass} kpc-select" ${readonlyAttr} onchange="generateWE(this)">
+                    ${kpcOptions}
+                </select>
+            </td>
+            <td><select class="${spandekClass} type-select" ${readonlyAttr} onchange="generateWE(this)"><option value="Custom" ${valType==='Custom'?'selected':''}>Custom</option><option value="Plat" ${valType==='Plat'?'selected':''}>Plat</option></select></td>
+            <td><input type="text" class="${spandekClass} we-code" readonly value="${item.we||''}"></td>
+            <td style="text-align:center;">${isSpandek && isEditable ? `<button class="btn-sm btn-split" onclick="splitRow(this, ${idx})"><i class="fas fa-plus"></i></button>` : '-'}</td>
+        `;
+
+        if (currentView === 'In Process') {
+            let checked = item.isFinished ? 'checked' : '';
+            inputs += `<td style="text-align:center;"><input type="checkbox" class="check-production" ${checked} onchange="checkAllDone()"></td>`;
+        }
+
+        tr.innerHTML = `<td>${nameHtml}</td><td style="text-align:center;"><span class="meter-val">${item.meter}</span></td><td style="text-align:center;"><span class="target-qty badge bg-open">${item.qty}</span></td>${inputs}`;
+        tbody.appendChild(tr);
+    });
+
+    renderFooterButtons();
+    document.getElementById('validationMsg').style.display = 'none';
+    document.getElementById('setupModal').style.display = 'flex';
+    if(currentView === 'In Process') checkAllDone();
+}
+
+function renderFooterButtons() {
+    const footerLeft = document.getElementById('footerLeft');
+    const footerRight = document.getElementById('footerRight');
+    
+    footerLeft.innerHTML = ''; 
+    footerRight.innerHTML = '';
+    
+    footerLeft.removeAttribute('style');
+    footerRight.removeAttribute('style');
+    footerRight.style.display = 'flex';
+    footerRight.style.gap = '10px';
+
+    const btnClose = `<button class="btn btn-secondary" onclick="closeModal('setupModal')">Close</button>`;
+    
+    if (currentView === 'Awaiting') {
+        footerRight.innerHTML = `${btnClose} <button class="btn btn-cancel" onclick="triggerAction('cancel')">Cancel Production</button><button class="btn btn-primary" onclick="triggerAction('process')">Process</button>`;
+    } else if (currentView === 'In Process') {
+        footerLeft.innerHTML = `<button class="btn btn-process" onclick="generatePDF('SPK')"><i class="fas fa-print"></i> Print SPK</button>`;
+        footerRight.innerHTML = `${btnClose} <button class="btn btn-cancel" onclick="triggerAction('cancel')">Cancel</button><button class="btn btn-primary" onclick="triggerAction('update')">Update</button><button class="btn btn-complete" id="btnComplete" onclick="triggerAction('complete')" disabled>Selesai Produksi</button>`;
+    } else if (currentView === 'Completed') {
+        footerRight.innerHTML = `${btnClose} <button class="btn btn-deliver" onclick="triggerAction('deliver')">Delivery (Kirim)</button>`;
+    } else if (currentView === 'Delivered') {
+        footerLeft.innerHTML = `<button class="btn btn-process" onclick="generatePDF('SJ')"><i class="fas fa-print"></i> Print Surat Jalan</button>`;
+        footerRight.innerHTML = btnClose;
+    } else {
+        footerRight.innerHTML = btnClose;
+    }
+}
+
+function checkAllDone() {
+    const checkboxes = document.querySelectorAll('#setupBody tr:not(.disabled-row) .check-production');
+    let allChecked = checkboxes.length > 0;
+    checkboxes.forEach(cb => { if (!cb.checked) allChecked = false; });
+    const btn = document.getElementById('btnComplete');
+    if(btn) btn.disabled = !allChecked;
+}
+
+function triggerAction(actionType) {
+    let msg = "";
+    let func = null;
+
+    if (actionType === 'process') { 
+        msg = "Yakin data sudah benar dan siap diproses?"; 
+        func = () => submitProduction('new'); 
+    }
+    else if (actionType === 'update') { 
+        msg = "Simpan perubahan data produksi?"; 
+        func = () => submitProduction('update'); 
+    }
+    else if (actionType === 'complete') { 
+        msg = "Barang fisik sudah selesai diproduksi?"; 
+        func = () => sendAPI('completeOrder', { orderId: activeOrderId }); 
+    }
+    else if (actionType === 'deliver') { 
+        msg = "Kirim barang sekarang? (Stok akan dipotong)"; 
+        func = () => sendAPI('deliverOrder', { orderId: activeOrderId }); 
+    }
+    else if (actionType === 'cancel') { 
+        msg = "Yakin batalkan produksi ini?"; 
+        func = () => sendAPI('cancelOrder', { orderId: activeOrderId }); 
+    }
+
+    if (msg && func) showConfirm(msg, func);
+}
+
+function showConfirm(message, callback) {
+    document.getElementById('confirmMessage').innerText = message;
+    confirmCallback = callback;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+function closeConfirm(isConfirmed) {
+    document.getElementById('confirmModal').style.display = 'none';
+    if (isConfirmed && confirmCallback) confirmCallback();
+    confirmCallback = null;
+}
+document.getElementById('confirmYesBtn').onclick = () => closeConfirm(true);
+
+// --- SPLIT & CALCULATION LOGIC ---
+function splitRow(btn, groupId) {
+    const originalRow = btn.closest('tr');
+    const nameCell = originalRow.cells[0];
+    const itemName = nameCell.querySelector('strong').innerText;
+    const itemType = nameCell.querySelector('small').innerText;
+
+    const tbody = originalRow.parentNode;
+    if (!originalRow.classList.contains('disabled-row')) {
+        originalRow.classList.add('disabled-row');
+        originalRow.querySelector('.qty-input').value = 0; 
+        originalRow.querySelector('.total-m').innerText = "0.00";
+        originalRow.querySelectorAll('input, select').forEach(el => el.disabled = true);
+        const cb = originalRow.querySelector('.check-production');
+        if(cb) cb.disabled = true; 
+    }
+    const newRow = originalRow.cloneNode(true);
+    newRow.classList.remove('main-row', 'disabled-row');
+    newRow.classList.add('split-row');
+    const qtyInput = newRow.querySelector('.qty-input');
+    qtyInput.value = 0; 
+    qtyInput.disabled = false;
+    qtyInput.setAttribute("min", "0");
+    qtyInput.setAttribute("oninput", "validity.valid||(value='');");
+    
+    newRow.querySelectorAll('select').forEach(s => { 
+        s.value = ""; s.disabled = false; 
+        if (s.classList.contains('kpc-select')) {
+             s.innerHTML = getKPCOptionsHTML(itemName, itemType, 0); 
+        }
+        s.onchange = function(){ generateWE(this); } 
+    });
+    
+    newRow.querySelector('.we-code').value = "";
+    const newCb = newRow.querySelector('.check-production');
+    if(newCb) { 
+        newCb.disabled = false; newCb.checked = false; newCb.onchange = checkAllDone; 
+    }
+    newRow.querySelector('.target-qty').parentElement.innerHTML = '<small style="color:#666;">↳ (Split)</small>';
+    const btnContainer = newRow.querySelector('.btn-split').parentElement;
+    btnContainer.innerHTML = `<button class="btn-sm btn-remove" onclick="removeSplit(this, ${groupId})"><i class="fas fa-trash"></i></button>`;
+    const groupRows = tbody.querySelectorAll(`tr[data-id="${groupId}"]`);
+    const lastRow = groupRows[groupRows.length-1];
+    lastRow.after(newRow);
+    qtyInput.onchange = function() { updateCalc(this); }; 
+    if(currentView === 'In Process') checkAllDone();
+}
+
+function removeSplit(btn, groupId) {
+    const row = btn.closest('tr');
+    const tbody = row.parentNode;
+    row.remove();
+    const remainingSplits = tbody.querySelectorAll(`.split-row[data-id="${groupId}"]`);
+    if(remainingSplits.length === 0) {
+        const main = tbody.querySelector(`.main-row[data-id="${groupId}"]`);
+        main.classList.remove('disabled-row');
+        const target = parseInt(main.querySelector('.target-qty').innerText);
+        main.querySelector('.qty-input').value = target;
+        main.querySelectorAll('select, input').forEach(el => el.disabled = false);
+        const cb = main.querySelector('.check-production');
+        if(cb) cb.disabled = false;
+        
+        const m = parseFloat(main.querySelector('.meter-val').innerText || 0);
+        const req = (m * target).toFixed(2);
+        
+        const nameCell = main.cells[0];
+        const itemName = nameCell.querySelector('strong').innerText;
+        const itemType = nameCell.querySelector('small').innerText;
+        const kpcSelect = main.querySelector('.kpc-select');
+        const currentVal = kpcSelect.value;
+        kpcSelect.innerHTML = getKPCOptionsHTML(itemName, itemType, req);
+        kpcSelect.value = currentVal;
+
+        updateCalc(main.querySelector('.qty-input'));
+    }
+    if(currentView === 'In Process') checkAllDone();
+}
+
+function updateCalc(input) {
+    const row = input.closest('tr');
+    if(row.classList.contains('disabled-row')) return;
+    const m = parseFloat(row.querySelector('.meter-val').innerText || 0);
+    const q = parseInt(input.value || 0);
+    const totalM = (m * q).toFixed(2);
+    row.querySelector('.total-m').innerText = totalM;
+}
+
+function generateWE(el) {
+    const row = el.closest('tr');
+    const mach = row.querySelector('.machine-select').value;
+    const kpc = row.querySelector('.kpc-select').value;
+    const type = TYPE_CODES[row.querySelector('.type-select').value] || 'XX';
+    let shortInv = activeOrderId ? String(activeOrderId) : "";
+    if (shortInv.length > 5) shortInv = shortInv.slice(-5);
+    if(mach && kpc) row.querySelector('.we-code').value = `${mach}_${kpc}_${type}_${shortInv}`;
+}
+
+async function submitProduction(mode) {
+    const rows = document.querySelectorAll('#setupBody tr:not(.disabled-row)');
+    let data = [], valid = true, errorMsg = "";
+    
+    // Validasi Group Qty
+    const groupIds = new Set([...document.querySelectorAll('.main-row')].map(r => r.dataset.id));
+    groupIds.forEach(gid => {
+        const main = document.querySelector(`.main-row[data-id="${gid}"]`);
+        if (main) {
+            const targetElement = main.querySelector('.target-qty');
+            const target = targetElement ? parseInt(targetElement.innerText) : 0;
+            
+            let current = 0;
+            document.querySelectorAll(`tr[data-id="${gid}"]:not(.disabled-row)`).forEach(r => {
+                let val = parseInt(r.querySelector('.qty-input').value || 0);
+                if (val < 0) { valid = false; errorMsg = "Qty tidak boleh minus!"; }
+                current += val;
+            });
+            
+            if (valid && current !== target) {
+                valid = false;
+                errorMsg = `Total Qty untuk item baris ke-${parseInt(gid)+1} harus ${target}, saat ini ${current}.`;
+            }
+        }
+    });
+    
+    if(!valid) return alert("Validasi Gagal:\n" + errorMsg);
+
+    rows.forEach(r => {
+        const type = r.dataset.type;
+        const q = r.querySelector('.qty-input')?.value;
+        let item = { originalData: r.dataset.original, qty: q, isSplit: r.classList.contains('split-row') };
+        
+        if(currentView === 'In Process') {
+            item.isFinished = r.querySelector('.check-production')?.checked || false;
+        }
+
+        if(type === 'spandek') {
+            const m = r.querySelector('.machine-select').value;
+            const k = r.querySelector('.kpc-select').value;
+            const w = r.querySelector('.we-code').value;
+            
+            if(!m || !k) { 
+                r.style.backgroundColor = '#fee2e2'; 
+                valid = false; 
+                errorMsg = "Data Mesin/KPC belum lengkap pada baris Spandek!"; 
+            } else { 
+                item.machine = m; item.kpc = k; item.we = w; 
+                r.style.backgroundColor = ''; 
+            }
+        }
+        data.push(item);
+    });
+    
+    if(!valid) return alert(errorMsg || "Lengkapi Data Mesin/KPC!");
+
+    await sendAPI(
+        mode === 'new' ? 'submitProduction' : 'updateProductionData', 
+        { orderId: activeOrderId, data: data }
+    );
+}
+
+async function sendAPI(action, payload) {
+    const activeModal = document.getElementById('setupModal');
+    const activeContent = activeModal.querySelector('.modal-box');
+    
+    const originalOpacity = activeContent.style.opacity;
+    const originalCursor = document.body.style.cursor;
+    
+    try {
+        activeContent.style.pointerEvents = 'none'; 
+        activeContent.style.opacity = '0.6';
+        document.body.style.cursor = 'wait';
+
+        payload.action = action;
+        payload.category = 'preorder'; 
+
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const json = await res.json();
+
+        if(json.result === 'error') throw json.message;
+
+        alert("Sukses!"); 
+        closeModal('setupModal'); 
+        loadData(currentView);
+
+    } catch(e) { 
+        alert("Error: " + e); 
+    } finally {
+        if(activeContent) {
+            activeContent.style.pointerEvents = 'auto';
+            activeContent.style.opacity = originalOpacity || '1';
+        }
+        document.body.style.cursor = originalCursor;
+    }
+}
+
+// --- NEW PDF GENERATION LOGIC ---
+function generatePDF(type) {
+    if (!activeOrderId || !currentOrders[activeOrderId]) return alert("Pilih order dulu!");
+    
+    const o = currentOrders[activeOrderId];
+    const docTitle = document.getElementById('pdfDocTitle');
+    const tableHead = document.getElementById('pdfTableHead');
+    const tableBody = document.getElementById('pdfItemsBody');
+    const sigContainer = document.getElementById('pdfSignatureRow');
+
+    document.getElementById('pdfOrderNo').innerText = activeOrderId;
+    document.getElementById('pdfCustName').innerText = o.customer;
+    document.getElementById('pdfCustAddr').innerText = o.address || "Kendari"; 
+    document.getElementById('pdfType').innerText = o.type || 'General';
+    const today = new Date();
+    const dateStr = today.getDate().toString().padStart(2, '0') + '/' + (today.getMonth()+1).toString().padStart(2, '0') + '/' + today.getFullYear();
+    document.getElementById('pdfDate').innerText = dateStr;
+
+    tableBody.innerHTML = '';
+    sigContainer.innerHTML = '';
+
+    if (type === 'SJ') {
+        docTitle.innerText = "SURAT JALAN";
+        
+        tableHead.innerHTML = `
+            <th class="t-center" style="width:5%;">NO</th>
+            <th class="t-left" style="width:40%;">NAMA BARANG</th>
+            <th class="t-center" style="width:10%;">METER</th>
+            <th class="t-center" style="width:10%;">QTY</th>
+            <th class="t-left" style="width:35%;">KETERANGAN</th>
+        `;
+
+        let grouped = {};
+        o.items.forEach(item => {
+            let key = `${item.item}_${item.meter}_${item.type}`;
+            if (!grouped[key]) { 
+                grouped[key] = { ...item, qty: 0 }; 
+            }
+            grouped[key].qty += parseInt(item.qty);
+        });
+        
+        Object.values(grouped).forEach((i, idx) => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td class="t-center">${idx + 1}</td>
+                    <td><strong>${i.item}</strong><br><small style="color:#666;">${i.type}</small></td>
+                    <td class="t-center">${i.meter}</td>
+                    <td class="t-center">${i.qty}</td>
+                    <td></td>
+                </tr>
+            `;
+        });
+
+        const signatures = ["Pembuat Nota", "Kepala Gudang", "Sopir", "Penerima Barang"];
+        signatures.forEach(role => {
+            sigContainer.innerHTML += `
+                <div class="sig-box">
+                    <div class="sig-title">${role}</div>
+                    <div class="sig-name">&nbsp;</div>
+                </div>
+            `;
+        });
+
+    } else {
+        docTitle.innerText = "SURAT PERINTAH KERJA";
+
+        tableHead.innerHTML = `
+            <th class="t-center" style="width:5%;">NO</th>
+            <th class="t-left" style="width:35%;">NAMA BARANG</th>
+            <th class="t-center" style="width:10%;">METER</th>
+            <th class="t-center" style="width:10%;">QTY</th>
+            <th class="t-left" style="width:20%;">DETAIL MESIN/KPC</th>
+            <th class="t-left" style="width:20%;">WE CODE</th>
+        `;
+
+        o.items.forEach((i, idx) => {
+            const mesinInfo = (i.machine && i.kpc) ? `${i.machine} / ${i.kpc}` : '';
+            tableBody.innerHTML += `
+                <tr>
+                    <td class="t-center">${idx + 1}</td>
+                    <td><strong>${i.item}</strong><br><small style="color:#666;">${i.type}</small></td>
+                    <td class="t-center">${i.meter}</td>
+                    <td class="t-center">${i.qty}</td>
+                    <td>${mesinInfo}</td>
+                    <td style="font-family:monospace;">${i.we || ''}</td>
+                </tr>
+            `;
+        });
+
+        const signatures = ["Admin Produksi", "Kepala Gudang"];
+        signatures.forEach(role => {
+            sigContainer.innerHTML += `
+                <div class="sig-box">
+                    <div class="sig-title">${role}</div>
+                    <div class="sig-name">&nbsp;</div>
+                </div>
+            `;
+        });
+    }
+
+    const element = document.getElementById('pdfContent');
+    const opt = {
+        margin:       [0.3, 0.25, 0.3, 0.25], 
+        filename:     `${type}_${activeOrderId}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, scrollY: 0, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'a5', orientation: 'landscape' }
+    };
+    html2pdf().set(opt).from(element).save();
+}
+
+async function openCreateModal() {
+    document.getElementById('createModal').style.display = 'flex';
+    document.getElementById('createItemsContainer').innerHTML = '';
+    
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    document.getElementById('inpDate').value = `${year}-${month}-${day}`;
+
+    document.getElementById('labelNextPRT').innerText = "Loading...";
+    fetchNextPRT();
+
+    const sel = document.getElementById('selCustomer');
+    sel.innerHTML = '<option value="">Loading Data...</option>';
+    sel.disabled = true;
+
+    try {
+        const url = API_URL + "?action=getPreOrdersMaster&viewType=Remaining";
+        const req = await fetch(url);
+        const data = await req.json();
+        
+        globalRemainingData = data; 
+        
+        populateCust(data);
+        sel.disabled = false;
+    } catch (e) {
+        sel.innerHTML = '<option value="">Gagal Load Customer</option>';
+        console.error(e);
+    }
+}
+
+async function fetchNextPRT() {
+    try {
+        const response = await fetch(API_URL + "?action=getNextPRT");
+        const text = await response.text();
+        document.getElementById('labelNextPRT').innerText = text;
+    } catch (e) {
+        document.getElementById('labelNextPRT').innerText = "Error";
+    }
+}
+
+function populateCust(dataList) {
+    const sel = document.getElementById('selCustomer');
+    sel.innerHTML = '<option value="">-- Pilih Customer --</option>';
+    const source = dataList || globalRemainingData;
+
+    if (!source || source.length === 0) {
+          sel.innerHTML += '<option value="" disabled>Tidak ada data saldo</option>';
+          return;
+    }
+
+    [...new Set(source.map(d=>d.customer))].sort().forEach(c => {
+        let opt = document.createElement('option'); 
+        opt.value = c; 
+        opt.innerText = c; 
+        sel.appendChild(opt);
+    });
+}
+
+function loadCustomerItemsAggregated(cust) {
+    const box = document.getElementById('createItemsContainer'); 
+    box.innerHTML = '';
+    aggregatedItemsMap = {}; 
+    if(!cust) return;
+
+    globalRemainingData.filter(d => d.customer === cust).forEach(po => {
+        po.items.forEach(item => {
+            let isQtyBased = item.isQtyBased; 
+            let hasBalance = isQtyBased ? (item.remainingMeter > 0) : (item.remainingMeter > 0.1);
+
+            if(!item.isLineClosed && hasBalance) {
+                if(!aggregatedItemsMap[item.name]) {
+                    aggregatedItemsMap[item.name] = { 
+                        name: item.name, totalRemaining: 0, isQtyBased: isQtyBased, poList: [] 
+                    };
+                }
+                aggregatedItemsMap[item.name].totalRemaining += item.remainingMeter;
+                aggregatedItemsMap[item.name].poList.push({ 
+                    poId: po.poId, rowIndex: item.rowIndex, remaining: item.remainingMeter, 
+                    price: item.price, unit: item.unit, type: item.type 
+                });
+            }
+        });
+    });
+
+    Object.keys(aggregatedItemsMap).forEach((itemName, index) => {
+        const data = aggregatedItemsMap[itemName];
+        const safeName = index;
+        const div = document.createElement('div');
+        div.className = 'request-item';
+        div.dataset.name = itemName;
+        div.dataset.safeId = safeName;
+        div.dataset.max = data.totalRemaining;
+        div.dataset.isQty = data.isQtyBased; 
+
+        let unitLabel = data.isQtyBased ? (data.poList[0].unit || 'Pcs') : 'm';
+        let hideMeterStyle = data.isQtyBased ? 'display:none;' : '';
+
+        div.innerHTML = `
+            <div class="request-header">
+                <strong>${itemName}</strong>
+                <span class="balance-text">Saldo Tersedia: ${data.totalRemaining.toFixed(2)} ${unitLabel}</span>
+            </div>
+            <div class="rows-container" id="rows-${safeName}">
+                <div class="input-row">
+                    <div style="${hideMeterStyle}">
+                        <label>P (m):</label>
+                        <input type="number" class="prod-input inp-meter" step="0.01" min="0" placeholder="Panjang" onkeyup="calcMultiTotal('${safeName}')">
+                    </div>
+                    <label>Qty:</label>
+                    <input type="number" class="prod-input inp-qty" step="1" min="0" placeholder="Lembar/Btg" onkeyup="calcMultiTotal('${safeName}')">
+                    <div style="flex:1;"></div>
+                    <button class="row-remove-btn" onclick="removeRequestRow(this, '${safeName}')" title="Hapus Baris"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <button class="btn-add-line" onclick="addRequestRow('${safeName}')"><i class="fas fa-plus"></i> Tambah Ukuran</button>
+            <div class="item-summary">
+                Total Request: <span class="calc-res" id="total-${safeName}">0.00</span> ${unitLabel}
+            </div>
+        `;
+        box.appendChild(div);
+    });
+}
+
+function addRequestRow(safeId) {
+    const container = document.getElementById(`rows-${safeId}`);
+    const parent = container.closest('.request-item');
+    const isQtyBased = parent.dataset.isQty === "true";
+    let hideMeterStyle = isQtyBased ? 'display:none;' : '';
+    
+    const div = document.createElement('div');
+    div.className = 'input-row';
+    div.innerHTML = `
+        <div style="${hideMeterStyle}">
+            <label>P (m):</label>
+            <input type="number" class="prod-input inp-meter" step="0.01" min="0" placeholder="Panjang" onkeyup="calcMultiTotal('${safeId}')">
+        </div>
+        <label>Qty:</label>
+        <input type="number" class="prod-input inp-qty" step="1" min="0" placeholder="Lembar/Btg" onkeyup="calcMultiTotal('${safeId}')">
+        <div style="flex:1;"></div>
+        <button class="row-remove-btn" onclick="removeRequestRow(this, '${safeId}')" title="Hapus Baris"><i class="fas fa-trash"></i></button>
+    `;
+    container.appendChild(div);
+}
+
+function removeRequestRow(btn, safeId) {
+    btn.closest('.input-row').remove();
+    calcMultiTotal(safeId);
+}
+
+function calcMultiTotal(safeId) {
+    const container = document.getElementById(`rows-${safeId}`);
+    const parent = container.closest('.request-item');
+    const maxBalance = parseFloat(parent.dataset.max);
+    const isQtyBased = parent.dataset.isQty === "true"; 
+    const totalDisplay = document.getElementById(`total-${safeId}`);
+    
+    let totalUsed = 0;
+    container.querySelectorAll('.input-row').forEach(row => {
+        const m = parseFloat(row.querySelector('.inp-meter')?.value) || 0;
+        const qRaw = row.querySelector('.inp-qty').value;
+        let q = parseFloat(qRaw) || 0;
+        if(qRaw.includes('.')) { row.querySelector('.inp-qty').value = Math.floor(q); q = Math.floor(q); }
+        
+        if (isQtyBased) { totalUsed += q; } 
+        else { totalUsed += (m * q); }
+    });
+
+    totalDisplay.innerText = totalUsed.toFixed(2);
+    const btn = document.getElementById('btnSubmitRequest');
+
+    if(totalUsed > maxBalance + 0.05) {
+        totalDisplay.classList.add('over-limit');
+        totalDisplay.innerText += " (OVER LIMIT!)";
+        parent.style.border = "1px solid red";
+        parent.style.background = "#fee2e2";
+        btn.disabled = true;
+    } else {
+        totalDisplay.classList.remove('over-limit');
+        parent.style.border = "1px solid #e5e7eb";
+        parent.style.background = "#fff";
+        btn.disabled = false;
+    }
+    
+    const allOver = document.querySelectorAll('.over-limit');
+    if(allOver.length > 0) btn.disabled = true;
+}
+
+async function submitRequestAggregated() {
+    const cust = document.getElementById('selCustomer').value;
+    const dateVal = document.getElementById('inpDate').value;
+    if(!cust || !dateVal) return alert("Mohon Pilih Customer & Tanggal Delivery!");
+
+    let requestItems = []; 
+    let isValid = true;
+    let hasItems = false;
+
+    document.querySelectorAll('.request-item').forEach(div => {
+        const itemName = div.dataset.name;
+        const maxBalance = parseFloat(div.dataset.max);
+        const isQtyBased = div.dataset.isQty === "true";
+        let itemTotalUsed = 0;
+
+        const rows = div.querySelectorAll('.input-row');
+        rows.forEach(row => {
+            const reqLen = parseFloat(row.querySelector('.inp-meter')?.value) || 0;
+            const reqQty = parseFloat(row.querySelector('.inp-qty').value) || 0;
+            const deductionValue = isQtyBased ? reqQty : (reqLen * reqQty);
+
+            if (reqQty < 0) { isValid = false; }
+            if (!isQtyBased && reqLen < 0) { isValid = false; }
+
+            if (deductionValue > 0) {
+                hasItems = true;
+                itemTotalUsed += deductionValue;
+                const refData = aggregatedItemsMap[itemName] && aggregatedItemsMap[itemName].poList[0];
+                
+                requestItems.push({
+                    itemName: itemName,
+                    length: isQtyBased ? 0 : reqLen,
+                    qty: reqQty,
+                    totalDeduction: deductionValue, 
+                    isQtyBased: isQtyBased,
+                    type: refData ? refData.type : '',
+                    unit: refData ? refData.unit : ''
+                });
+            }
+        });
+
+        if (itemTotalUsed > maxBalance + 0.05) {
+            isValid = false;
+            div.style.background = "#fee2e2";
+        }
+    });
+
+    if(!isValid) return alert("Gagal: Ada input minus atau melebihi sisa saldo!");
+    if(!hasItems) return alert("Gagal: Belum ada item yang diisi.");
+
+    const btn = document.getElementById('btnSubmitRequest');
+    const originalText = btn.innerText;
+    
+    try {
+        btn.disabled = true; 
+        btn.innerText = "Processing Backend...";
+        const payload = {
+            action: 'submitPreorderRequest',
+            data: { customer: cust, estDelivery: dateVal, items: requestItems }
+        };
+        const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const res = await req.json();
+
+        if(res.result === 'success') {
+            alert("Request Berhasil Dibuat! \nID: " + res.orderId);
+            closeModal('createModal'); 
+            loadData('Awaiting'); 
+            loadData('Remaining').then(d => globalRemainingData = d);
+        } else {
+            throw new Error(res.message || "Unknown Error from Backend");
+        }
+    } catch(e) {
+        console.error(e);
+        alert("Terjadi Kesalahan: " + e.message);
+    } finally {
+        btn.disabled = false; 
+        btn.innerText = originalText;
+    }
+}
+
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+</script>
+</body>
+</html>
