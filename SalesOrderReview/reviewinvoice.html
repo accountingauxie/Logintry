@@ -685,9 +685,9 @@ table.pdf-table td {
                         <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Awaiting Approval" onchange="handleChk('chkStatus', this)"> Awaiting Approval</label>
                         <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Awaiting Production" onchange="handleChk('chkStatus', this)"> Awaiting Production</label>
                         <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="In Production" onchange="handleChk('chkStatus', this)"> In Production</label>
-                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Shipping" onchange="handleChk('chkStatus', this)"> Shipping</label>
-                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Completed" onchange="handleChk('chkStatus', this)"> Completed</label>
-                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Cancel Order" onchange="handleChk('chkStatus', this)"> Cancelled</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Cancel Order" onchange="handleChk('chkStatus', this)"> Cancel Order</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Cancel Production" onchange="handleChk('chkStatus', this)"> Cancel Production</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Delivered" onchange="handleChk('chkStatus', this)"> Delivered</label>
                     </div>
                 </div>
 
@@ -920,7 +920,8 @@ function renderTable() {
     filtered.forEach(o => {
         let badge = 'badge-approve';
         if(o.status.includes('Cancel')) badge = 'badge-danger';
-        if(o.status.includes('Completed') || o.status.includes('Production') || o.status.includes('Process')) badge = 'badge-success';
+        // Termasuk Delivered di badge sukses
+        if(o.status.includes('Completed') || o.status.includes('Production') || o.status.includes('Process') || o.status.includes('Delivered')) badge = 'badge-success';
         
         let typeBadgeClass = 'type-gen'; 
         let t = (o.type || "").toLowerCase();
