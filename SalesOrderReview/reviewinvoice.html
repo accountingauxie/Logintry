@@ -160,6 +160,37 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
 .btn-pdf-cash { background: #0369a1; }
 .btn-pdf-kredit { background: #7e22ce; }
 
+/* --- TAMBAHAN STYLE UNTUK CHECKBOX GROUP --- */
+.checkbox-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 Kolom */
+    gap: 10px;
+    margin-top: 5px;
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
 /* --- PDF STYLE --- */
 #pdf-hidden-container { position: absolute; left: -9999px; top: 0; }
 #pdfContent { 
@@ -186,7 +217,6 @@ table.web-items td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size:
     letter-spacing: 1px;
 }
 
-/* CSS BARU UNTUK NOMOR ORDER DI KANAN ATAS */
 .pdf-order-number-right {
     text-align: right;       /* Rata Kanan */
     font-size: 16px;         /* Ukuran Font Besar */
@@ -282,13 +312,12 @@ table.pdf-table th {
     text-transform: uppercase; 
     padding: 6px 4px; 
     color: #000; 
-    /* --- UBAH BORDER DI SINI MENJADI 0.5PT --- */
+    /* --- BORDER 0.5pt --- */
     border-top: 0.5pt solid #000; 
     border-bottom: 0.5pt solid #000; 
     letter-spacing: 0.5px; 
 }
 
-/* --- HANYA DI SINI LINE SPACING RAPAT (1) --- */
 table.pdf-table td { 
     padding: 6px 4px; 
     font-size: 11px; 
@@ -371,7 +400,6 @@ table.pdf-table td {
     padding-bottom: 5px; 
 }
 
-/* --- UPDATE CSS SIGNATURE --- */
 .sig-box { 
     width: 250px; 
     text-align: center; 
@@ -393,7 +421,6 @@ table.pdf-table td {
     margin-bottom: 40px; 
 }
 
-/* --- CSS PAYMENT INFO --- */
 .pdf-payment-wrapper { 
     margin-top: 15px;            
     border-top: 2px solid #000; 
@@ -401,7 +428,6 @@ table.pdf-table td {
     page-break-inside: avoid; 
 }
 
-/* Judul "Informasi Pembayaran" */
 .pdf-payment-title { 
     font-size: 10.5px; 
     font-weight: 700; 
@@ -415,14 +441,12 @@ table.pdf-table td {
     gap: 30px;            
 }
 
-/* Isi Detail Bank */
 .pdf-bank-detail { 
     font-size: 9.5px; 
     line-height: 1.3; 
     color: #000;            
 }
 
-/* Nama Pemilik Rekening (Bold) */
 .bank-name { 
     font-weight: 700; 
     color: #000; 
@@ -611,7 +635,7 @@ table.pdf-table td {
 </div>
 
 <div id="reportModal" class="modal-overlay">
-    <div class="modal-box" style="width: 450px; height: auto; max-height: 90vh;">
+    <div class="modal-box" style="width: 500px; height: auto; max-height: 90vh;">
         <div class="modal-header">
             <h3 style="margin:0; font-size: 16px; font-weight: bold;">Export Sales Report</h3>
             <button class="btn-close" onclick="closeReportModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
@@ -619,20 +643,21 @@ table.pdf-table td {
         <div class="modal-body" style="padding: 20px;">
             <div style="display:flex; flex-direction:column; gap:15px;">
                 
-                <div>
-                    <label class="web-label">Report Format</label>
-                    <select id="reportFormat" class="form-control" style="background:#f0f9ff; border-color:#bae6fd; font-weight:bold; color:#0284c7;">
-                        <option value="summary">Summary (One row per Order)</option>
-                        <option value="detail">Detail (One row per Item)</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="web-label">Export To</label>
-                    <select id="exportTarget" class="form-control">
-                        <option value="excel" selected>Excel (.xlsx)</option>
-                        <option value="pdf">PDF Report (A4)</option>
-                    </select>
+                <div style="display:flex; gap:15px;">
+                    <div style="flex:1;">
+                        <label class="web-label">Report Format</label>
+                        <select id="reportFormat" class="form-control" style="background:#f0f9ff; border-color:#bae6fd; font-weight:bold; color:#0284c7;">
+                            <option value="summary">Summary (Per Order)</option>
+                            <option value="detail">Detail (Per Item)</option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <label class="web-label">Export To</label>
+                        <select id="exportTarget" class="form-control">
+                            <option value="excel" selected>Excel (.xlsx)</option>
+                            <option value="pdf">PDF Report (A4)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
@@ -645,25 +670,25 @@ table.pdf-table td {
 
                 <div>
                     <label class="web-label">Order Type</label>
-                    <select id="reportType" class="form-control">
-                        <option value="All">All Types</option>
-                        <option value="General Order">General Order</option>
-                        <option value="Pre Order">Pre Order</option>
-                        <option value="Back Order">Back Order</option>
-                    </select>
+                    <div class="checkbox-group" id="chkGroupType">
+                        <label class="checkbox-item"><input type="checkbox" name="chkType" value="All" checked onchange="handleChk('chkType', this)"> <b>All Types</b></label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkType" value="General Order" onchange="handleChk('chkType', this)"> General Order</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkType" value="Pre Order" onchange="handleChk('chkType', this)"> Pre Order</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkType" value="Back Order" onchange="handleChk('chkType', this)"> Back Order</label>
+                    </div>
                 </div>
 
                 <div>
                     <label class="web-label">Order Status</label>
-                    <select id="reportStatus" class="form-control">
-                        <option value="All">All Status</option>
-                        <option value="Awaiting Approval">Awaiting Approval</option>
-                        <option value="Awaiting Production">Awaiting Production</option>
-                        <option value="In Production">In Production</option>
-                        <option value="Shipping">Shipping</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancel Order">Cancelled</option>
-                    </select>
+                    <div class="checkbox-group" id="chkGroupStatus">
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="All" checked onchange="handleChk('chkStatus', this)"> <b>All Status</b></label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Awaiting Approval" onchange="handleChk('chkStatus', this)"> Awaiting Approval</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Awaiting Production" onchange="handleChk('chkStatus', this)"> Awaiting Production</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="In Production" onchange="handleChk('chkStatus', this)"> In Production</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Shipping" onchange="handleChk('chkStatus', this)"> Shipping</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Completed" onchange="handleChk('chkStatus', this)"> Completed</label>
+                        <label class="checkbox-item"><input type="checkbox" name="chkStatus" value="Cancel Order" onchange="handleChk('chkStatus', this)"> Cancelled</label>
+                    </div>
                 </div>
 
             </div>
@@ -1102,6 +1127,36 @@ function dlPDF(mode, filenameId) {
     }
 }
 
+// --- LOGIKA CHECKBOX (Eksklusif All vs Specific) ---
+function handleChk(groupName, el) {
+    const checkboxes = document.querySelectorAll(`input[name="${groupName}"]`);
+    const allBox = document.querySelector(`input[name="${groupName}"][value="All"]`);
+    
+    // Skenario 1: User klik "All"
+    if (el.value === "All") {
+        if (el.checked) {
+            // Jika All dicentang, matikan semua yang lain
+            checkboxes.forEach(cb => {
+                if (cb.value !== "All") cb.checked = false;
+            });
+        }
+    } 
+    // Skenario 2: User klik item spesifik (selain All)
+    else {
+        if (el.checked) {
+            // Jika item spesifik dicentang, matikan All
+            allBox.checked = false;
+        } else {
+            // Cek apakah ada sisa yang dicentang?
+            const anyChecked = Array.from(checkboxes).some(cb => cb !== allBox && cb.checked);
+            if (!anyChecked) {
+                // Jika tidak ada satupun yg dicentang, kembalikan ke All
+                allBox.checked = true;
+            }
+        }
+    }
+}
+
 // --- FUNGSI SALES REPORT (EXPORT EXCEL & PDF) ---
 
 function openReportModal() {
@@ -1121,23 +1176,52 @@ function closeReportModal() {
 function generateReport() {
     const startVal = document.getElementById('reportStartDate').value;
     const endVal = document.getElementById('reportEndDate').value;
-    const typeVal = document.getElementById('reportType').value;
-    const statusVal = document.getElementById('reportStatus').value;
-    const formatVal = document.getElementById('reportFormat').value; // 'summary' or 'detail'
-    const targetVal = document.getElementById('exportTarget').value; // 'excel' or 'pdf'
+    const formatVal = document.getElementById('reportFormat').value; 
+    const targetVal = document.getElementById('exportTarget').value;
 
-    // 1. Filter Data
+    // 1. AMBIL NILAI CHECKBOX TYPE
+    const chkTypes = document.querySelectorAll('input[name="chkType"]:checked');
+    let selectedTypes = Array.from(chkTypes).map(cb => cb.value);
+    
+    // 2. AMBIL NILAI CHECKBOX STATUS
+    const chkStatuses = document.querySelectorAll('input[name="chkStatus"]:checked');
+    let selectedStatuses = Array.from(chkStatuses).map(cb => cb.value);
+
+    // Validasi: Harus ada minimal 1 yg terpilih
+    if (selectedTypes.length === 0) { alert("Pilih minimal satu Order Type."); return; }
+    if (selectedStatuses.length === 0) { alert("Pilih minimal satu Order Status."); return; }
+
+    // 3. FILTER DATA
     let filteredData = allOrders.filter(o => {
-        if (statusVal !== 'All' && o.status !== statusVal) return false;
-
-        if (typeVal !== 'All') {
-            const oType = (o.type || "").toLowerCase();
-            const filterType = typeVal.toLowerCase();
-            if (filterType === 'pre order' && !oType.includes('pre')) return false;
-            if (filterType === 'back order' && !oType.includes('back')) return false;
-            if (filterType === 'general order' && (oType.includes('pre') || oType.includes('back'))) return false;
+        // --- FILTER STATUS ---
+        // Jika "All" TIDAK ada di pilihan, maka kita cek apakah status order ini ada di list yg dipilih
+        if (!selectedStatuses.includes('All')) {
+            if (!selectedStatuses.includes(o.status)) return false;
         }
 
+        // --- FILTER TYPE ---
+        // Jika "All" TIDAK ada di pilihan, cek tipe spesifik
+        if (!selectedTypes.includes('All')) {
+            const oType = (o.type || "").toLowerCase();
+            
+            // Logika OR (Multi select)
+            const match = selectedTypes.some(sel => {
+                const selLow = sel.toLowerCase();
+                if (selLow === 'general order') {
+                    // General logic: tidak ada kata pre/back
+                    return (!oType.includes('pre') && !oType.includes('back'));
+                } else if (selLow === 'pre order') {
+                    return oType.includes('pre');
+                } else if (selLow === 'back order') {
+                    return oType.includes('back');
+                }
+                return false;
+            });
+
+            if (!match) return false;
+        }
+
+        // --- FILTER TANGGAL ---
         if (startVal || endVal) {
             const orderDate = parseDateStr(o.date);
             if (orderDate) {
@@ -1159,14 +1243,7 @@ function generateReport() {
         return;
     }
 
-    // Helper: dd/mm/yyyy converter
-    const fmtDateIndo = (isoStr) => {
-        if(!isoStr) return "";
-        const [y, m, d] = isoStr.split('-');
-        return `${d}/${m}/${y}`;
-    }
-
-    // 2. Prepare Data for Export
+    // 4. PREPARE DATA FOR EXPORT
     let exportData = [];
     const fmtCcy = (n) => "Rp " + (Number(n)||0).toLocaleString('id-ID');
 
@@ -1219,7 +1296,7 @@ function generateReport() {
         });
     }
 
-    // 3. GENERATE OUTPUT
+    // 5. GENERATE OUTPUT
 
     if (targetVal === 'excel') {
         const ws = XLSX.utils.json_to_sheet(exportData);
@@ -1243,21 +1320,17 @@ function generateReport() {
     } else {
         // --- EXPORT TO PDF (A4) ---
         const { jsPDF } = window.jspdf;
-        // Gunakan landscape jika Detail, Portrait jika Summary
         const orient = formatVal === 'detail' ? 'landscape' : 'portrait';
-        // Set unit ke 'cm' agar margin 0.7cm presisi
         const doc = new jsPDF({ orientation: orient, unit: 'cm', format: 'a4' });
 
         // HEADER
         doc.setFont("helvetica", "bold"); 
         doc.setFontSize(14);
-        // Posisi Y disesuaikan dengan satuan cm
         doc.text(`Sales Report (${formatVal.toUpperCase()})`, 0.7, 1.0);
         
         doc.setFont("helvetica", "normal"); 
         doc.setFontSize(10);
         
-        // Format Tanggal Periode dd/mm/yyyy
         const dStart = startVal ? startVal.split('-').reverse().join('/') : '...';
         const dEnd = endVal ? endVal.split('-').reverse().join('/') : '...';
         doc.text(`Periode: ${dStart} s/d ${dEnd}`, 0.7, 1.5);
@@ -1267,44 +1340,38 @@ function generateReport() {
         const head = [keys];
         const body = exportData.map(obj => Object.values(obj));
 
-        // Logic Column Styles untuk Detail View
         let myColumnStyles = {};
         if (formatVal === 'detail') {
             myColumnStyles = {
-                0: { cellWidth: 'auto' }, // ID
-                1: { cellWidth: 'auto' }, // Date
-                2: { cellWidth: 'auto' }, // Due
-                3: { cellWidth: 3.5, overflow: 'linebreak' }, // Customer (Wrap ~3.5cm)
-                4: { cellWidth: 4.5, overflow: 'linebreak' }, // Address (Wrap ~4.5cm)
-                5: { cellWidth: 'auto' }, // Item (Auto)
-                // Sisanya auto...
+                0: { cellWidth: 'auto' }, 
+                1: { cellWidth: 'auto' }, 
+                2: { cellWidth: 'auto' }, 
+                3: { cellWidth: 3.5, overflow: 'linebreak' }, 
+                4: { cellWidth: 4.5, overflow: 'linebreak' }, 
+                5: { cellWidth: 'auto' }, 
             };
         } else {
-             // Summary View
              myColumnStyles = {
-                3: { cellWidth: 4.0, overflow: 'linebreak' }, // Customer
-                4: { cellWidth: 4.0, overflow: 'linebreak' }, // Region
+                3: { cellWidth: 4.0, overflow: 'linebreak' }, 
+                4: { cellWidth: 4.0, overflow: 'linebreak' }, 
              };
         }
 
         doc.autoTable({
             head: head,
             body: body,
-            startY: 2.0, // Mulai di 2cm dari atas
-            // Set Margin Kiri Kanan 0.7cm
+            startY: 2.0, 
             margin: { top: 2.0, left: 0.7, right: 0.7 },
             styles: { 
                 fontSize: 7, 
                 cellPadding: 0.1,
                 valign: 'middle',
-                // --- UPDATE BORDER DISINI ---
-                lineWidth: 0.018, // 0.5 pt kira-kira 0.0176 cm
-                lineColor: [0, 0, 0] // Border hitam
+                lineWidth: 0.018, // 0.5pt
+                lineColor: [0, 0, 0] 
             },
             headStyles: { 
                 fillColor: [17, 105, 153],
                 fontStyle: 'bold',
-                // --- UPDATE BORDER DISINI ---
                 lineWidth: 0.018,
                 lineColor: [0, 0, 0]
             },
