@@ -3,69 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Kontrol COGS</title>
+    <title>Sistem COGS Modern</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 300px; }
-        h2 { margin-top: 0; color: #333; }
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border: none; padding: 15px 30px; border-radius: 50px;
-            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0,0,0,0.3); }
-        .btn:disabled { background: #ccc; cursor: wait; transform: none; }
-        #log { margin-top: 20px; font-size: 14px; color: #555; min-height: 20px; }
-        .success { color: green; font-weight: bold; }
-        .empty { color: orange; font-weight: bold; }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .loader { border-top-color: #3B82F6; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Smooth transition for detail expansion */
+        .detail-row { transition: all 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0; }
+        .detail-row.open { max-height: 500px; opacity: 1; padding-top: 1rem; padding-bottom: 1rem; }
     </style>
 </head>
-<body>
+<body class="text-gray-800 h-screen flex overflow-hidden">
 
-    <div class="card">
-        <h2>🚀 Control Panel</h2>
-        <p>Sync Google Sheet & Xero</p>
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col shadow-lg z-10">
+        <div class="h-16 flex items-center justify-center border-b border-gray-100">
+            <h1 class="text-xl font-bold text-blue-600"><i class="fa-solid fa-boxes-stacked mr-2"></i> COGS SYS</h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <a href="#" onclick="switchTab('orders')" id="nav-orders" class="flex items-center px-4 py-3 bg-blue-50 text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-file-invoice w-6"></i>
+                <span class="font-medium">Invoice Pending</span>
+            </a>
+            <a href="#" onclick="switchTab('inventory')" id="nav-inventory" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+                <i class="fa-solid fa-warehouse w-6"></i>
+                <span class="font-medium">Stok Gudang</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <p class="text-xs text-gray-400 text-center">Connected to Google Sheets</p>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
         
-        <button id="btnAction" class="btn" onclick="triggerScript()">
-            HITUNG COGS SEKARANG
-        </button>
-        
-        <div id="log">Siap dijalankan...</div>
-    </div>
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm">
+            <div class="md:hidden">
+                <button class="text-gray-500"><i class="fa-solid fa-bars text-xl"></i></button>
+            </div>
+            <div class="flex items-center bg-gray-100 rounded-full px-4 py-2 w-96">
+                <i class="fa-solid fa-search text-gray-400 mr-2"></i>
+                <input type="text" id="searchInput" placeholder="Cari No Invoice atau Customer..." class="bg-transparent border-none focus:outline-none w-full text-sm">
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="text-sm font-bold text-gray-700">Admin</p>
+                    <p class="text-xs text-green-500">● Online</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-auto p-8 relative">
+            
+            <div id="loading" class="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-80 z-50">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+                <h2 class="text-center text-gray-600 text-sm font-semibold">Mengambil Data Terbaru...</h2>
+            </div>
+
+            <div id="view-orders" class="space-y-6">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Daftar Penjualan</h2>
+                        <p class="text-gray-500 text-sm">Transaksi yang belum dihitung HPP-nya.</p>
+                    </div>
+                    <button onclick="fetchOrders()" class="text-blue-600 text-sm font-semibold hover:underline">
+                        <i class="fa-solid fa-rotate-right"></i> Refresh Data
+                    </button>
+                </div>
+
+                <div id="orders-container" class="grid grid-cols-1 gap-4">
+                    </div>
+            </div>
+
+            <div id="view-inventory" class="hidden space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Rekap Persediaan</h2>
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold text-gray-600">Nama Barang</th>
+                                <th class="px-6 py-4 font-semibold text-gray-600">History Batch</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-container" class="divide-y divide-gray-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
 
     <script>
-        // GANTI URL INI DENGAN HASIL DEPLOY KAMU
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOcHAFutKpae68VRjIjrFCgeq7zX4BessaxjyIuYqM-tXLJPs2MmaZDTIO7htvmCMA/exec";
+        // --- KONFIGURASI ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbwAqm2MiF0H5a8J4kgjnCVcpzV9OyAnG2TseLqvCTtTE3KVs2Z9vfHNXjxehYQLtAoD/exec"; // Ganti dengan URL AppScript Deploy
 
-        function triggerScript() {
-            const btn = document.getElementById('btnAction');
-            const log = document.getElementById('log');
+        let ordersData = [];
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchOrders();
             
-            btn.disabled = true;
-            btn.innerText = "Sedang Memproses...";
-            log.innerText = "Menghubungi Google Sheet...";
-            log.className = "";
-
-            // Kita pakai POST agar masuk ke fungsi doPost(e)
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors' // Penting untuk bypass CORS sederhana
-            })
-            .then(() => {
-                // Karena 'no-cors', kita tidak bisa baca respons JSON detailnya
-                // Tapi kita bisa asumsikan berhasil jika tidak error network
-                btn.disabled = false;
-                btn.innerText = "HITUNG COGS SEKARANG";
-                log.innerText = "✅ Perintah Terkirim! Cek Spreadsheet.";
-                log.className = "success";
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                btn.disabled = false;
-                btn.innerText = "COBA LAGI";
-                log.innerText = "❌ Gagal Menghubungi Server";
+            // Search Functionality
+            document.getElementById('searchInput').addEventListener('keyup', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = ordersData.filter(o => 
+                    o.invoice.toLowerCase().includes(term) || 
+                    o.customer.toLowerCase().includes(term)
+                );
+                renderOrders(filtered);
             });
+        });
+
+        function switchTab(tab) {
+            // UI Toggle
+            document.getElementById('nav-orders').classList.remove('bg-blue-50', 'text-blue-700');
+            document.getElementById('nav-inventory').classList.remove('bg-blue-50', 'text-blue-700');
+            document.getElementById('view-orders').classList.add('hidden');
+            document.getElementById('view-inventory').classList.add('hidden');
+
+            if(tab === 'orders') {
+                document.getElementById('nav-orders').classList.add('bg-blue-50', 'text-blue-700');
+                document.getElementById('view-orders').classList.remove('hidden');
+                fetchOrders();
+            } else {
+                document.getElementById('nav-inventory').classList.add('bg-blue-50', 'text-blue-700');
+                document.getElementById('view-inventory').classList.remove('hidden');
+                fetchInventory();
+            }
+        }
+
+        // --- FETCH ORDERS ---
+        async function fetchOrders() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_URL}?action=getOrders`);
+                const data = await response.json();
+                ordersData = data;
+                renderOrders(data);
+            } catch (error) {
+                Swal.fire('Error', 'Gagal mengambil data: ' + error, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderOrders(data) {
+            const container = document.getElementById('orders-container');
+            container.innerHTML = '';
+
+            if(data.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-gray-400">Tidak ada penjualan pending. Semua bersih! ✨</div>`;
+                return;
+            }
+
+            data.forEach(inv => {
+                // Generate Items HTML
+                const itemsHtml = inv.items.map(item => `
+                    <div class="flex justify-between py-2 border-b border-gray-100 last:border-0">
+                        <span class="text-gray-600">${item.item}</span>
+                        <span class="font-mono font-bold text-gray-800">${item.qty}</span>
+                    </div>
+                `).join('');
+
+                // Card HTML
+                const html = `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                        <div class="p-5 flex justify-between items-center cursor-pointer" onclick="toggleDetail('${inv.invoice}')">
+                            <div class="flex items-center space-x-4">
+                                <div class="bg-blue-100 text-blue-600 p-3 rounded-lg">
+                                    <i class="fa-solid fa-file-lines text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-lg">${inv.invoice}</h3>
+                                    <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">${inv.date} • ${inv.customer}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="bg-orange-100 text-orange-600 text-xs px-3 py-1 rounded-full font-bold">PENDING</span>
+                                <i class="fa-solid fa-chevron-down text-gray-300"></i>
+                            </div>
+                        </div>
+                        
+                        <div id="detail-${inv.invoice}" class="detail-row bg-gray-50 px-5 border-t border-gray-100">
+                            <h4 class="text-xs font-bold text-gray-400 mb-2 uppercase">Items Breakdown</h4>
+                            <div class="mb-4 text-sm">
+                                ${itemsHtml}
+                            </div>
+                            <div class="flex justify-end pb-2">
+                                <button onclick="processCOGS('${inv.invoice}')" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg hover:opacity-90 transition-all transform hover:scale-105 flex items-center">
+                                    <i class="fa-solid fa-calculator mr-2"></i> Hitung COGS
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        function toggleDetail(id) {
+            const el = document.getElementById(`detail-${id}`);
+            el.classList.toggle('open');
+        }
+
+        // --- FETCH INVENTORY ---
+        async function fetchInventory() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_URL}?action=getInventory`);
+                const data = await response.json();
+                renderInventory(data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderInventory(data) {
+            const container = document.getElementById('inventory-container');
+            container.innerHTML = '';
+            
+            for (const [key, batches] of Object.entries(data)) {
+                const batchBadges = batches.map(b => 
+                    `<span class="inline-block bg-gray-100 border border-gray-200 text-xs px-2 py-1 rounded mr-1 mb-1 text-gray-600">
+                        ${b.date} (${b.qty})
+                    </span>`
+                ).join('');
+
+                const html = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-800">${key}</td>
+                        <td class="px-6 py-4">${batchBadges}</td>
+                    </tr>
+                `;
+                container.innerHTML += html;
+            }
+        }
+
+        // --- ACTION: CALCULATE COGS ---
+        async function processCOGS(invoice) {
+            const result = await Swal.fire({
+                title: 'Hitung COGS?',
+                text: `Sistem akan memotong stok FIFO untuk invoice ${invoice}`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10B981',
+                confirmButtonText: 'Ya, Hitung!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                showLoading(true);
+                
+                // Teknik untuk POST ke GAS tanpa CORS Error (no-cors mode)
+                // Kita kirim data via fetch POST standard
+                // Note: Apps Script harus handle doPost(e)
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'calculate', invoice: invoice })
+                    });
+                    
+                    const resData = await response.json();
+
+                    if(resData.success) {
+                        Swal.fire('Berhasil!', `Data ${invoice} telah diproses.`, 'success');
+                        fetchOrders(); // Refresh list
+                    } else {
+                        Swal.fire('Gagal', resData.message, 'error');
+                    }
+
+                } catch (error) {
+                    Swal.fire('Error Network', 'Cek koneksi atau script permissions', 'error');
+                } finally {
+                    showLoading(false);
+                }
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
         }
     </script>
 </body>
