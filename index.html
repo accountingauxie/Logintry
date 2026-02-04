@@ -89,7 +89,8 @@
                             <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Reference</th>
                             <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi</th>
                             <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Akun</th>
-                            <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Nominal</th>
+                            <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Debit</th>
+                            <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Kredit</th>
                             <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo</th>
                             <th class="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Bukti</th>
                         </tr>
@@ -97,7 +98,9 @@
                     <tbody id="tableBody">
                         </tbody>
                 </table>
-                <div id="tableLoading" class="p-4 text-center text-gray-500 hidden">Mengambil data...</div>
+                <div id="tableLoading" class="p-4 text-center text-gray-500 hidden">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Mengambil data...
+                </div>
             </div>
 
         </div>
@@ -167,7 +170,6 @@
         // --- STATE MANAGEMENT ---
         document.addEventListener("DOMContentLoaded", () => {
             checkSession();
-            // Set default date input today
             document.getElementById('tgl').valueAsDate = new Date();
         });
 
@@ -177,7 +179,7 @@
                 document.getElementById("loginPage").classList.add("hidden");
                 document.getElementById("dashboardPage").classList.remove("hidden");
                 document.getElementById("userName").innerText = JSON.parse(user).name;
-                fetchData(); // Load data saat masuk dashboard
+                fetchData(); 
             }
         }
 
@@ -197,26 +199,6 @@
                 password: document.getElementById("password").value
             };
 
-            fetch(API_URL, {
-                method: "POST",
-                mode: "no-cors", // Note: Apps Script Post redirect workaround
-                body: JSON.stringify(payload)
-            }).then(() => {
-                // Karena 'no-cors' tidak mengembalikan response body, 
-                // Kita gunakan trick sedikit atau untuk development ini
-                // PENTING: Untuk Apps Script 'no-cors', kita tidak bisa baca response JSON success/fail secara langsung di browser modern dengan mudah tanpa proxy.
-                // SOLUSI: Kita gunakan method text/json standard dan handle redirectnya.
-                // KOREKSI: Mari gunakan post biasa, Apps Script akan return JSON.
-                // Jika error CORS muncul, gunakan extension CORS atau ubah header di Apps Script.
-                // Untuk solusi paling stabil tanpa CORS error di GitHub Pages:
-                
-                // Gunakan teknik 'JSONP' untuk GET, tapi untuk POST (Login) kita coba direct fetch.
-                // Jika masih CORS, kita harus gunakan doPost yang return ContentService.
-            });
-            
-            // REVISI FETCH LOGIN (Agar Jalan di GitHub Pages):
-            // Apps Script doPost sering kena CORS jika headers content-type application/json.
-            // Kita kirim sebagai text/plain (default) tapi isi string JSON.
             fetch(API_URL, {
                 method: "POST",
                 body: JSON.stringify(payload)
@@ -256,7 +238,6 @@
             tbody.innerHTML = "";
             loading.classList.remove("hidden");
 
-            // Build URL Query
             let url = `${API_URL}?action=getData`;
             if (start) url += `&start=${start}`;
             if (end) url += `&end=${end}`;
@@ -280,26 +261,24 @@
             document.getElementById("valSaldo").innerText = fmt(stats.saldo);
         }
 
+        // FUNGSI UPDATE TABLE (DIPERBAIKI)
         function updateTable(rows) {
             const tbody = document.getElementById("tableBody");
-            const fmt = (n) => new Intl.NumberFormat('id-ID').format(n);
+            // Format angka tanpa "Rp", jika 0 tampilkan "-"
+            const fmt = (n) => n === 0 ? "-" : new Intl.NumberFormat('id-ID').format(n);
             
             if(rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Tidak ada data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4">Tidak ada data</td></tr>';
                 return;
             }
 
             rows.forEach(row => {
                 const tr = document.createElement("tr");
-                const isExpense = row.kredit > 0;
-                const nominal = isExpense ? row.kredit : row.debit;
-                const colorClass = isExpense ? "text-red-600" : "text-green-600";
-                const sign = isExpense ? "- " : "+ ";
 
                 // Link Bukti
                 let buktiHtml = "-";
                 if (row.attach && row.attach.includes("http")) {
-                    buktiHtml = `<a href="${row.attach}" target="_blank" class="text-blue-500 hover:text-blue-700"><i class="fas fa-image"></i> Lihat</a>`;
+                    buktiHtml = `<a href="${row.attach}" target="_blank" class="text-blue-500 hover:text-blue-700"><i class="fas fa-paperclip"></i> Lihat</a>`;
                 }
 
                 tr.innerHTML = `
@@ -307,8 +286,16 @@
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-600">${row.ref}</td>
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900 font-medium">${row.desc}</td>
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-500">${row.account}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm font-bold text-right ${colorClass}">${sign}${fmt(nominal)}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-right text-gray-700 font-bold">${fmt(row.saldo)}</td>
+                    
+                    <td class="px-5 py-3 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
+                        ${row.debit > 0 ? '<span class="text-green-600">'+fmt(row.debit)+'</span>' : '-'}
+                    </td>
+                    
+                    <td class="px-5 py-3 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
+                        ${row.kredit > 0 ? '<span class="text-red-600">'+fmt(row.kredit)+'</span>' : '-'}
+                    </td>
+
+                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-right text-gray-800 font-bold">${fmt(row.saldo)}</td>
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-center">${buktiHtml}</td>
                 `;
                 tbody.appendChild(tr);
@@ -317,7 +304,6 @@
 
         function updateDropdown(accounts) {
             const sel = document.getElementById("akun");
-            // Hanya isi jika masih kosong/loading
             if (sel.options.length <= 1) {
                 sel.innerHTML = '<option value="" disabled selected>-- Pilih Akun --</option>';
                 accounts.forEach(acc => {
@@ -341,7 +327,6 @@
 
             const fileInput = document.getElementById("file");
             
-            // Siapkan Data
             const payload = {
                 action: "addTransaction",
                 tanggal: document.getElementById("tgl").value,
@@ -352,7 +337,6 @@
                 noTagihan: document.getElementById("tagihan").value
             };
 
-            // Fungsi kirim data
             const send = (finalPayload) => {
                 fetch(API_URL, {
                     method: "POST",
@@ -365,7 +349,7 @@
                         closeModal();
                         document.getElementById("addForm").reset();
                         document.getElementById('tgl').valueAsDate = new Date();
-                        fetchData(); // Refresh table
+                        fetchData(); 
                     } else {
                         alert("Error: " + data.message);
                     }
@@ -376,7 +360,6 @@
                 });
             };
 
-            // Cek File dulu
             if (fileInput.files.length > 0) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
