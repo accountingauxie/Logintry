@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kas Kecil Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Custom Styles */
         .loading-overlay { background: rgba(255,255,255,0.8); z-index: 50; }
@@ -18,6 +18,9 @@
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 300ms;
         }
+
+        /* Styling khusus untuk ikon Lock */
+        .cursor-not-allowed { cursor: not-allowed; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 h-screen overflow-hidden">
@@ -47,6 +50,10 @@
         <nav class="bg-white shadow px-6 py-4 flex justify-between items-center z-20 relative flex-none">
             <h1 class="text-xl font-bold text-gray-700"><i class="fas fa-wallet mr-2"></i> Kas Kecil Overview</h1>
             <div class="flex items-center gap-4">
+                <div id="lockStatus" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200">
+                    <i class="fas fa-lock mr-1"></i> Locked: <span id="lockDateDisplay">-</span>
+                </div>
+                <div class="h-6 w-px bg-gray-300"></div>
                 <span id="userName" class="text-sm font-medium text-gray-600">Admin</span>
                 <button onclick="logout()" class="text-red-500 hover:text-red-700 text-sm font-bold">Logout</button>
             </div>
@@ -196,11 +203,18 @@
     </div>
 
     <script>
-        // PASTIKAN URL INI SESUAI DENGAN DEPLOYMENT TERBARU ANDA
-        const API_URL = "https://script.google.com/macros/s/AKfycbz4p7XZCQ4_1X3TO1ZQUDNFXwFX4ivPmOd_3c3cSUB49xlgp_3q_y-xFaKRROXjRHu-/exec"; 
+        // --- KONFIGURASI ---
+        // Ganti URL ini dengan deployment Google Script Anda
+        const API_URL = "https://script.google.com/macros/s/AKfycbzwHcTmy__jqykPH4a8GhfMuP7GWmDW4bOgjI6vHj134UyxbUQC5tNHhGUniWNs-C2-/exec"; 
+        
+        // --- SETTING MANUAL LOCK DATE (Jika backend belum support) ---
+        // Format: 'YYYY-MM-DD'. Contoh: '2023-12-31'
+        // Kosongkan (null) jika ingin mengandalkan data dari backend sepenuhnya
+        let MANUAL_LOCK_DATE = null; 
 
-        // VARIABEL GLOBAL UNTUK MENYIMPAN DATA (AGAR BISA DI-EDIT)
+        // VARIABEL GLOBAL
         let globalTransactions = [];
+        let currentLockDate = null; // Akan diisi dari Backend atau MANUAL_LOCK_DATE
 
         // --- STATE & AUTH ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -281,14 +295,39 @@
             .then(data => {
                 loading.classList.add("hidden");
                 if (data.status === "success") {
-                    // Simpan data ke global variable untuk keperluan Edit
                     globalTransactions = data.data;
 
+                    // Logika Penentuan Lock Date
+                    // Prioritas: Backend Data > Manual Config > Null
+                    if (data.lockDate) {
+                        currentLockDate = data.lockDate;
+                    } else {
+                        currentLockDate = MANUAL_LOCK_DATE;
+                    }
+
+                    updateLockDateUI();
                     updateCards(data.stats);
                     updateTable(globalTransactions);
                     updateDropdown(data.accounts);
                 }
+            })
+            .catch(err => {
+                loading.innerHTML = `<span class="text-red-500">Error: ${err}</span>`;
             });
+        }
+
+        function updateLockDateUI() {
+            const el = document.getElementById("lockStatus");
+            const txt = document.getElementById("lockDateDisplay");
+            
+            if (currentLockDate) {
+                el.classList.remove("hidden");
+                // Format tanggal agar cantik (misal: 31/12/2023)
+                const d = new Date(currentLockDate);
+                txt.innerText = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            } else {
+                el.classList.add("hidden");
+            }
         }
 
         function updateCards(stats) {
@@ -307,11 +346,10 @@
                 return;
             }
 
-            // Loop menggunakan index agar bisa ambil data dari globalTransactions[i]
             rows.forEach((row, index) => {
                 const tr = document.createElement("tr");
 
-                // TOMBOL BUKTI (Lihat)
+                // --- TOMBOL BUKTI ---
                 let btnLihat = `<span class="text-gray-300 text-xs">-</span>`;
                 if (row.attach && row.attach.includes("http")) {
                     btnLihat = `
@@ -321,13 +359,31 @@
                     `;
                 }
 
-                // TOMBOL EDIT (Pensil)
-                // Kita panggil openModal dengan mode 'edit' dan index data
-                let btnEdit = `
-                    <button onclick="openModal('edit', ${index})" class="text-amber-500 hover:text-amber-700 ml-3" title="Edit Transaksi">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
-                `;
+                // --- LOGIKA LOCK DATE ---
+                // Bandingkan tanggal transaksi (row.dateISO) dengan currentLockDate
+                // Format ISO String (YYYY-MM-DD) bisa dibandingan secara leksikografis
+                let isLocked = false;
+                if (currentLockDate && row.dateISO <= currentLockDate) {
+                    isLocked = true;
+                }
+
+                // --- TOMBOL EDIT / LOCK ICON ---
+                let btnAction = "";
+                if (isLocked) {
+                    // TAMPILKAN ICON LOCK (Terkunci)
+                    btnAction = `
+                        <span class="text-gray-400 ml-3 cursor-not-allowed" title="Data Terkunci (Lock Date: ${currentLockDate})">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                    `;
+                } else {
+                    // TAMPILKAN ICON EDIT MODERN (fa-pen-to-square)
+                    btnAction = `
+                        <button onclick="openModal('edit', ${index})" class="text-amber-500 hover:text-amber-600 ml-3 transition-colors" title="Edit Transaksi">
+                            <i class="fas fa-pen-to-square"></i>
+                        </button>
+                    `;
+                }
 
                 tr.innerHTML = `
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900 whitespace-nowrap">${row.date}</td>
@@ -345,7 +401,7 @@
 
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-right text-gray-800 font-bold">${fmt(row.saldo)}</td>
                     <td class="px-5 py-3 border-b border-gray-200 text-center text-lg">
-                        ${btnLihat} ${btnEdit}
+                        ${btnLihat} ${btnAction}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -354,15 +410,16 @@
 
         function updateDropdown(accounts) {
             const sel = document.getElementById("akun");
-            // Cek apakah option > 1 (karena ada default 'Loading' atau 'Pilih')
             if (sel.options.length <= 1) {
                 sel.innerHTML = '<option value="" disabled selected>-- Pilih Akun --</option>';
-                accounts.forEach(acc => {
-                    const opt = document.createElement("option");
-                    opt.value = acc;
-                    opt.text = acc;
-                    sel.add(opt);
-                });
+                if(accounts && accounts.length > 0){
+                    accounts.forEach(acc => {
+                        const opt = document.createElement("option");
+                        opt.value = acc;
+                        opt.text = acc;
+                        sel.add(opt);
+                    });
+                }
             }
         }
 
@@ -423,35 +480,28 @@
             const title = document.getElementById("modalTitle");
             const fileInfo = document.getElementById("fileLabelInfo");
 
-            // Set Mode ke Hidden Input
             document.getElementById("formMode").value = mode;
 
             if (mode === 'add') {
                 form.reset();
                 title.innerText = "Tambah Transaksi";
-                fileInfo.classList.add("hidden"); // Sembunyikan info "biarkan kosong"
+                fileInfo.classList.add("hidden");
                 document.getElementById("editRef").value = "";
-                
-                // Set Default Date Hari Ini
                 document.getElementById('tgl').valueAsDate = new Date();
-                // Set Default Radio
                 document.getElementById("tipeKeluar").checked = true;
 
             } else if (mode === 'edit') {
-                // Ambil data dari globalTransactions berdasarkan index
                 const data = globalTransactions[index];
                 
                 title.innerText = "Edit Transaksi";
-                fileInfo.classList.remove("hidden"); // Tampilkan info "biarkan kosong"
+                fileInfo.classList.remove("hidden");
 
-                // Isi Form dengan Data Lama
                 document.getElementById("editRef").value = data.ref;
-                document.getElementById("tgl").value = data.dateISO; // Format YYYY-MM-DD dari backend
+                document.getElementById("tgl").value = data.dateISO; 
                 document.getElementById("akun").value = data.account;
                 document.getElementById("desc").value = data.desc;
                 document.getElementById("tagihan").value = data.noTagihan || "";
 
-                // Nominal & Tipe
                 if (data.debit > 0) {
                     document.getElementById("tipeMasuk").checked = true;
                     document.getElementById("nominal").value = data.debit;
@@ -475,13 +525,11 @@
             btn.disabled = true;
 
             const fileInput = document.getElementById("file");
-            
-            // Tentukan Action berdasarkan Mode
             const actionType = (mode === 'edit') ? "editTransaction" : "addTransaction";
 
             const payload = {
                 action: actionType,
-                ref: document.getElementById("editRef").value, // Hanya terpakai saat edit
+                ref: document.getElementById("editRef").value,
                 tanggal: document.getElementById("tgl").value,
                 tipe: document.querySelector('input[name="tipe"]:checked').value,
                 akun: document.getElementById("akun").value,
@@ -498,12 +546,12 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === "success") {
-                        alert(data.message); // Tampilkan pesan sukses dari server
+                        alert(data.message);
                         closeModal();
                         document.getElementById("addForm").reset();
-                        fetchData(); // Refresh data tabel
+                        fetchData();
                     } else {
-                        alert("Gagal: " + data.message); // Tampilkan pesan error (misal Lock Date)
+                        alert("Gagal: " + data.message);
                     }
                 })
                 .catch(err => alert("Gagal koneksi: " + err))
@@ -513,7 +561,6 @@
                 });
             };
 
-            // Cek Upload File
             if (fileInput.files.length > 0) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
