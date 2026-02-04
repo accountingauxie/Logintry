@@ -7,15 +7,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* Custom Styles */
         .loading-overlay { background: rgba(255,255,255,0.8); z-index: 50; }
-        /* Style Tabel Striping Custom */
         tbody tr:nth-child(even) { background-color: #f9fafb; }
         tbody tr:hover { background-color: #f3f4f6; }
+        
+        /* Transisi Halus untuk Split View */
+        .transition-width {
+            transition-property: width;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+        }
     </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800">
+<body class="bg-gray-100 font-sans text-gray-800 h-screen overflow-hidden">
 
-    <div id="loginPage" class="min-h-screen flex items-center justify-center bg-gray-200">
+    <div id="loginPage" class="fixed inset-0 flex items-center justify-center bg-gray-200 z-50">
         <div class="bg-white p-8 rounded-lg shadow-lg w-96">
             <h2 class="text-2xl font-bold mb-6 text-center text-blue-800">Login Kas Kecil</h2>
             <form id="loginForm" onsubmit="handleLogin(event)">
@@ -35,8 +42,9 @@
         </div>
     </div>
 
-    <div id="dashboardPage" class="hidden min-h-screen">
-        <nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
+    <div id="dashboardPage" class="hidden flex flex-col h-full">
+        
+        <nav class="bg-white shadow px-6 py-4 flex justify-between items-center z-20 relative flex-none">
             <h1 class="text-xl font-bold text-gray-700"><i class="fas fa-wallet mr-2"></i> Kas Kecil Overview</h1>
             <div class="flex items-center gap-4">
                 <span id="userName" class="text-sm font-medium text-gray-600">Admin</span>
@@ -44,82 +52,106 @@
             </div>
         </nav>
 
-        <div class="p-6 max-w-7xl mx-auto">
+        <div class="flex-grow flex overflow-hidden relative">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
-                    <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Saldo Akhir</div>
-                    <div class="text-3xl font-bold text-gray-800" id="valSaldo">Rp 0</div>
+            <div id="mainContent" class="w-full h-full overflow-y-auto p-6 transition-width">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
+                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Saldo Akhir</div>
+                        <div class="text-3xl font-bold text-gray-800" id="valSaldo">Rp 0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Masuk (Filtered)</div>
+                        <div class="text-2xl font-bold text-green-600" id="valDebit">Rp 0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-red-500">
+                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Keluar (Filtered)</div>
+                        <div class="text-2xl font-bold text-red-600" id="valKredit">Rp 0</div>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
-                    <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Masuk (Filtered)</div>
-                    <div class="text-2xl font-bold text-green-600" id="valDebit">Rp 0</div>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow border-l-4 border-red-500">
-                    <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Keluar (Filtered)</div>
-                    <div class="text-2xl font-bold text-red-600" id="valKredit">Rp 0</div>
-                </div>
-            </div>
 
-            <div class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap gap-4 items-end justify-between">
-                <div class="flex gap-4 items-end">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Start Date</label>
-                        <input type="date" id="filterStart" class="border p-2 rounded text-sm">
+                <div class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap gap-4 items-end justify-between">
+                    <div class="flex gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Start Date</label>
+                            <input type="date" id="filterStart" class="border p-2 rounded text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">End Date</label>
+                            <input type="date" id="filterEnd" class="border p-2 rounded text-sm">
+                        </div>
+                        <button onclick="fetchData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded border font-medium text-sm">
+                            <i class="fas fa-filter mr-1"></i> Filter
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">End Date</label>
-                        <input type="date" id="filterEnd" class="border p-2 rounded text-sm">
-                    </div>
-                    <button onclick="fetchData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded border font-medium text-sm">
-                        <i class="fas fa-filter mr-1"></i> Filter
+                    
+                    <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold text-sm">
+                        <i class="fas fa-plus mr-1"></i> Add Transaction
                     </button>
                 </div>
-                
-                <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold text-sm">
-                    <i class="fas fa-plus mr-1"></i> Add Transaction
-                </button>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden mb-10">
+                    <table class="min-w-full leading-normal relative">
+                        <thead class="sticky top-0 z-10">
+                            <tr class="bg-gray-50 border-b border-gray-200">
+                                <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Reference</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Akun</th>
+                                <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Debit</th>
+                                <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Kredit</th>
+                                <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo</th>
+                                <th class="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Bukti</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            </tbody>
+                    </table>
+                    <div id="tableLoading" class="p-8 text-center text-gray-500 hidden">
+                        <i class="fas fa-spinner fa-spin mr-2 text-2xl"></i> <br>Mengambil data...
+                    </div>
+                </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <table class="min-w-full leading-normal">
-                    <thead>
-                        <tr class="bg-gray-50 border-b border-gray-200">
-                            <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Reference</th>
-                            <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                            <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Akun</th>
-                            <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Debit</th>
-                            <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Kredit</th>
-                            <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo</th>
-                            <th class="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Bukti</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        </tbody>
-                </table>
-                <div id="tableLoading" class="p-4 text-center text-gray-500 hidden">
-                    <i class="fas fa-spinner fa-spin mr-2"></i> Mengambil data...
+            <div id="previewPane" class="w-0 bg-gray-50 border-l border-gray-300 shadow-2xl transition-width flex flex-col hidden relative z-30">
+                <div class="flex justify-between items-center p-4 bg-white border-b flex-none">
+                    <h3 class="font-bold text-gray-700"><i class="fas fa-file-invoice mr-2"></i> Preview Dokumen</h3>
+                    <div class="flex gap-2">
+                        <a id="btnNewTab" href="#" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border rounded hover:bg-blue-50">
+                            <i class="fas fa-external-link-alt"></i> Full Screen
+                        </a>
+                        <button onclick="closePreview()" class="text-red-500 hover:text-red-700 text-xl font-bold px-2" title="Tutup Preview">&times;</button>
+                    </div>
+                </div>
+                <div class="flex-grow relative bg-gray-200">
+                    <div id="previewLoader" class="absolute inset-0 flex items-center justify-center text-gray-500">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+                            <p>Memuat Dokumen...</p>
+                        </div>
+                    </div>
+                    <iframe id="previewFrame" class="w-full h-full hidden" src="" frameborder="0"></iframe>
                 </div>
             </div>
 
         </div>
     </div>
 
-    <div id="modalAdd" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center mb-4">
+    <div id="modalAdd" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
                 <h3 class="text-lg font-bold text-gray-900">Tambah Transaksi</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">&times;</button>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
             </div>
             
             <form id="addForm" onsubmit="submitTransaction(event)">
                 <div class="mb-3">
                     <label class="block text-xs font-bold mb-1">Tanggal</label>
-                    <input type="date" id="tgl" class="w-full border p-2 rounded text-sm" required>
+                    <input type="date" id="tgl" class="w-full border p-2 rounded text-sm bg-gray-50" required>
                 </div>
                 
-                <div class="mb-3 flex gap-4">
+                <div class="mb-3 flex gap-4 bg-gray-100 p-2 rounded">
                     <label class="flex items-center cursor-pointer">
                         <input type="radio" name="tipe" value="Keluar" checked class="mr-2"> Expense (Keluar)
                     </label>
@@ -130,8 +162,8 @@
 
                 <div class="mb-3">
                     <label class="block text-xs font-bold mb-1">Akun CoA</label>
-                    <select id="akun" class="w-full border p-2 rounded text-sm" required>
-                        <option>Loading...</option>
+                    <select id="akun" class="w-full border p-2 rounded text-sm bg-white" required>
+                        <option value="">Loading...</option>
                     </select>
                 </div>
 
@@ -152,22 +184,19 @@
 
                 <div class="mb-4">
                     <label class="block text-xs font-bold mb-1">Upload Bukti</label>
-                    <input type="file" id="file" class="w-full text-sm text-gray-500" accept="image/*,application/pdf">
+                    <input type="file" id="file" class="w-full text-sm text-gray-500 border rounded p-1" accept="image/*,application/pdf">
                 </div>
 
-                <button type="submit" id="btnSubmit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-bold">Simpan</button>
+                <button type="submit" id="btnSubmit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-bold transition">Simpan Transaksi</button>
             </form>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // KONFIGURASI: Masukkan URL Web App Anda Disini
-        // ==========================================
+        // KONFIGURASI URL
         const API_URL = "https://script.google.com/macros/s/AKfycbyGpSSJriWLg7m4MX62Cihyhbgftr5eyvxg-yZK_mnOm1wuj6xGQBhaxGIFtOktmMB1/exec"; 
-        // ==========================================
 
-        // --- STATE MANAGEMENT ---
+        // --- STATE & AUTH ---
         document.addEventListener("DOMContentLoaded", () => {
             checkSession();
             document.getElementById('tgl').valueAsDate = new Date();
@@ -183,7 +212,6 @@
             }
         }
 
-        // --- AUTHENTICATION ---
         function handleLogin(e) {
             e.preventDefault();
             const btn = document.getElementById("btnLogin");
@@ -214,7 +242,7 @@
                 }
             })
             .catch(error => {
-                err.innerText = "Gagal terhubung ke server.";
+                err.innerText = "Gagal terhubung server: " + error;
                 err.classList.remove("hidden");
             })
             .finally(() => {
@@ -261,42 +289,44 @@
             document.getElementById("valSaldo").innerText = fmt(stats.saldo);
         }
 
-        // FUNGSI UPDATE TABLE (DIPERBAIKI)
         function updateTable(rows) {
             const tbody = document.getElementById("tableBody");
-            // Format angka tanpa "Rp", jika 0 tampilkan "-"
             const fmt = (n) => n === 0 ? "-" : new Intl.NumberFormat('id-ID').format(n);
             
             if(rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4">Tidak ada data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-gray-500">Tidak ada data transaksi.</td></tr>';
                 return;
             }
 
             rows.forEach(row => {
                 const tr = document.createElement("tr");
 
-                // Link Bukti
-                let buktiHtml = "-";
+                // LOGIKA TOMBOL BUKTI (PREVIEW SPLIT VIEW)
+                let buktiHtml = `<span class="text-gray-300">-</span>`;
                 if (row.attach && row.attach.includes("http")) {
-                    buktiHtml = `<a href="${row.attach}" target="_blank" class="text-blue-500 hover:text-blue-700"><i class="fas fa-paperclip"></i> Lihat</a>`;
+                    buktiHtml = `
+                        <button onclick="openPreview('${row.attach}')" class="text-blue-500 hover:text-blue-700 font-bold text-xs border border-blue-500 px-2 py-1 rounded hover:bg-blue-50 transition">
+                            <i class="fas fa-eye mr-1"></i> Lihat
+                        </button>
+                    `;
                 }
 
                 tr.innerHTML = `
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900">${row.date}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-600">${row.ref}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900 font-medium">${row.desc}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-500">${row.account}</td>
+                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900 whitespace-nowrap">${row.date}</td>
+                    <td class="px-5 py-3 border-b border-gray-200 text-xs text-gray-500 font-mono">${row.ref}</td>
+                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900 font-medium truncate max-w-xs" title="${row.desc}">${row.desc}</td>
+                    <td class="px-5 py-3 border-b border-gray-200 text-xs text-gray-500">${row.account}</td>
                     
                     <td class="px-5 py-3 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
-                        ${row.debit > 0 ? '<span class="text-green-600">'+fmt(row.debit)+'</span>' : '-'}
+                        ${row.debit > 0 ? '<span class="text-green-600">+ '+fmt(row.debit)+'</span>' : '-'}
                     </td>
                     
                     <td class="px-5 py-3 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
-                        ${row.kredit > 0 ? '<span class="text-red-600">'+fmt(row.kredit)+'</span>' : '-'}
+                        ${row.kredit > 0 ? '<span class="text-red-600">- '+fmt(row.kredit)+'</span>' : '-'}
                     </td>
 
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-right text-gray-800 font-bold">${fmt(row.saldo)}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-center">${buktiHtml}</td>
+                    <td class="px-5 py-3 border-b border-gray-200 text-center">${buktiHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -313,6 +343,65 @@
                     sel.add(opt);
                 });
             }
+        }
+
+        // --- SPLIT VIEW PREVIEW LOGIC ---
+        function openPreview(url) {
+            if(!url) return alert("Link file tidak valid");
+
+            const mainContent = document.getElementById("mainContent");
+            const previewPane = document.getElementById("previewPane");
+            const iframe = document.getElementById("previewFrame");
+            const btnNewTab = document.getElementById("btnNewTab");
+            const loader = document.getElementById("previewLoader");
+
+            // 1. Transformasi URL Google Drive (/view -> /preview)
+            let previewUrl = url;
+            if (url.includes("drive.google.com") && url.includes("/view")) {
+                previewUrl = url.replace(/\/view.*/, "/preview");
+            }
+
+            // 2. Animasi Layout (Geser Kiri)
+            previewPane.classList.remove("hidden");
+            // Delay sedikit agar transisi CSS berjalan
+            setTimeout(() => {
+                mainContent.classList.remove("w-full");
+                mainContent.classList.add("w-2/3"); // Tabel jadi 66%
+                previewPane.classList.remove("w-0");
+                previewPane.classList.add("w-1/3"); // Preview jadi 33%
+            }, 10);
+
+            // 3. Load Iframe
+            loader.classList.remove("hidden");
+            iframe.classList.add("hidden");
+            
+            iframe.src = previewUrl;
+            iframe.onload = function() {
+                loader.classList.add("hidden");
+                iframe.classList.remove("hidden");
+            };
+
+            // Set link tombol "Full Screen"
+            btnNewTab.href = url;
+        }
+
+        function closePreview() {
+            const mainContent = document.getElementById("mainContent");
+            const previewPane = document.getElementById("previewPane");
+            const iframe = document.getElementById("previewFrame");
+
+            // 1. Kembalikan Lebar
+            mainContent.classList.remove("w-2/3");
+            mainContent.classList.add("w-full");
+            
+            previewPane.classList.remove("w-1/3");
+            previewPane.classList.add("w-0");
+
+            // 2. Sembunyikan pane setelah transisi selesai (300ms)
+            setTimeout(() => {
+                previewPane.classList.add("hidden");
+                iframe.src = ""; // Reset src agar stop loading memori
+            }, 300);
         }
 
         // --- ADD TRANSACTION ---
@@ -354,8 +443,9 @@
                         alert("Error: " + data.message);
                     }
                 })
+                .catch(err => alert("Gagal koneksi: " + err))
                 .finally(() => {
-                    btn.innerText = "Simpan";
+                    btn.innerText = "Simpan Transaksi";
                     btn.disabled = false;
                 });
             };
