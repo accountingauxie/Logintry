@@ -86,7 +86,7 @@
                         </button>
                     </div>
                     
-                    <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold text-sm">
+                    <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold text-sm">
                         <i class="fas fa-plus mr-1"></i> Add Transaction
                     </button>
                 </div>
@@ -102,7 +102,7 @@
                                 <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Debit</th>
                                 <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Kredit</th>
                                 <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo</th>
-                                <th class="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Bukti</th>
+                                <th class="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -119,7 +119,7 @@
                     <h3 class="font-bold text-gray-700"><i class="fas fa-file-invoice mr-2"></i> Preview Dokumen</h3>
                     <div class="flex gap-2">
                         <a id="btnNewTab" href="#" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border rounded hover:bg-blue-50">
-                            <i class="fas fa-external-link-alt"></i> Full Screen
+                            <i class="fas fa-external-link-alt"></i> Full
                         </a>
                         <button onclick="closePreview()" class="text-red-500 hover:text-red-700 text-xl font-bold px-2" title="Tutup Preview">&times;</button>
                     </div>
@@ -141,11 +141,14 @@
     <div id="modalAdd" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="text-lg font-bold text-gray-900">Tambah Transaksi</h3>
+                <h3 id="modalTitle" class="text-lg font-bold text-gray-900">Tambah Transaksi</h3>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
             </div>
             
             <form id="addForm" onsubmit="submitTransaction(event)">
+                <input type="hidden" id="editRef">
+                <input type="hidden" id="formMode" value="add">
+
                 <div class="mb-3">
                     <label class="block text-xs font-bold mb-1">Tanggal</label>
                     <input type="date" id="tgl" class="w-full border p-2 rounded text-sm bg-gray-50" required>
@@ -153,10 +156,10 @@
                 
                 <div class="mb-3 flex gap-4 bg-gray-100 p-2 rounded">
                     <label class="flex items-center cursor-pointer">
-                        <input type="radio" name="tipe" value="Keluar" checked class="mr-2"> Expense (Keluar)
+                        <input type="radio" name="tipe" id="tipeKeluar" value="Keluar" checked class="mr-2"> Expense (Keluar)
                     </label>
                     <label class="flex items-center cursor-pointer">
-                        <input type="radio" name="tipe" value="Masuk" class="mr-2"> Income (Masuk)
+                        <input type="radio" name="tipe" id="tipeMasuk" value="Masuk" class="mr-2"> Income (Masuk)
                     </label>
                 </div>
 
@@ -183,7 +186,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-xs font-bold mb-1">Upload Bukti</label>
+                    <label class="block text-xs font-bold mb-1">Upload Bukti <span id="fileLabelInfo" class="font-normal text-gray-400 text-[10px] hidden">(Biarkan kosong jika tidak diubah)</span></label>
                     <input type="file" id="file" class="w-full text-sm text-gray-500 border rounded p-1" accept="image/*,application/pdf">
                 </div>
 
@@ -193,8 +196,11 @@
     </div>
 
     <script>
-        // KONFIGURASI URL
+        // PASTIKAN URL INI SESUAI DENGAN DEPLOYMENT TERBARU ANDA
         const API_URL = "https://script.google.com/macros/s/AKfycbyGpSSJriWLg7m4MX62Cihyhbgftr5eyvxg-yZK_mnOm1wuj6xGQBhaxGIFtOktmMB1/exec"; 
+
+        // VARIABEL GLOBAL UNTUK MENYIMPAN DATA (AGAR BISA DI-EDIT)
+        let globalTransactions = [];
 
         // --- STATE & AUTH ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -275,8 +281,11 @@
             .then(data => {
                 loading.classList.add("hidden");
                 if (data.status === "success") {
+                    // Simpan data ke global variable untuk keperluan Edit
+                    globalTransactions = data.data;
+
                     updateCards(data.stats);
-                    updateTable(data.data);
+                    updateTable(globalTransactions);
                     updateDropdown(data.accounts);
                 }
             });
@@ -298,18 +307,27 @@
                 return;
             }
 
-            rows.forEach(row => {
+            // Loop menggunakan index agar bisa ambil data dari globalTransactions[i]
+            rows.forEach((row, index) => {
                 const tr = document.createElement("tr");
 
-                // LOGIKA TOMBOL BUKTI (PREVIEW SPLIT VIEW)
-                let buktiHtml = `<span class="text-gray-300">-</span>`;
+                // TOMBOL BUKTI (Lihat)
+                let btnLihat = `<span class="text-gray-300 text-xs">-</span>`;
                 if (row.attach && row.attach.includes("http")) {
-                    buktiHtml = `
-                        <button onclick="openPreview('${row.attach}')" class="text-blue-500 hover:text-blue-700 font-bold text-xs border border-blue-500 px-2 py-1 rounded hover:bg-blue-50 transition">
-                            <i class="fas fa-eye mr-1"></i> Lihat
+                    btnLihat = `
+                        <button onclick="openPreview('${row.attach}')" class="text-blue-500 hover:text-blue-700" title="Lihat Bukti">
+                            <i class="fas fa-eye"></i>
                         </button>
                     `;
                 }
+
+                // TOMBOL EDIT (Pensil)
+                // Kita panggil openModal dengan mode 'edit' dan index data
+                let btnEdit = `
+                    <button onclick="openModal('edit', ${index})" class="text-amber-500 hover:text-amber-700 ml-3" title="Edit Transaksi">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                `;
 
                 tr.innerHTML = `
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900 whitespace-nowrap">${row.date}</td>
@@ -326,7 +344,9 @@
                     </td>
 
                     <td class="px-5 py-3 border-b border-gray-200 text-sm text-right text-gray-800 font-bold">${fmt(row.saldo)}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-center">${buktiHtml}</td>
+                    <td class="px-5 py-3 border-b border-gray-200 text-center text-lg">
+                        ${btnLihat} ${btnEdit}
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -334,6 +354,7 @@
 
         function updateDropdown(accounts) {
             const sel = document.getElementById("akun");
+            // Cek apakah option > 1 (karena ada default 'Loading' atau 'Pilih')
             if (sel.options.length <= 1) {
                 sel.innerHTML = '<option value="" disabled selected>-- Pilih Akun --</option>';
                 accounts.forEach(acc => {
@@ -355,33 +376,26 @@
             const btnNewTab = document.getElementById("btnNewTab");
             const loader = document.getElementById("previewLoader");
 
-            // 1. Transformasi URL Google Drive (/view -> /preview)
             let previewUrl = url;
             if (url.includes("drive.google.com") && url.includes("/view")) {
                 previewUrl = url.replace(/\/view.*/, "/preview");
             }
 
-            // 2. Animasi Layout (Geser Kiri)
             previewPane.classList.remove("hidden");
-            // Delay sedikit agar transisi CSS berjalan
             setTimeout(() => {
                 mainContent.classList.remove("w-full");
-                mainContent.classList.add("w-2/3"); // Tabel jadi 66%
+                mainContent.classList.add("w-2/3"); 
                 previewPane.classList.remove("w-0");
-                previewPane.classList.add("w-1/3"); // Preview jadi 33%
+                previewPane.classList.add("w-1/3"); 
             }, 10);
 
-            // 3. Load Iframe
             loader.classList.remove("hidden");
             iframe.classList.add("hidden");
-            
             iframe.src = previewUrl;
             iframe.onload = function() {
                 loader.classList.add("hidden");
                 iframe.classList.remove("hidden");
             };
-
-            // Set link tombol "Full Screen"
             btnNewTab.href = url;
         }
 
@@ -390,34 +404,84 @@
             const previewPane = document.getElementById("previewPane");
             const iframe = document.getElementById("previewFrame");
 
-            // 1. Kembalikan Lebar
             mainContent.classList.remove("w-2/3");
             mainContent.classList.add("w-full");
-            
             previewPane.classList.remove("w-1/3");
             previewPane.classList.add("w-0");
 
-            // 2. Sembunyikan pane setelah transisi selesai (300ms)
             setTimeout(() => {
                 previewPane.classList.add("hidden");
-                iframe.src = ""; // Reset src agar stop loading memori
+                iframe.src = ""; 
             }, 300);
         }
 
-        // --- ADD TRANSACTION ---
-        function openModal() { document.getElementById("modalAdd").classList.remove("hidden"); }
+        // --- ADD & EDIT TRANSACTION LOGIC ---
+        
+        function openModal(mode, index = null) {
+            const modal = document.getElementById("modalAdd");
+            const form = document.getElementById("addForm");
+            const title = document.getElementById("modalTitle");
+            const fileInfo = document.getElementById("fileLabelInfo");
+
+            // Set Mode ke Hidden Input
+            document.getElementById("formMode").value = mode;
+
+            if (mode === 'add') {
+                form.reset();
+                title.innerText = "Tambah Transaksi";
+                fileInfo.classList.add("hidden"); // Sembunyikan info "biarkan kosong"
+                document.getElementById("editRef").value = "";
+                
+                // Set Default Date Hari Ini
+                document.getElementById('tgl').valueAsDate = new Date();
+                // Set Default Radio
+                document.getElementById("tipeKeluar").checked = true;
+
+            } else if (mode === 'edit') {
+                // Ambil data dari globalTransactions berdasarkan index
+                const data = globalTransactions[index];
+                
+                title.innerText = "Edit Transaksi";
+                fileInfo.classList.remove("hidden"); // Tampilkan info "biarkan kosong"
+
+                // Isi Form dengan Data Lama
+                document.getElementById("editRef").value = data.ref;
+                document.getElementById("tgl").value = data.dateISO; // Format YYYY-MM-DD dari backend
+                document.getElementById("akun").value = data.account;
+                document.getElementById("desc").value = data.desc;
+                document.getElementById("tagihan").value = data.noTagihan || "";
+
+                // Nominal & Tipe
+                if (data.debit > 0) {
+                    document.getElementById("tipeMasuk").checked = true;
+                    document.getElementById("nominal").value = data.debit;
+                } else {
+                    document.getElementById("tipeKeluar").checked = true;
+                    document.getElementById("nominal").value = data.kredit;
+                }
+            }
+
+            modal.classList.remove("hidden");
+        }
+
         function closeModal() { document.getElementById("modalAdd").classList.add("hidden"); }
 
         function submitTransaction(e) {
             e.preventDefault();
             const btn = document.getElementById("btnSubmit");
-            btn.innerText = "Menyimpan...";
+            const mode = document.getElementById("formMode").value;
+            
+            btn.innerText = "Memproses...";
             btn.disabled = true;
 
             const fileInput = document.getElementById("file");
             
+            // Tentukan Action berdasarkan Mode
+            const actionType = (mode === 'edit') ? "editTransaction" : "addTransaction";
+
             const payload = {
-                action: "addTransaction",
+                action: actionType,
+                ref: document.getElementById("editRef").value, // Hanya terpakai saat edit
                 tanggal: document.getElementById("tgl").value,
                 tipe: document.querySelector('input[name="tipe"]:checked').value,
                 akun: document.getElementById("akun").value,
@@ -434,13 +498,12 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === "success") {
-                        alert("Berhasil! Ref: " + data.ref);
+                        alert(data.message); // Tampilkan pesan sukses dari server
                         closeModal();
                         document.getElementById("addForm").reset();
-                        document.getElementById('tgl').valueAsDate = new Date();
-                        fetchData(); 
+                        fetchData(); // Refresh data tabel
                     } else {
-                        alert("Error: " + data.message);
+                        alert("Gagal: " + data.message); // Tampilkan pesan error (misal Lock Date)
                     }
                 })
                 .catch(err => alert("Gagal koneksi: " + err))
@@ -450,6 +513,7 @@
                 });
             };
 
+            // Cek Upload File
             if (fileInput.files.length > 0) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
