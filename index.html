@@ -7,136 +7,249 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Custom Styles */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        
         .loading-overlay { background: rgba(255,255,255,0.8); z-index: 50; }
         tbody tr:nth-child(even) { background-color: #f9fafb; }
         tbody tr:hover { background-color: #f3f4f6; }
         
-        /* Transisi Halus untuk Split View */
+        /* Smooth Width Transition */
         .transition-width {
             transition-property: width;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 300ms;
         }
 
-        /* Styling khusus untuk ikon Lock */
         .cursor-not-allowed { cursor: not-allowed; }
+
+        /* Modern Modal Styles */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Segmented Control for Radio Buttons */
+        .segmented-control {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            position: relative;
+        }
+        .segmented-control input { display: none; }
+        .segmented-control label {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            z-index: 2;
+            color: #64748b;
+        }
+        /* Active States */
+        #tipeKeluar:checked ~ .indicator {
+            transform: translateX(0);
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #fee2e2;
+        }
+        #tipeKeluar:checked + label { color: #ef4444; } /* Red for Expense */
+        
+        #tipeMasuk:checked ~ .indicator {
+            transform: translateX(100%);
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #dcfce7;
+        }
+        #tipeMasuk:checked + label { color: #16a34a; } /* Green for Income */
+
+        .indicator {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+            z-index: 1;
+        }
+
+        /* Input styling adjustments */
+        .input-group-text {
+            @apply flex items-center px-3 bg-gray-50 border border-r-0 border-gray-300 rounded-l-lg text-gray-500;
+        }
+        .modern-input {
+            @apply w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:outline-none transition-all;
+        }
+        .modern-input:focus {
+            @apply border-blue-500 ring-blue-100;
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 h-screen overflow-hidden">
 
     <div id="loginPage" class="fixed inset-0 flex items-center justify-center bg-gray-200 z-50">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
-            <h2 class="text-2xl font-bold mb-6 text-center text-blue-800">Login Kas Kecil</h2>
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-96 border border-gray-100">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Login Kas Kecil</h2>
+                <p class="text-gray-500 text-sm mt-1">Silakan masuk untuk melanjutkan</p>
+            </div>
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="mb-4">
-                    <label class="block text-sm font-bold mb-2">Email</label>
-                    <input type="email" id="email" class="w-full p-2 border rounded focus:outline-blue-500" required>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Email</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" id="email" class="w-full py-3 pl-10 pr-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" placeholder="user@example.com" required>
+                    </div>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-sm font-bold mb-2">Password</label>
-                    <input type="password" id="password" class="w-full p-2 border rounded focus:outline-blue-500" required>
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" id="password" class="w-full py-3 pl-10 pr-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" placeholder="••••••••" required>
+                    </div>
                 </div>
-                <button type="submit" id="btnLogin" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">
+                <button type="submit" id="btnLogin" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 hover:shadow-lg transition transform hover:-translate-y-0.5">
                     Masuk
                 </button>
-                <p id="loginError" class="text-red-500 text-sm mt-3 text-center hidden"></p>
+                <p id="loginError" class="text-red-500 text-sm mt-4 text-center hidden bg-red-50 p-2 rounded border border-red-200"></p>
             </form>
         </div>
     </div>
 
     <div id="dashboardPage" class="hidden flex flex-col h-full">
         
-        <nav class="bg-white shadow px-6 py-4 flex justify-between items-center z-20 relative flex-none">
-            <h1 class="text-xl font-bold text-gray-700"><i class="fas fa-wallet mr-2"></i> Kas Kecil Overview</h1>
+        <nav class="bg-white shadow-sm px-6 py-3 flex justify-between items-center z-20 relative flex-none border-b">
+            <h1 class="text-lg font-bold text-gray-700 flex items-center">
+                <span class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                    <i class="fas fa-wallet text-sm"></i>
+                </span>
+                Kas Kecil Overview
+            </h1>
             <div class="flex items-center gap-4">
-                <div id="lockStatus" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200">
-                    <i class="fas fa-lock mr-1"></i> Locked: <span id="lockDateDisplay">-</span>
+                <div id="lockStatus" class="hidden text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-full border border-red-100 font-medium">
+                    <i class="fas fa-lock mr-1.5"></i> Locked: <span id="lockDateDisplay">-</span>
                 </div>
-                <div class="h-6 w-px bg-gray-300"></div>
-                <span id="userName" class="text-sm font-medium text-gray-600">Admin</span>
-                <button onclick="logout()" class="text-red-500 hover:text-red-700 text-sm font-bold">Logout</button>
+                <div class="h-6 w-px bg-gray-200"></div>
+                <div class="flex items-center gap-2">
+                    <div class="text-right hidden md:block">
+                        <p id="userName" class="text-sm font-bold text-gray-700">Admin</p>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider">User Active</p>
+                    </div>
+                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition flex items-center justify-center">
+                        <i class="fas fa-power-off"></i>
+                    </button>
+                </div>
             </div>
         </nav>
 
         <div class="flex-grow flex overflow-hidden relative">
             
-            <div id="mainContent" class="w-full h-full overflow-y-auto p-6 transition-width">
+            <div id="mainContent" class="w-full h-full overflow-y-auto p-6 transition-width custom-scrollbar">
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
-                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Saldo Akhir</div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition">
+                        <div class="absolute right-0 top-0 h-full w-1 bg-blue-500"></div>
+                        <div class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Total Saldo Akhir</div>
                         <div class="text-3xl font-bold text-gray-800" id="valSaldo">Rp 0</div>
+                        <div class="absolute -bottom-4 -right-4 text-blue-50 opacity-20 text-8xl group-hover:scale-110 transition">
+                            <i class="fas fa-wallet"></i>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
-                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Masuk (Filtered)</div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition">
+                        <div class="absolute right-0 top-0 h-full w-1 bg-green-500"></div>
+                        <div class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Total Masuk (Filtered)</div>
                         <div class="text-2xl font-bold text-green-600" id="valDebit">Rp 0</div>
+                         <div class="absolute -bottom-4 -right-4 text-green-50 opacity-20 text-8xl group-hover:scale-110 transition">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-red-500">
-                        <div class="text-gray-500 text-sm font-bold uppercase mb-1">Total Keluar (Filtered)</div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition">
+                        <div class="absolute right-0 top-0 h-full w-1 bg-red-500"></div>
+                        <div class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Total Keluar (Filtered)</div>
                         <div class="text-2xl font-bold text-red-600" id="valKredit">Rp 0</div>
+                         <div class="absolute -bottom-4 -right-4 text-red-50 opacity-20 text-8xl group-hover:scale-110 transition">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap gap-4 items-end justify-between">
-                    <div class="flex gap-4 items-end">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Start Date</label>
-                            <input type="date" id="filterStart" class="border p-2 rounded text-sm">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-4 items-end justify-between">
+                    <div class="flex gap-4 items-end flex-wrap">
+                        <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Start Date</label>
+                                <input type="date" id="filterStart" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none">
+                            </div>
+                            <div class="w-px bg-gray-300"></div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">End Date</label>
+                                <input type="date" id="filterEnd" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">End Date</label>
-                            <input type="date" id="filterEnd" class="border p-2 rounded text-sm">
-                        </div>
-                        <button onclick="fetchData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded border font-medium text-sm">
-                            <i class="fas fa-filter mr-1"></i> Filter
+                        <button onclick="fetchData()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg shadow-sm font-medium text-sm transition flex items-center">
+                            <i class="fas fa-filter mr-2"></i> Filter
                         </button>
                     </div>
                     
-                    <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-bold text-sm">
-                        <i class="fas fa-plus mr-1"></i> Add Transaction
+                    <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-md font-bold text-sm transition transform hover:-translate-y-0.5 flex items-center">
+                        <i class="fas fa-plus-circle mr-2 text-lg"></i> Add Transaction
                     </button>
                 </div>
 
-                <div class="bg-white rounded-lg shadow overflow-hidden mb-10">
-                    <table class="min-w-full leading-normal relative">
-                        <thead class="sticky top-0 z-10">
-                            <tr class="bg-gray-50 border-b border-gray-200">
-                                <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Reference</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                                <th class="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Akun</th>
-                                <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Debit</th>
-                                <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Kredit</th>
-                                <th class="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo</th>
-                                <th class="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            </tbody>
-                    </table>
-                    <div id="tableLoading" class="p-8 text-center text-gray-500 hidden">
-                        <i class="fas fa-spinner fa-spin mr-2 text-2xl"></i> <br>Mengambil data...
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-10">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full leading-normal">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-left">
+                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Reference</th>
+                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Akun</th>
+                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Debit</th>
+                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Kredit</th>
+                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo</th>
+                                    <th class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="tableLoading" class="p-12 text-center text-gray-500 hidden">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600 mb-3"></div>
+                        <p class="text-sm font-medium">Mengambil data terbaru...</p>
                     </div>
                 </div>
             </div>
 
-            <div id="previewPane" class="w-0 bg-gray-50 border-l border-gray-300 shadow-2xl transition-width flex flex-col hidden relative z-30">
-                <div class="flex justify-between items-center p-4 bg-white border-b flex-none">
-                    <h3 class="font-bold text-gray-700"><i class="fas fa-file-invoice mr-2"></i> Preview Dokumen</h3>
+            <div id="previewPane" class="w-0 bg-white border-l border-gray-200 shadow-2xl transition-width flex flex-col hidden relative z-30">
+                <div class="flex justify-between items-center p-4 border-b flex-none bg-gray-50">
+                    <h3 class="font-bold text-gray-700 text-sm"><i class="fas fa-paperclip mr-2 text-gray-400"></i> Bukti Transaksi</h3>
                     <div class="flex gap-2">
-                        <a id="btnNewTab" href="#" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border rounded hover:bg-blue-50">
-                            <i class="fas fa-external-link-alt"></i> Full
+                        <a id="btnNewTab" href="#" target="_blank" class="text-gray-500 hover:text-blue-600 p-2 rounded hover:bg-gray-200 transition">
+                            <i class="fas fa-external-link-alt"></i>
                         </a>
-                        <button onclick="closePreview()" class="text-red-500 hover:text-red-700 text-xl font-bold px-2" title="Tutup Preview">&times;</button>
+                        <button onclick="closePreview()" class="text-gray-500 hover:text-red-600 p-2 rounded hover:bg-gray-200 transition">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="flex-grow relative bg-gray-200">
-                    <div id="previewLoader" class="absolute inset-0 flex items-center justify-center text-gray-500">
-                        <div class="text-center">
-                            <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
-                            <p>Memuat Dokumen...</p>
-                        </div>
+                <div class="flex-grow relative bg-gray-100 flex items-center justify-center">
+                    <div id="previewLoader" class="absolute inset-0 flex items-center justify-center text-gray-400 flex-col">
+                        <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
+                        <span class="text-xs">Memuat...</span>
                     </div>
                     <iframe id="previewFrame" class="w-full h-full hidden" src="" frameborder="0"></iframe>
                 </div>
@@ -145,82 +258,156 @@
         </div>
     </div>
 
-    <div id="modalAdd" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 id="modalTitle" class="text-lg font-bold text-gray-900">Tambah Transaksi</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+    <div id="modalAdd" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden backdrop-blur-sm h-full w-full z-50 flex items-center justify-center p-4">
+        <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100">
+            
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Transaksi</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <form id="addForm" onsubmit="submitTransaction(event)">
+            <form id="addForm" onsubmit="submitTransaction(event)" class="p-6">
                 <input type="hidden" id="editRef">
                 <input type="hidden" id="formMode" value="add">
 
-                <div class="mb-3">
-                    <label class="block text-xs font-bold mb-1">Tanggal</label>
-                    <input type="date" id="tgl" class="w-full border p-2 rounded text-sm bg-gray-50" required>
-                </div>
-                
-                <div class="mb-3 flex gap-4 bg-gray-100 p-2 rounded">
-                    <label class="flex items-center cursor-pointer">
-                        <input type="radio" name="tipe" id="tipeKeluar" value="Keluar" checked class="mr-2"> Expense (Keluar)
-                    </label>
-                    <label class="flex items-center cursor-pointer">
-                        <input type="radio" name="tipe" id="tipeMasuk" value="Masuk" class="mr-2"> Income (Masuk)
-                    </label>
-                </div>
-
-                <div class="mb-3">
-                    <label class="block text-xs font-bold mb-1">Akun CoA</label>
-                    <select id="akun" class="w-full border p-2 rounded text-sm bg-white" required>
-                        <option value="">Loading...</option>
-                    </select>
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipe Transaksi</label>
+                    <div class="segmented-control">
+                        <input type="radio" name="tipe" id="tipeKeluar" value="Keluar" checked onchange="handleTypeChange()">
+                        <label for="tipeKeluar"><i class="fas fa-arrow-up mr-1"></i> Expense</label>
+                        
+                        <input type="radio" name="tipe" id="tipeMasuk" value="Masuk" onchange="handleTypeChange()">
+                        <label for="tipeMasuk"><i class="fas fa-arrow-down mr-1"></i> Income</label>
+                        
+                        <div class="indicator"></div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="block text-xs font-bold mb-1">Deskripsi</label>
-                    <input type="text" id="desc" class="w-full border p-2 rounded text-sm" placeholder="Contoh: Beli bensin" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="block text-xs font-bold mb-1">Nominal (Rp)</label>
-                    <input type="number" id="nominal" class="w-full border p-2 rounded text-sm" placeholder="0" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="block text-xs font-bold mb-1">No Tagihan (Opsional)</label>
-                    <input type="text" id="tagihan" class="w-full border p-2 rounded text-sm" placeholder="Isi jika ada">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tanggal</label>
+                        <input type="date" id="tgl" class="modern-input text-sm bg-gray-50" required>
+                    </div>
+                    <div>
+                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nominal (Rp)</label>
+                         <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 text-sm font-bold">Rp</span>
+                            <input type="number" id="nominal" class="modern-input pl-10 font-bold text-gray-800" placeholder="0" required>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-xs font-bold mb-1">Upload Bukti <span id="fileLabelInfo" class="font-normal text-gray-400 text-[10px] hidden">(Biarkan kosong jika tidak diubah)</span></label>
-                    <input type="file" id="file" class="w-full text-sm text-gray-500 border rounded p-1" accept="image/*,application/pdf">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Akun (CoA)</label>
+                    <div class="relative">
+                        <select id="akun" class="modern-input appearance-none bg-white" required>
+                            <option value="">-- Pilih Akun --</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1 italic" id="coaHelpText">*Menampilkan akun Expense</p>
                 </div>
 
-                <button type="submit" id="btnSubmit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-bold transition">Simpan Transaksi</button>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Deskripsi</label>
+                    <input type="text" id="desc" class="modern-input" placeholder="Contoh: Beli bensin operasional" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">No Tagihan (Opsional)</label>
+                        <input type="text" id="tagihan" class="modern-input text-sm" placeholder="-">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">
+                            Bukti <span id="fileLabelInfo" class="font-normal text-gray-400 text-[9px] lowercase">(kosongkan jika tetap)</span>
+                        </label>
+                        <input type="file" id="file" class="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-xs file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded-lg p-1" 
+                            accept="image/*,application/pdf">
+                    </div>
+                </div>
+
+                <button type="submit" id="btnSubmit" class="w-full bg-red-500 text-white p-3 rounded-xl hover:bg-red-600 font-bold transition shadow-lg flex items-center justify-center">
+                    <i class="fas fa-save mr-2"></i> Simpan Transaksi
+                </button>
             </form>
         </div>
     </div>
 
     <script>
         // --- KONFIGURASI ---
-        // Ganti URL ini dengan deployment Google Script Anda
-        const API_URL = "https://script.google.com/macros/s/AKfycbzwHcTmy__jqykPH4a8GhfMuP7GWmDW4bOgjI6vHj134UyxbUQC5tNHhGUniWNs-C2-/exec"; 
-        
-        // --- SETTING MANUAL LOCK DATE (Jika backend belum support) ---
-        // Format: 'YYYY-MM-DD'. Contoh: '2023-12-31'
-        // Kosongkan (null) jika ingin mengandalkan data dari backend sepenuhnya
+        const API_URL = "https://script.google.com/macros/s/AKfycbxblz4W4BcX0X_Ad4e7sxYuqEt2qDBZ3xds1Po4A7xvHp34A6RqcBNjz-fH2PfyMU3o/exec"; 
         let MANUAL_LOCK_DATE = null; 
 
         // VARIABEL GLOBAL
         let globalTransactions = [];
-        let currentLockDate = null; // Akan diisi dari Backend atau MANUAL_LOCK_DATE
+        let currentLockDate = null;
+        
+        // GLOBAL STORAGE UNTUK COA (Dipisah)
+        let coaData = {
+            expense: [],
+            income: []
+        };
 
-        // --- STATE & AUTH ---
         document.addEventListener("DOMContentLoaded", () => {
             checkSession();
             document.getElementById('tgl').valueAsDate = new Date();
         });
+
+        // --- UI LOGIC BARU: Handle Perubahan Tipe Transaksi ---
+        function handleTypeChange() {
+            const isIncome = document.getElementById("tipeMasuk").checked;
+            const btnSubmit = document.getElementById("btnSubmit");
+            const helpText = document.getElementById("coaHelpText");
+            
+            // 1. Ubah List Dropdown
+            const listToUse = isIncome ? coaData.income : coaData.expense;
+            updateDropdown(listToUse);
+
+            // 2. Ubah UI Theme (Warna Tombol & Text)
+            if (isIncome) {
+                btnSubmit.classList.remove("bg-red-500", "hover:bg-red-600");
+                btnSubmit.classList.add("bg-green-600", "hover:bg-green-700");
+                helpText.innerText = "*Menampilkan akun Income (Pendapatan)";
+            } else {
+                btnSubmit.classList.remove("bg-green-600", "hover:bg-green-700");
+                btnSubmit.classList.add("bg-red-500", "hover:bg-red-600");
+                helpText.innerText = "*Menampilkan akun Expense (Pengeluaran)";
+            }
+        }
+
+        function updateDropdown(accounts) {
+            const sel = document.getElementById("akun");
+            const currentVal = sel.value; // Simpan value saat ini jika ada (untuk edit mode)
+            
+            sel.innerHTML = '<option value="">-- Pilih Akun --</option>';
+            
+            if(accounts && accounts.length > 0){
+                accounts.forEach(acc => {
+                    const opt = document.createElement("option");
+                    opt.value = acc;
+                    opt.text = acc;
+                    sel.add(opt);
+                });
+            }
+
+            // Coba restore value jika ada di list baru
+            // (Berguna saat edit mode, tapi jika switch tipe manual, value akan hilang yg wajar)
+            if (currentVal && accounts.includes(currentVal)) {
+                sel.value = currentVal;
+            }
+        }
+
+        // --- AUTH & CORE ---
 
         function checkSession() {
             const user = localStorage.getItem("kasUser");
@@ -296,9 +483,14 @@
                 loading.classList.add("hidden");
                 if (data.status === "success") {
                     globalTransactions = data.data;
+                    
+                    // SIMPAN DATA COA TERPISAH
+                    if(data.accounts) {
+                        coaData.expense = data.accounts.expense || [];
+                        coaData.income = data.accounts.income || [];
+                    }
 
-                    // Logika Penentuan Lock Date
-                    // Prioritas: Backend Data > Manual Config > Null
+                    // Set Lock Date
                     if (data.lockDate) {
                         currentLockDate = data.lockDate;
                     } else {
@@ -308,7 +500,6 @@
                     updateLockDateUI();
                     updateCards(data.stats);
                     updateTable(globalTransactions);
-                    updateDropdown(data.accounts);
                 }
             })
             .catch(err => {
@@ -322,7 +513,6 @@
             
             if (currentLockDate) {
                 el.classList.remove("hidden");
-                // Format tanggal agar cantik (misal: 31/12/2023)
                 const d = new Date(currentLockDate);
                 txt.innerText = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
             } else {
@@ -337,116 +527,86 @@
             document.getElementById("valSaldo").innerText = fmt(stats.saldo);
         }
 
-function updateTable(rows) {
+        function updateTable(rows) {
             const tbody = document.getElementById("tableBody");
             const fmt = (n) => n === 0 ? "-" : new Intl.NumberFormat('id-ID').format(n);
             
             if(rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-4 text-gray-500">Tidak ada data transaksi.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-gray-400 italic">Tidak ada data transaksi.</td></tr>';
                 return;
             }
 
             rows.forEach((row, index) => {
                 const tr = document.createElement("tr");
 
-                // --- TOMBOL BUKTI ---
+                // Tombol Bukti
                 let btnLihat = `<span class="text-gray-300 text-xs">-</span>`;
                 if (row.attach && row.attach.includes("http")) {
                     btnLihat = `
-                        <button onclick="openPreview('${row.attach}')" class="text-blue-500 hover:text-blue-700" title="Lihat Bukti">
+                        <button onclick="openPreview('${row.attach}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 p-2 rounded-full transition" title="Lihat Bukti">
                             <i class="fas fa-eye"></i>
                         </button>
                     `;
                 }
 
-                // --- PERBAIKAN LOGIKA LOCK DATE ---
+                // Cek Lock Date
                 let isLocked = false;
-                
                 if (currentLockDate) {
-                    // 1. Konversi Lock Date ke Objek Date
                     const lockDateObj = new Date(currentLockDate); 
-                    
-                    // 2. Konversi Tanggal Transaksi ke Objek Date
-                    // Kita asumsikan format dari backend/tabel adalah "DD/MM/YYYY" (contoh: 09/01/2026)
-                    // Kita pecah manual agar akurat (karena new Date("09/01/2026") bisa dibaca bulan Sept di browser US)
                     let transDateObj;
-                    
                     if (row.date && row.date.includes('/')) {
-                        const parts = row.date.split('/'); // ["09", "01", "2026"]
-                        // new Date(Year, Month-1, Day) -> Bulan dimulai dari 0 (Januari = 0)
+                        const parts = row.date.split('/'); 
                         transDateObj = new Date(parts[2], parts[1] - 1, parts[0]);
                     } else if (row.dateISO) {
                         transDateObj = new Date(row.dateISO);
                     } else {
-                        transDateObj = new Date(row.date); // Fallback
+                        transDateObj = new Date(row.date); 
                     }
-
-                    // 3. Bandingkan Waktunya (Hapus jam/menit agar adil, set ke 00:00:00)
                     lockDateObj.setHours(0,0,0,0);
                     transDateObj.setHours(0,0,0,0);
-
-                    // Jika Tanggal Transaksi LEBIH KECIL atau SAMA DENGAN Lock Date -> Kunci!
-                    if (transDateObj <= lockDateObj) {
-                        isLocked = true;
-                    }
+                    if (transDateObj <= lockDateObj) isLocked = true;
                 }
 
-                // --- TOMBOL EDIT / LOCK ICON ---
+                // Tombol Aksi
                 let btnAction = "";
                 if (isLocked) {
-                    // TAMPILKAN ICON LOCK (Terkunci)
                     btnAction = `
-                        <span class="text-gray-400 ml-3 cursor-not-allowed" title="Data Terkunci (Lock Date: ${new Date(currentLockDate).toLocaleDateString('id-ID')})">
+                        <span class="text-gray-400 ml-2 cursor-not-allowed p-2" title="Data Terkunci">
                             <i class="fas fa-lock"></i>
                         </span>
                     `;
                 } else {
-                    // TAMPILKAN ICON EDIT MODERN
                     btnAction = `
-                        <button onclick="openModal('edit', ${index})" class="text-amber-500 hover:text-amber-600 ml-3 transition-colors" title="Edit Transaksi">
-                            <i class="fas fa-pen-to-square"></i>
+                        <button onclick="openModal('edit', ${index})" class="text-amber-500 hover:text-amber-600 bg-amber-50 hover:bg-amber-100 p-2 rounded-full ml-2 transition" title="Edit Transaksi">
+                            <i class="fas fa-pen"></i>
                         </button>
                     `;
                 }
 
                 tr.innerHTML = `
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900 whitespace-nowrap">${row.date}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-xs text-gray-500 font-mono">${row.ref}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-gray-900 font-medium truncate max-w-xs" title="${row.desc}">${row.desc}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-xs text-gray-500">${row.account}</td>
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-gray-900 whitespace-nowrap">${row.date}</td>
+                    <td class="px-5 py-4 border-b border-gray-200 text-xs text-gray-500 font-mono bg-gray-50 rounded">${row.ref}</td>
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-gray-700 font-medium truncate max-w-xs" title="${row.desc}">${row.desc}</td>
+                    <td class="px-5 py-4 border-b border-gray-200 text-xs text-gray-500">${row.account}</td>
                     
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
-                        ${row.debit > 0 ? '<span class="text-green-600">+ '+fmt(row.debit)+'</span>' : '-'}
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
+                        ${row.debit > 0 ? '<span class="text-green-600 bg-green-50 px-2 py-1 rounded">+ '+fmt(row.debit)+'</span>' : '-'}
                     </td>
                     
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
-                        ${row.kredit > 0 ? '<span class="text-red-600">- '+fmt(row.kredit)+'</span>' : '-'}
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
+                        ${row.kredit > 0 ? '<span class="text-red-600 bg-red-50 px-2 py-1 rounded">- '+fmt(row.kredit)+'</span>' : '-'}
                     </td>
 
-                    <td class="px-5 py-3 border-b border-gray-200 text-sm text-right text-gray-800 font-bold">${fmt(row.saldo)}</td>
-                    <td class="px-5 py-3 border-b border-gray-200 text-center text-lg">
+                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-right text-gray-900 font-bold">${fmt(row.saldo)}</td>
+                    <td class="px-5 py-4 border-b border-gray-200 text-center text-lg whitespace-nowrap">
                         ${btnLihat} ${btnAction}
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
-        function updateDropdown(accounts) {
-            const sel = document.getElementById("akun");
-            if (sel.options.length <= 1) {
-                sel.innerHTML = '<option value="" disabled selected>-- Pilih Akun --</option>';
-                if(accounts && accounts.length > 0){
-                    accounts.forEach(acc => {
-                        const opt = document.createElement("option");
-                        opt.value = acc;
-                        opt.text = acc;
-                        sel.add(opt);
-                    });
-                }
-            }
-        }
 
-        // --- SPLIT VIEW PREVIEW LOGIC ---
+        // --- PREVIEW LOGIC ---
         function openPreview(url) {
             if(!url) return alert("Link file tidak valid");
 
@@ -495,7 +655,7 @@ function updateTable(rows) {
             }, 300);
         }
 
-        // --- ADD & EDIT TRANSACTION LOGIC ---
+        // --- MODAL LOGIC ---
         
         function openModal(mode, index = null) {
             const modal = document.getElementById("modalAdd");
@@ -511,20 +671,23 @@ function updateTable(rows) {
                 fileInfo.classList.add("hidden");
                 document.getElementById("editRef").value = "";
                 document.getElementById('tgl').valueAsDate = new Date();
+                
+                // Default ke Expense
                 document.getElementById("tipeKeluar").checked = true;
+                handleTypeChange(); 
 
             } else if (mode === 'edit') {
                 const data = globalTransactions[index];
                 
-                title.innerText = "Edit Transaksi";
+                title.innerText = "Edit Transaksi (" + data.ref + ")";
                 fileInfo.classList.remove("hidden");
 
                 document.getElementById("editRef").value = data.ref;
                 document.getElementById("tgl").value = data.dateISO; 
-                document.getElementById("akun").value = data.account;
                 document.getElementById("desc").value = data.desc;
                 document.getElementById("tagihan").value = data.noTagihan || "";
 
+                // Set Tipe & Nominal
                 if (data.debit > 0) {
                     document.getElementById("tipeMasuk").checked = true;
                     document.getElementById("nominal").value = data.debit;
@@ -532,6 +695,14 @@ function updateTable(rows) {
                     document.getElementById("tipeKeluar").checked = true;
                     document.getElementById("nominal").value = data.kredit;
                 }
+
+                // Panggil handleTypeChange DULU agar dropdown terisi sesuai tipe
+                handleTypeChange();
+
+                // BARU set value dropdown (karena dropdown baru saja di-reset oleh handleTypeChange)
+                setTimeout(() => {
+                    document.getElementById("akun").value = data.account;
+                }, 50);
             }
 
             modal.classList.remove("hidden");
@@ -544,7 +715,8 @@ function updateTable(rows) {
             const btn = document.getElementById("btnSubmit");
             const mode = document.getElementById("formMode").value;
             
-            btn.innerText = "Memproses...";
+            const originalText = btn.innerHTML;
+            btn.innerText = "Menyimpan...";
             btn.disabled = true;
 
             const fileInput = document.getElementById("file");
@@ -569,17 +741,23 @@ function updateTable(rows) {
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === "success") {
-                        alert(data.message);
-                        closeModal();
-                        document.getElementById("addForm").reset();
-                        fetchData();
+                        // Notifikasi visual simpel
+                        const title = document.getElementById("modalTitle");
+                        title.innerHTML = '<span class="text-green-500"><i class="fas fa-check"></i> Berhasil!</span>';
+                        setTimeout(() => {
+                            closeModal();
+                            document.getElementById("addForm").reset();
+                            fetchData();
+                        }, 800);
                     } else {
                         alert("Gagal: " + data.message);
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
                     }
                 })
-                .catch(err => alert("Gagal koneksi: " + err))
-                .finally(() => {
-                    btn.innerText = "Simpan Transaksi";
+                .catch(err => {
+                    alert("Gagal koneksi: " + err);
+                    btn.innerHTML = originalText;
                     btn.disabled = false;
                 });
             };
