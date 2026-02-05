@@ -366,7 +366,7 @@
 
     <script>
         // --- GANTI URL INI DENGAN DEPLOYMENT ID BARU ANDA ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbwj5Tw5AP4oaV5ggaPBnUGczeTwlN-iJMCN63aHOSwNAElrupzvNRTcUPh_9BkuiWnb/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbyS8MpNz-Ybpppi-WRNrWVBjgrFWosnIHw_Tzslje7BnLnrMhkivTq5kmalJjmEL2Jz/exec"; 
         
         // VARIABEL GLOBAL
         let globalTransactions = [];
@@ -599,6 +599,7 @@
                     if (transDateObj <= lockDateObj) isLocked = true;
                 }
 
+                // --- ACTION BUTTONS & SYNC BUTTON LOGIC ---
                 let btnAction = "";
                 if (isLocked) {
                     btnAction = `<span class="text-gray-400 ml-2 cursor-not-allowed p-2"><i class="fas fa-lock"></i></span>`;
@@ -606,6 +607,22 @@
                     btnAction = `
                         <button onclick="openModal('edit', ${index})" class="text-amber-500 hover:text-amber-600 bg-amber-50 hover:bg-amber-100 p-2 rounded-full ml-2 transition">
                             <i class="fas fa-pen"></i>
+                        </button>
+                    `;
+                }
+
+                // ** LOGIKA SINKRONISASI **
+                // Cek status sync dari backend. Jika tidak "Imported", tampilkan tombol sync.
+                let btnSync = "";
+                const isImported = (row.syncStatus && String(row.syncStatus).toLowerCase() === "imported");
+                
+                if (isImported) {
+                    btnSync = `<span class="text-green-500 ml-2 p-2" title="Sudah diimpor"><i class="fas fa-check-circle"></i></span>`;
+                } else {
+                    // Tombol Sync
+                    btnSync = `
+                        <button onclick="syncData('${row.ref}')" class="text-indigo-500 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-full ml-2 transition" title="Sinkronkan">
+                            <i class="fas fa-sync-alt"></i>
                         </button>
                     `;
                 }
@@ -623,10 +640,48 @@
                     </td>
                     <td class="px-5 py-4 border-b border-gray-200 text-sm text-right text-gray-900 font-bold">${fmt(row.saldo)}</td>
                     <td class="px-5 py-4 border-b border-gray-200 text-center text-lg whitespace-nowrap">
-                        ${btnLihat} ${btnAction}
+                        ${btnLihat} ${btnAction} ${btnSync}
                     </td>
                 `;
                 tbody.appendChild(tr);
+            });
+        }
+
+        // --- FUNGSI BARU: SYNC DATA ---
+        function syncData(ref) {
+            if(!confirm("Anda yakin ingin menandai transaksi " + ref + " untuk sinkronisasi?")) return;
+            
+            // Tampilkan loading sementara (opsional: bisa dibuat lebih cantik)
+            const loadingHtml = `<div class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[60] flex items-center justify-center text-white flex-col">
+                <i class="fas fa-sync fa-spin text-4xl mb-3"></i>
+                <p>Sedang sinkronisasi...</p>
+            </div>`;
+            const loadingEl = document.createElement('div');
+            loadingEl.innerHTML = loadingHtml;
+            document.body.appendChild(loadingEl);
+
+            const payload = {
+                action: "syncTransaction",
+                ref: ref
+            };
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.body.removeChild(loadingEl);
+                if (data.status === "success") {
+                    alert(data.message);
+                    fetchData(); // Refresh tabel untuk update icon
+                } else {
+                    alert("Gagal: " + data.message);
+                }
+            })
+            .catch(err => {
+                document.body.removeChild(loadingEl);
+                alert("Gagal koneksi: " + err);
             });
         }
 
@@ -748,56 +803,56 @@
 
         // --- VALIDATION FUNCTION (KONTROL INPUT) ---
        function validateForm() {
-    let isValid = true;
-    
-    // Elements
-    const elTgl = document.getElementById('tgl');
-    const elContact = document.getElementById('contact'); // Tambahan
-    const elTaxType = document.getElementById('taxType'); // Tambahan
-    const elDesc = document.getElementById('desc');
-    const elQty = document.getElementById('qty');
-    const elPrice = document.getElementById('price');
-    const elNominal = document.getElementById('nominal');
+        let isValid = true;
+        
+        // Elements
+        const elTgl = document.getElementById('tgl');
+        const elContact = document.getElementById('contact'); // Tambahan
+        const elTaxType = document.getElementById('taxType'); // Tambahan
+        const elDesc = document.getElementById('desc');
+        const elQty = document.getElementById('qty');
+        const elPrice = document.getElementById('price');
+        const elNominal = document.getElementById('nominal');
 
-    // Reset Styles
-    $('.input-error').removeClass('input-error');
-    $('#akun').next('.select2-container').find('.select2-selection').removeClass('border-red-500');
+        // Reset Styles
+        $('.input-error').removeClass('input-error');
+        $('#akun').next('.select2-container').find('.select2-selection').removeClass('border-red-500');
 
-    // Validasi Kolom
-    if (!elTgl.value) { elTgl.classList.add('input-error'); isValid = false; }
-    
-    // NEW: Validasi Contact
-    if (!elContact.value.trim()) { 
-        elContact.classList.add('input-error'); 
-        isValid = false; 
+        // Validasi Kolom
+        if (!elTgl.value) { elTgl.classList.add('input-error'); isValid = false; }
+        
+        // NEW: Validasi Contact
+        if (!elContact.value.trim()) { 
+            elContact.classList.add('input-error'); 
+            isValid = false; 
+        }
+        
+        // NEW: Validasi Tax Type
+        if (!elTaxType.value) { 
+            elTaxType.classList.add('input-error'); 
+            isValid = false; 
+        }
+
+        if (!elDesc.value.trim()) { elDesc.classList.add('input-error'); isValid = false; }
+        
+        // Select2 Validation
+        if (!$('#akun').val()) {
+            $('#akun').next('.select2-container').find('.select2-selection').addClass('border-red-500');
+            isValid = false;
+        }
+
+        // Qty & Price Validation
+        if (!elQty.value || elQty.value <= 0) { elQty.classList.add('input-error'); isValid = false; }
+        if (elPrice.value === "" || elPrice.value < 0) { elPrice.classList.add('input-error'); isValid = false; }
+        
+        const nom = parseFloat(elNominal.value) || 0;
+        if (nom <= 0) { elNominal.classList.add('input-error'); isValid = false; }
+
+        if (!isValid) {
+            alert("Mohon lengkapi data yang wajib diisi (Contact, Tax Type, dll).");
+        }
+        return isValid;
     }
-    
-    // NEW: Validasi Tax Type
-    if (!elTaxType.value) { 
-        elTaxType.classList.add('input-error'); 
-        isValid = false; 
-    }
-
-    if (!elDesc.value.trim()) { elDesc.classList.add('input-error'); isValid = false; }
-    
-    // Select2 Validation
-    if (!$('#akun').val()) {
-        $('#akun').next('.select2-container').find('.select2-selection').addClass('border-red-500');
-        isValid = false;
-    }
-
-    // Qty & Price Validation
-    if (!elQty.value || elQty.value <= 0) { elQty.classList.add('input-error'); isValid = false; }
-    if (elPrice.value === "" || elPrice.value < 0) { elPrice.classList.add('input-error'); isValid = false; }
-    
-    const nom = parseFloat(elNominal.value) || 0;
-    if (nom <= 0) { elNominal.classList.add('input-error'); isValid = false; }
-
-    if (!isValid) {
-        alert("Mohon lengkapi data yang wajib diisi (Contact, Tax Type, dll).");
-    }
-    return isValid;
-}
 
         function submitTransaction(e) {
             e.preventDefault();
