@@ -747,43 +747,57 @@
         function closeModal() { document.getElementById("modalAdd").classList.add("hidden"); }
 
         // --- VALIDATION FUNCTION (KONTROL INPUT) ---
-        function validateForm() {
-            let isValid = true;
-            
-            // Elements
-            const elTgl = document.getElementById('tgl');
-            const elDesc = document.getElementById('desc');
-            const elQty = document.getElementById('qty');
-            const elPrice = document.getElementById('price');
-            const elNominal = document.getElementById('nominal');
+       function validateForm() {
+    let isValid = true;
+    
+    // Elements
+    const elTgl = document.getElementById('tgl');
+    const elContact = document.getElementById('contact'); // Tambahan
+    const elTaxType = document.getElementById('taxType'); // Tambahan
+    const elDesc = document.getElementById('desc');
+    const elQty = document.getElementById('qty');
+    const elPrice = document.getElementById('price');
+    const elNominal = document.getElementById('nominal');
 
-            // Reset Styles
-            $('.input-error').removeClass('input-error');
-            $('#akun').next('.select2-container').find('.select2-selection').removeClass('border-red-500');
+    // Reset Styles
+    $('.input-error').removeClass('input-error');
+    $('#akun').next('.select2-container').find('.select2-selection').removeClass('border-red-500');
 
-            // Checks
-            if (!elTgl.value) { elTgl.classList.add('input-error'); isValid = false; }
-            if (!elDesc.value.trim()) { elDesc.classList.add('input-error'); isValid = false; }
-            
-            // Select2 Validation
-            if (!$('#akun').val()) {
-                $('#akun').next('.select2-container').find('.select2-selection').addClass('border-red-500');
-                isValid = false;
-            }
+    // Validasi Kolom
+    if (!elTgl.value) { elTgl.classList.add('input-error'); isValid = false; }
+    
+    // NEW: Validasi Contact
+    if (!elContact.value.trim()) { 
+        elContact.classList.add('input-error'); 
+        isValid = false; 
+    }
+    
+    // NEW: Validasi Tax Type
+    if (!elTaxType.value) { 
+        elTaxType.classList.add('input-error'); 
+        isValid = false; 
+    }
 
-            // Qty & Price Validation
-            if (!elQty.value || elQty.value <= 0) { elQty.classList.add('input-error'); isValid = false; }
-            if (elPrice.value === "" || elPrice.value < 0) { elPrice.classList.add('input-error'); isValid = false; }
-            
-            // Check Nominal
-            const nom = parseFloat(elNominal.value) || 0;
-            if (nom <= 0) { elNominal.classList.add('input-error'); isValid = false; }
+    if (!elDesc.value.trim()) { elDesc.classList.add('input-error'); isValid = false; }
+    
+    // Select2 Validation
+    if (!$('#akun').val()) {
+        $('#akun').next('.select2-container').find('.select2-selection').addClass('border-red-500');
+        isValid = false;
+    }
 
-            if (!isValid) {
-                alert("Mohon lengkapi data yang wajib diisi (ditandai merah).");
-            }
-            return isValid;
-        }
+    // Qty & Price Validation
+    if (!elQty.value || elQty.value <= 0) { elQty.classList.add('input-error'); isValid = false; }
+    if (elPrice.value === "" || elPrice.value < 0) { elPrice.classList.add('input-error'); isValid = false; }
+    
+    const nom = parseFloat(elNominal.value) || 0;
+    if (nom <= 0) { elNominal.classList.add('input-error'); isValid = false; }
+
+    if (!isValid) {
+        alert("Mohon lengkapi data yang wajib diisi (Contact, Tax Type, dll).");
+    }
+    return isValid;
+}
 
         function submitTransaction(e) {
             e.preventDefault();
