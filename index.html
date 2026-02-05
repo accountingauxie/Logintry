@@ -16,16 +16,13 @@
         
         body { font-family: 'Inter', sans-serif; }
         
-        /* Select2 Customization to match Tailwind */
         .select2-container .select2-selection--single {
             height: 42px;
             border: 1px solid #d1d5db;
             border-radius: 0.5rem;
             padding: 6px;
         }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            top: 8px;
-        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { top: 8px; }
         
         .loading-overlay { background: rgba(255,255,255,0.8); z-index: 50; }
         tbody tr:nth-child(even) { background-color: #f9fafb; }
@@ -39,71 +36,36 @@
 
         .cursor-not-allowed { cursor: not-allowed; }
 
-        .glass-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-        }
-        
-        /* Segmented Control */
         .segmented-control {
-            display: flex;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: 12px;
-            position: relative;
+            display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; position: relative;
         }
         .segmented-control input { display: none; }
         .segmented-control label {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            z-index: 2;
-            color: #64748b;
+            flex: 1; text-align: center; padding: 8px; font-size: 0.875rem; font-weight: 600;
+            cursor: pointer; border-radius: 8px; transition: all 0.2s ease; z-index: 2; color: #64748b;
         }
-        /* Active States */
         #tipeKeluar:checked ~ .indicator {
-            transform: translateX(0);
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #fee2e2;
+            transform: translateX(0); background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #fee2e2;
         }
         #tipeKeluar:checked + label { color: #ef4444; } 
-        
         #tipeMasuk:checked ~ .indicator {
-            transform: translateX(100%);
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #dcfce7;
+            transform: translateX(100%); background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #dcfce7;
         }
         #tipeMasuk:checked + label { color: #16a34a; } 
-
         .indicator {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: calc(50% - 4px);
-            height: calc(100% - 8px);
-            border-radius: 8px;
-            transition: transform 0.2s ease;
-            z-index: 1;
+            position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px);
+            border-radius: 8px; transition: transform 0.2s ease; z-index: 1;
         }
 
         .modern-input {
             @apply w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:outline-none transition-all;
         }
-        .modern-input:focus {
-            @apply border-blue-500 ring-blue-100;
-        }
-        /* Readonly input style */
-        .modern-input:read-only {
-            background-color: #f3f4f6;
-            cursor: not-allowed;
-        }
+        .modern-input:focus { @apply border-blue-500 ring-blue-100; }
+        .modern-input:read-only { background-color: #e5e7eb; cursor: not-allowed; }
+        
+        /* Error State Class for Validation */
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        .input-error:focus { ring-color: #fee2e2 !important; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800 h-screen overflow-hidden">
@@ -115,30 +77,26 @@
                     <i class="fas fa-wallet"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800">Login Kas Kecil</h2>
-                <p class="text-gray-500 text-sm mt-1">Silakan masuk untuk melanjutkan</p>
             </div>
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="mb-4">
                     <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Email</label>
-                    <input type="email" id="email" class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="user@example.com" required>
+                    <input type="email" id="email" class="w-full py-3 px-4 border border-gray-300 rounded-lg" required>
                 </div>
                 <div class="mb-6">
                     <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Password</label>
-                    <input type="password" id="password" class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="••••••••" required>
+                    <input type="password" id="password" class="w-full py-3 px-4 border border-gray-300 rounded-lg" required>
                 </div>
-                <button type="submit" id="btnLogin" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition">Masuk</button>
+                <button type="submit" id="btnLogin" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700">Masuk</button>
                 <p id="loginError" class="text-red-500 text-sm mt-4 text-center hidden"></p>
             </form>
         </div>
     </div>
 
     <div id="dashboardPage" class="hidden flex flex-col h-full">
-        
         <nav class="bg-white shadow-sm px-6 py-3 flex justify-between items-center z-20 relative flex-none border-b">
             <h1 class="text-lg font-bold text-gray-700 flex items-center">
-                <span class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-                    <i class="fas fa-wallet text-sm"></i>
-                </span>
+                <span class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center mr-3 shadow-sm"><i class="fas fa-wallet text-sm"></i></span>
                 Kas Kecil Overview
             </h1>
             <div class="flex items-center gap-4">
@@ -148,17 +106,13 @@
                 <div class="flex items-center gap-2">
                     <div class="text-right hidden md:block">
                         <p id="userName" class="text-sm font-bold text-gray-700">User</p>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Active</p>
                     </div>
-                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition flex items-center justify-center">
-                        <i class="fas fa-power-off"></i>
-                    </button>
+                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-gray-100 hover:text-red-600 transition flex items-center justify-center"><i class="fas fa-power-off"></i></button>
                 </div>
             </div>
         </nav>
 
         <div class="flex-grow flex overflow-hidden relative">
-            
             <div id="mainContent" class="w-full h-full overflow-y-auto p-6 transition-width custom-scrollbar">
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -182,24 +136,13 @@
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-4 items-end justify-between">
                     <div class="flex gap-4 items-end flex-wrap">
                         <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex gap-3">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Start Date</label>
-                                <input type="date" id="filterStart" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none">
-                            </div>
+                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Start</label><input type="date" id="filterStart" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none"></div>
                             <div class="w-px bg-gray-300"></div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">End Date</label>
-                                <input type="date" id="filterEnd" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none">
-                            </div>
+                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">End</label><input type="date" id="filterEnd" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none"></div>
                         </div>
-                        <button onclick="fetchData()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg shadow-sm font-medium text-sm transition flex items-center">
-                            <i class="fas fa-filter mr-2"></i> Filter
-                        </button>
+                        <button onclick="fetchData()" class="bg-gray-800 text-white px-5 py-2.5 rounded-lg text-sm"><i class="fas fa-filter mr-2"></i> Filter</button>
                     </div>
-                    
-                    <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-md font-bold text-sm transition transform hover:-translate-y-0.5 flex items-center">
-                        <i class="fas fa-plus-circle mr-2 text-lg"></i> Add Transaction
-                    </button>
+                    <button onclick="openModal('add')" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold text-sm flex items-center hover:bg-blue-700"><i class="fas fa-plus-circle mr-2 text-lg"></i> Add Transaction</button>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-10">
@@ -207,47 +150,32 @@
                         <table class="min-w-full leading-normal">
                             <thead>
                                 <tr class="bg-gray-50 border-b border-gray-200 text-left">
-                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Ref</th>
-                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Akun</th>
-                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Debit</th>
-                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Kredit</th>
-                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo</th>
-                                    <th class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase">Tanggal</th>
+                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase">Ref</th>
+                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase">Deskripsi</th>
+                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase">Akun</th>
+                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase">Debit</th>
+                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase">Kredit</th>
+                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase">Saldo</th>
+                                    <th class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody"></tbody>
                         </table>
                     </div>
-                    <div id="tableLoading" class="p-12 text-center text-gray-500 hidden">
-                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600 mb-3"></div>
-                        <p class="text-sm font-medium">Mengambil data terbaru...</p>
-                    </div>
+                    <div id="tableLoading" class="p-12 text-center text-gray-500 hidden"><div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600 mb-3"></div><p class="text-sm">Loading...</p></div>
                 </div>
             </div>
 
             <div id="previewPane" class="w-0 bg-white border-l border-gray-200 shadow-2xl transition-width flex flex-col hidden relative z-30">
                 <div class="flex justify-between items-center p-4 border-b flex-none bg-gray-50">
-                    <h3 class="font-bold text-gray-700 text-sm"><i class="fas fa-paperclip mr-2 text-gray-400"></i> Bukti</h3>
-                    <div class="flex gap-2">
-                        <a id="btnNewTab" href="#" target="_blank" class="text-gray-500 hover:text-blue-600 p-2 rounded hover:bg-gray-200 transition">
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
-                        <button onclick="closePreview()" class="text-gray-500 hover:text-red-600 p-2 rounded hover:bg-gray-200 transition">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+                    <h3 class="font-bold text-gray-700 text-sm">Bukti Transaksi</h3>
+                    <button onclick="closePreview()" class="text-gray-500 hover:text-red-600 p-2"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="flex-grow relative bg-gray-100 flex items-center justify-center">
-                    <div id="previewLoader" class="absolute inset-0 flex items-center justify-center text-gray-400 flex-col">
-                        <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
-                        <span class="text-xs">Memuat...</span>
-                    </div>
                     <iframe id="previewFrame" class="w-full h-full hidden" src="" frameborder="0"></iframe>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -264,80 +192,77 @@
             <form id="addForm" onsubmit="submitTransaction(event)" class="p-6">
                 <input type="hidden" id="editRef">
                 <input type="hidden" id="formMode" value="add">
-                
-                <input type="hidden" id="taxType">
 
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipe Transaksi</label>
                     <div class="segmented-control">
                         <input type="radio" name="tipe" id="tipeKeluar" value="Keluar" checked onchange="handleTypeChange()">
                         <label for="tipeKeluar"><i class="fas fa-arrow-up mr-1"></i> Expense</label>
-                        
                         <input type="radio" name="tipe" id="tipeMasuk" value="Masuk" onchange="handleTypeChange()">
                         <label for="tipeMasuk"><i class="fas fa-arrow-down mr-1"></i> Income</label>
-                        
                         <div class="indicator"></div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tanggal</label>
-                        <input type="date" id="tgl" class="modern-input text-sm bg-gray-50" required>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" id="tgl" class="modern-input text-sm bg-gray-50">
                     </div>
                     <div>
-                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Contact (Kolom J)</label>
-                         <input type="text" id="contact" class="modern-input text-sm" placeholder="Nama Vendor/Klien">
+                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Contact</label>
+                         <input type="text" id="contact" class="modern-input text-sm" placeholder="Vendor/Klien">
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Akun (CoA)</label>
-                    <select id="akun" class="w-full" required style="width: 100%;">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Akun (CoA) <span class="text-red-500">*</span></label>
+                    <select id="akun" class="w-full" style="width: 100%;">
                         <option value="">-- Cari Akun --</option>
                     </select>
-                    <div class="flex justify-between mt-1">
-                        <p class="text-[10px] text-gray-400 italic" id="coaHelpText">*Menampilkan akun Expense</p>
-                        <p class="text-[10px] text-gray-500 font-bold" id="taxDisplay">Tax: -</p>
+                    <p class="text-[10px] text-gray-400 italic mt-1" id="coaHelpText">*Menampilkan akun Expense</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tax Type</label>
+                    <div class="relative">
+                         <select id="taxType" class="modern-input appearance-none bg-white">
+                            <option value="">-- Pilih Tax Type --</option>
+                         </select>
+                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                             <i class="fas fa-chevron-down text-xs"></i>
+                         </div>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Deskripsi</label>
-                    <input type="text" id="desc" class="modern-input" placeholder="Contoh: Beli bensin operasional" required>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Deskripsi <span class="text-red-500">*</span></label>
+                    <input type="text" id="desc" class="modern-input" placeholder="Contoh: Beli bensin operasional">
                 </div>
 
                 <div class="grid grid-cols-3 gap-3 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty (L)</label>
-                        <input type="number" id="qty" class="modern-input text-sm text-center" placeholder="1" value="1" min="1" oninput="updateNominal()">
+                    <div class="flex flex-col">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label>
+                        <input type="number" id="qty" class="modern-input text-sm text-center w-full" placeholder="1" value="1" min="1" oninput="updateNominal()">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Price (M)</label>
-                        <input type="number" id="price" class="modern-input text-sm" placeholder="0" oninput="updateNominal()">
+                    <div class="flex flex-col">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Price</label>
+                        <input type="number" id="price" class="modern-input text-sm w-full" placeholder="0" oninput="updateNominal()">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Total (Calc)</label>
-                        <input type="number" id="nominal" class="modern-input text-sm bg-gray-200 font-bold text-gray-800" readonly>
+                    <div class="flex flex-col">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Total</label>
+                        <input type="number" id="nominal" class="modern-input text-sm font-bold text-gray-800 w-full bg-white" readonly>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">No Tagihan (Opsional)</label>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">No Tagihan</label>
                         <input type="text" id="tagihan" class="modern-input text-sm" placeholder="-">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">
-                            Bukti <span id="fileLabelInfo" class="font-normal text-gray-400 text-[9px] lowercase">(kosongkan jika tetap)</span>
-                        </label>
-                        <input type="file" id="file" class="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-full file:border-0
-                            file:text-xs file:font-semibold
-                            file:bg-blue-50 file:text-blue-700
-                            hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded-lg p-1" 
-                            accept="image/*,application/pdf">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Bukti</label>
+                        <input type="file" id="file" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded-lg p-1" accept="image/*,application/pdf">
                     </div>
                 </div>
 
@@ -349,13 +274,13 @@
     </div>
 
     <script>
-        // --- GANTI URL INI DENGAN DEPLOYMENT ID BARU ANDA ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbyGdq9NkAB2UyMfKppioSD8RHOu85w4oeQcI3WhVCwbtmClbf0hA6Vl8AGo1kTlFyHA/exec"; 
+        // --- KONFIGURASI API (URL Deployment Anda) ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbxVvVGjJIZ7aSgApkYd6oaIOWeUCyQ4Z-VCYvQWiaTSefrFYBwQeH2jREF-RP05nvjh/exec"; 
         
-        // VARIABEL GLOBAL
         let globalTransactions = [];
         let currentLockDate = null;
-        let coaData = { expense: [], income: [] };
+        // Penampung Data CoA & Tax dari Server
+        let coaData = { expense: [], income: [], taxTypes: [] };
 
         document.addEventListener("DOMContentLoaded", () => {
             checkSession();
@@ -365,47 +290,35 @@
             $('#akun').select2({
                 placeholder: "-- Pilih Akun --",
                 allowClear: true,
-                dropdownParent: $('#modalAdd') // Penting agar Select2 jalan di dalam Modal
+                dropdownParent: $('#modalAdd')
             });
-
-            // Event Listener Select2: Saat akun dipilih, cari Tax Type
-            $('#akun').on('select2:select', function (e) {
-                const selectedText = e.params.data.text; // Nama Akun
-                
-                // Cari data tax dari object coaData
-                const isIncome = document.getElementById("tipeMasuk").checked;
-                const list = isIncome ? coaData.income : coaData.expense;
-                const foundItem = list.find(item => item.name === selectedText);
-                
-                if (foundItem) {
-                    document.getElementById("taxType").value = foundItem.tax;
-                    document.getElementById("taxDisplay").innerText = "Tax: " + (foundItem.tax || "-");
-                } else {
-                    document.getElementById("taxType").value = "";
-                    document.getElementById("taxDisplay").innerText = "Tax: -";
-                }
+            
+            // Reset error visual saat user mengetik/memilih
+            $('input, select').on('input change', function() {
+                $(this).removeClass('input-error');
             });
+             $('#akun').on('select2:select', function (e) {
+                 $('#akun').next('.select2-container').find('.select2-selection').removeClass('border-red-500');
+             });
         });
 
-        // --- MATH LOGIC: Qty * Price = Nominal ---
         function updateNominal() {
             const qty = parseFloat(document.getElementById("qty").value) || 0;
             const price = parseFloat(document.getElementById("price").value) || 0;
             const total = qty * price;
             document.getElementById("nominal").value = total;
+            document.getElementById("nominal").classList.remove('input-error');
         }
 
-        // --- UI LOGIC: Handle Perubahan Tipe Transaksi ---
         function handleTypeChange() {
             const isIncome = document.getElementById("tipeMasuk").checked;
             const btnSubmit = document.getElementById("btnSubmit");
             const helpText = document.getElementById("coaHelpText");
             
-            // 1. Ubah Data Dropdown (Select2)
+            // Data akun Expense/Income
             const listToUse = isIncome ? coaData.income : coaData.expense;
             updateDropdown(listToUse);
 
-            // 2. Ubah UI Theme
             if (isIncome) {
                 btnSubmit.classList.remove("bg-red-500", "hover:bg-red-600");
                 btnSubmit.classList.add("bg-green-600", "hover:bg-green-700");
@@ -419,21 +332,33 @@
 
         function updateDropdown(accounts) {
             const $select = $('#akun');
-            $select.empty(); // Kosongkan opsi lama
+            $select.empty(); 
             $select.append('<option value="">-- Pilih Akun --</option>');
-            
             if(accounts && accounts.length > 0){
                 accounts.forEach(acc => {
-                    // acc sekarang object {name: "...", tax: "..."}
+                    // acc berupa object {name: "...", tax: "..."}
                     const opt = new Option(acc.name, acc.name, false, false);
                     $select.append(opt);
                 });
             }
-            $select.trigger('change'); // Refresh Select2
+            $select.trigger('change');
         }
 
-        // --- AUTH & CORE (Sama seperti sebelumnya) ---
+        // --- NEW: Populate Dropdown Tax Manual ---
+        function updateTaxDropdown(taxList) {
+            const sel = document.getElementById("taxType");
+            sel.innerHTML = '<option value="">-- Pilih Tax Type --</option>';
+            if(taxList && taxList.length > 0) {
+                taxList.forEach(tax => {
+                    const opt = document.createElement("option");
+                    opt.value = tax;
+                    opt.text = tax;
+                    sel.add(opt);
+                });
+            }
+        }
 
+        // --- AUTH & CORE ---
         function checkSession() {
             const user = localStorage.getItem("kasUser");
             if (user) {
@@ -447,351 +372,205 @@
         function handleLogin(e) {
             e.preventDefault();
             const btn = document.getElementById("btnLogin");
-            const err = document.getElementById("loginError");
-            
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            btn.disabled = true;
-            err.classList.add("hidden");
-
-            const payload = {
-                action: "login",
-                email: document.getElementById("email").value,
-                password: document.getElementById("password").value
-            };
-
-            fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            })
+            btn.innerText = "Loading..."; btn.disabled = true;
+            const payload = { action: "login", email: document.getElementById("email").value, password: document.getElementById("password").value };
+            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(data => {
                 if (data.status === "success") {
                     localStorage.setItem("kasUser", JSON.stringify(data.user));
                     checkSession();
-                } else {
-                    err.innerText = data.message;
-                    err.classList.remove("hidden");
-                }
+                } else { alert(data.message); }
             })
-            .catch(error => {
-                err.innerText = "Gagal terhubung server";
-                err.classList.remove("hidden");
-            })
-            .finally(() => {
-                btn.innerText = "Masuk";
-                btn.disabled = false;
-            });
+            .finally(() => { btn.innerText = "Masuk"; btn.disabled = false; });
         }
 
-        function logout() {
-            localStorage.removeItem("kasUser");
-            location.reload();
-        }
+        function logout() { localStorage.removeItem("kasUser"); location.reload(); }
 
-        // --- DATA FETCHING ---
         function fetchData() {
             const tbody = document.getElementById("tableBody");
             const loading = document.getElementById("tableLoading");
             const start = document.getElementById("filterStart").value;
             const end = document.getElementById("filterEnd").value;
-
-            tbody.innerHTML = "";
-            loading.classList.remove("hidden");
+            tbody.innerHTML = ""; loading.classList.remove("hidden");
 
             let url = `${API_URL}?action=getData`;
             if (start) url += `&start=${start}`;
             if (end) url += `&end=${end}`;
 
-            fetch(url)
-            .then(res => res.json())
-            .then(data => {
+            fetch(url).then(res => res.json()).then(data => {
                 loading.classList.add("hidden");
                 if (data.status === "success") {
                     globalTransactions = data.data;
-                    
                     if(data.accounts) {
                         coaData.expense = data.accounts.expense || [];
                         coaData.income = data.accounts.income || [];
+                        // Simpan list tax unique
+                        coaData.taxTypes = data.accounts.taxTypes || [];
                     }
-
                     if (data.lockDate) currentLockDate = data.lockDate;
                     
-                    updateLockDateUI();
-                    updateCards(data.stats);
+                    document.getElementById("lockStatus").classList.toggle("hidden", !currentLockDate);
+                    if(currentLockDate) document.getElementById("lockDateDisplay").innerText = new Date(currentLockDate).toLocaleDateString('id-ID');
+                    
+                    document.getElementById("valSaldo").innerText = "Rp " + new Intl.NumberFormat('id-ID').format(data.stats.saldo);
+                    document.getElementById("valDebit").innerText = "Rp " + new Intl.NumberFormat('id-ID').format(data.stats.debit);
+                    document.getElementById("valKredit").innerText = "Rp " + new Intl.NumberFormat('id-ID').format(data.stats.kredit);
+                    
                     updateTable(globalTransactions);
                 }
-            })
-            .catch(err => {
-                loading.innerHTML = `<span class="text-red-500">Error: ${err}</span>`;
             });
-        }
-
-        function updateLockDateUI() {
-            const el = document.getElementById("lockStatus");
-            const txt = document.getElementById("lockDateDisplay");
-            
-            if (currentLockDate) {
-                el.classList.remove("hidden");
-                const d = new Date(currentLockDate);
-                txt.innerText = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-            } else {
-                el.classList.add("hidden");
-            }
-        }
-
-        function updateCards(stats) {
-            const fmt = (n) => "Rp " + new Intl.NumberFormat('id-ID').format(n);
-            document.getElementById("valDebit").innerText = fmt(stats.debit);
-            document.getElementById("valKredit").innerText = fmt(stats.kredit);
-            document.getElementById("valSaldo").innerText = fmt(stats.saldo);
         }
 
         function updateTable(rows) {
             const tbody = document.getElementById("tableBody");
             const fmt = (n) => n === 0 ? "-" : new Intl.NumberFormat('id-ID').format(n);
-            
-            if(rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-gray-400 italic">Tidak ada data transaksi.</td></tr>';
-                return;
-            }
-
+            if(rows.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-gray-400">Tidak ada data.</td></tr>'; return; }
             rows.forEach((row, index) => {
                 const tr = document.createElement("tr");
-
-                let btnLihat = `<span class="text-gray-300 text-xs">-</span>`;
-                if (row.attach && row.attach.includes("http")) {
-                    btnLihat = `
-                        <button onclick="openPreview('${row.attach}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 p-2 rounded-full transition" title="Lihat Bukti">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    `;
-                }
-
-                let isLocked = false;
+                let btnAction = `<button onclick="openModal('edit', ${index})" class="text-amber-500 bg-amber-50 p-2 rounded-full ml-2"><i class="fas fa-pen"></i></button>`;
                 if (currentLockDate) {
-                    const lockDateObj = new Date(currentLockDate); 
-                    const transDateObj = new Date(row.dateISO || row.date); 
-                    lockDateObj.setHours(0,0,0,0);
-                    transDateObj.setHours(0,0,0,0);
-                    if (transDateObj <= lockDateObj) isLocked = true;
+                   if (new Date(row.dateISO || row.date) <= new Date(currentLockDate)) btnAction = `<span class="text-gray-400 ml-2 p-2"><i class="fas fa-lock"></i></span>`;
                 }
-
-                let btnAction = "";
-                if (isLocked) {
-                    btnAction = `<span class="text-gray-400 ml-2 cursor-not-allowed p-2"><i class="fas fa-lock"></i></span>`;
-                } else {
-                    btnAction = `
-                        <button onclick="openModal('edit', ${index})" class="text-amber-500 hover:text-amber-600 bg-amber-50 hover:bg-amber-100 p-2 rounded-full ml-2 transition">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                    `;
-                }
-
                 tr.innerHTML = `
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-gray-900 whitespace-nowrap">${row.date}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-xs text-gray-500 font-mono bg-gray-50 rounded">${row.ref}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-gray-700 font-medium truncate max-w-xs" title="${row.desc}">${row.desc}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-xs text-gray-500">${row.account}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
-                        ${row.debit > 0 ? '<span class="text-green-600 bg-green-50 px-2 py-1 rounded">+ '+fmt(row.debit)+'</span>' : '-'}
-                    </td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
-                        ${row.kredit > 0 ? '<span class="text-red-600 bg-red-50 px-2 py-1 rounded">- '+fmt(row.kredit)+'</span>' : '-'}
-                    </td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-right text-gray-900 font-bold">${fmt(row.saldo)}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-center text-lg whitespace-nowrap">
-                        ${btnLihat} ${btnAction}
-                    </td>
+                    <td class="px-5 py-4 border-b text-sm">${row.date}</td>
+                    <td class="px-5 py-4 border-b text-xs font-mono bg-gray-50">${row.ref}</td>
+                    <td class="px-5 py-4 border-b text-sm max-w-xs truncate">${row.desc}</td>
+                    <td class="px-5 py-4 border-b text-xs">${row.account}</td>
+                    <td class="px-5 py-4 border-b text-sm font-bold text-right text-green-600">${row.debit > 0 ? fmt(row.debit) : '-'}</td>
+                    <td class="px-5 py-4 border-b text-sm font-bold text-right text-red-600">${row.kredit > 0 ? fmt(row.kredit) : '-'}</td>
+                    <td class="px-5 py-4 border-b text-sm text-right font-bold">${fmt(row.saldo)}</td>
+                    <td class="px-5 py-4 border-b text-center text-lg">${btnAction}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // --- PREVIEW LOGIC ---
-        function openPreview(url) {
-            if(!url) return alert("Link file tidak valid");
-            const mainContent = document.getElementById("mainContent");
-            const previewPane = document.getElementById("previewPane");
-            const iframe = document.getElementById("previewFrame");
-            const btnNewTab = document.getElementById("btnNewTab");
-            const loader = document.getElementById("previewLoader");
-
-            let previewUrl = url;
-            if (url.includes("drive.google.com") && url.includes("/view")) {
-                previewUrl = url.replace(/\/view.*/, "/preview");
-            }
-
-            previewPane.classList.remove("hidden");
-            setTimeout(() => {
-                mainContent.classList.remove("w-full");
-                mainContent.classList.add("w-2/3"); 
-                previewPane.classList.remove("w-0");
-                previewPane.classList.add("w-1/3"); 
-            }, 10);
-
-            loader.classList.remove("hidden");
-            iframe.classList.add("hidden");
-            iframe.src = previewUrl;
-            iframe.onload = function() {
-                loader.classList.add("hidden");
-                iframe.classList.remove("hidden");
-            };
-            btnNewTab.href = url;
-        }
-
-        function closePreview() {
-            const mainContent = document.getElementById("mainContent");
-            const previewPane = document.getElementById("previewPane");
-            const iframe = document.getElementById("previewFrame");
-
-            mainContent.classList.remove("w-2/3");
-            mainContent.classList.add("w-full");
-            previewPane.classList.remove("w-1/3");
-            previewPane.classList.add("w-0");
-
-            setTimeout(() => {
-                previewPane.classList.add("hidden");
-                iframe.src = ""; 
-            }, 300);
-        }
-
-        // --- MODAL LOGIC ---
-        
         function openModal(mode, index = null) {
             const modal = document.getElementById("modalAdd");
             const form = document.getElementById("addForm");
-            const title = document.getElementById("modalTitle");
-            const fileInfo = document.getElementById("fileLabelInfo");
-            
-            // Reset Form
             document.getElementById("formMode").value = mode;
+            
+            // Populate Dropdown Tax dari data yang sudah di-fetch
+            updateTaxDropdown(coaData.taxTypes);
 
             if (mode === 'add') {
                 form.reset();
-                $('#akun').val(null).trigger('change'); // Reset Select2
-                document.getElementById("taxDisplay").innerText = "Tax: -"; // Reset Tax Display
-
-                title.innerText = "Tambah Transaksi";
-                fileInfo.classList.add("hidden");
-                document.getElementById("editRef").value = "";
+                $('#akun').val(null).trigger('change');
                 document.getElementById('tgl').valueAsDate = new Date();
-                
-                // Default ke Expense
                 document.getElementById("tipeKeluar").checked = true;
                 handleTypeChange(); 
-
             } else if (mode === 'edit') {
                 const data = globalTransactions[index];
-                
-                title.innerText = "Edit Transaksi (" + data.ref + ")";
-                fileInfo.classList.remove("hidden");
-
                 document.getElementById("editRef").value = data.ref;
                 document.getElementById("tgl").value = data.dateISO; 
                 document.getElementById("desc").value = data.desc;
                 document.getElementById("tagihan").value = data.noTagihan || "";
-                
-                // Set New Fields
                 document.getElementById("contact").value = data.contact || "";
                 document.getElementById("qty").value = data.qty || 1;
                 document.getElementById("price").value = data.price || 0;
                 document.getElementById("taxType").value = data.taxType || "";
-                document.getElementById("taxDisplay").innerText = "Tax: " + (data.taxType || "-");
-
-                // Hitung ulang nominal
+                
                 updateNominal();
-
-                if (data.debit > 0) {
-                    document.getElementById("tipeMasuk").checked = true;
-                } else {
-                    document.getElementById("tipeKeluar").checked = true;
-                }
-
-                // 1. Populate Dropdown Options
+                if (data.debit > 0) document.getElementById("tipeMasuk").checked = true;
+                else document.getElementById("tipeKeluar").checked = true;
+                
                 handleTypeChange();
-
-                // 2. Set Selected Value di Select2
-                // Timeout kecil diperlukan agar Select2 merender opsi dulu
-                setTimeout(() => {
-                    $('#akun').val(data.account).trigger('change');
-                }, 50);
+                setTimeout(() => { $('#akun').val(data.account).trigger('change'); }, 50);
             }
-
             modal.classList.remove("hidden");
         }
 
         function closeModal() { document.getElementById("modalAdd").classList.add("hidden"); }
 
+        // --- VALIDATION FUNCTION (KONTROL INPUT) ---
+        function validateForm() {
+            let isValid = true;
+            
+            // Elements
+            const elTgl = document.getElementById('tgl');
+            const elDesc = document.getElementById('desc');
+            const elQty = document.getElementById('qty');
+            const elPrice = document.getElementById('price');
+            const elNominal = document.getElementById('nominal');
+
+            // Reset Styles
+            $('.input-error').removeClass('input-error');
+            $('#akun').next('.select2-container').find('.select2-selection').removeClass('border-red-500');
+
+            // Checks
+            if (!elTgl.value) { elTgl.classList.add('input-error'); isValid = false; }
+            if (!elDesc.value.trim()) { elDesc.classList.add('input-error'); isValid = false; }
+            
+            // Select2 Validation
+            if (!$('#akun').val()) {
+                $('#akun').next('.select2-container').find('.select2-selection').addClass('border-red-500');
+                isValid = false;
+            }
+
+            // Qty & Price Validation
+            if (!elQty.value || elQty.value <= 0) { elQty.classList.add('input-error'); isValid = false; }
+            if (elPrice.value === "" || elPrice.value < 0) { elPrice.classList.add('input-error'); isValid = false; }
+            
+            // Check Nominal
+            const nom = parseFloat(elNominal.value) || 0;
+            if (nom <= 0) { elNominal.classList.add('input-error'); isValid = false; }
+
+            if (!isValid) {
+                alert("Mohon lengkapi data yang wajib diisi (ditandai merah).");
+            }
+            return isValid;
+        }
+
         function submitTransaction(e) {
             e.preventDefault();
-            const btn = document.getElementById("btnSubmit");
-            const mode = document.getElementById("formMode").value;
             
+            // PANGGIL VALIDASI
+            if (!validateForm()) return;
+
+            const btn = document.getElementById("btnSubmit");
             const originalText = btn.innerHTML;
-            btn.innerText = "Menyimpan...";
-            btn.disabled = true;
+            btn.innerText = "Menyimpan..."; btn.disabled = true;
 
             const fileInput = document.getElementById("file");
-            const actionType = (mode === 'edit') ? "editTransaction" : "addTransaction";
-            const select2Val = $('#akun').val();
-
             const payload = {
-                action: actionType,
+                action: document.getElementById("formMode").value === 'edit' ? "editTransaction" : "addTransaction",
                 ref: document.getElementById("editRef").value,
                 tanggal: document.getElementById("tgl").value,
                 tipe: document.querySelector('input[name="tipe"]:checked').value,
-                akun: select2Val,
+                akun: $('#akun').val(),
                 deskripsi: document.getElementById("desc").value,
                 nominal: document.getElementById("nominal").value,
                 noTagihan: document.getElementById("tagihan").value,
-                // Data Baru
                 contact: document.getElementById("contact").value,
                 taxType: document.getElementById("taxType").value,
                 qty: document.getElementById("qty").value,
                 price: document.getElementById("price").value
             };
 
-            const send = (finalPayload) => {
-                fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify(finalPayload)
-                })
+            const send = (dataPayload) => {
+                fetch(API_URL, { method: "POST", body: JSON.stringify(dataPayload) })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === "success") {
-                        const title = document.getElementById("modalTitle");
-                        title.innerHTML = '<span class="text-green-500"><i class="fas fa-check"></i> Berhasil!</span>';
-                        setTimeout(() => {
-                            closeModal();
-                            document.getElementById("addForm").reset();
-                            $('#akun').val(null).trigger('change');
-                            fetchData();
-                        }, 800);
-                    } else {
-                        alert("Gagal: " + data.message);
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
+                        closeModal();
+                        document.getElementById("addForm").reset();
+                        $('#akun').val(null).trigger('change');
+                        fetchData();
+                    } else { alert("Gagal: " + data.message); }
                 })
-                .catch(err => {
-                    alert("Gagal koneksi: " + err);
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                });
+                .catch(err => alert("Error: " + err))
+                .finally(() => { btn.innerHTML = originalText; btn.disabled = false; });
             };
 
             if (fileInput.files.length > 0) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    payload.fileData = e.target.result;
-                    payload.fileName = fileInput.files[0].name;
-                    send(payload);
-                };
+                reader.onload = function(e) { payload.fileData = e.target.result; payload.fileName = fileInput.files[0].name; send(payload); };
                 reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                send(payload);
-            }
+            } else { send(payload); }
         }
+
+        function closePreview() { document.getElementById("previewPane").classList.add("hidden"); document.getElementById("previewFrame").src = ""; }
     </script>
 </body>
 </html>
