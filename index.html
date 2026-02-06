@@ -237,17 +237,24 @@
                     </div>
                 </div>
 
-                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                    <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
-                        <div class="relative group">
-                            <input type="date" id="filterStart" onchange="fetchData()" class="bg-transparent text-xs font-medium text-slate-600 px-2 py-1.5 focus:outline-none cursor-pointer">
-                            <span class="absolute -top-2 left-2 bg-white px-1 text-[9px] text-slate-400">Start</span>
+               <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    
+                    <div class="flex items-center gap-2">
+                        <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
+                            <div class="relative group">
+                                <input type="date" id="filterStart" class="bg-transparent text-xs font-medium text-slate-600 px-2 py-1.5 focus:outline-none cursor-pointer">
+                                <span class="absolute -top-2 left-2 bg-white px-1 text-[9px] text-slate-400">Start</span>
+                            </div>
+                            <span class="text-slate-300">|</span>
+                            <div class="relative group">
+                                <input type="date" id="filterEnd" class="bg-transparent text-xs font-medium text-slate-600 px-2 py-1.5 focus:outline-none cursor-pointer">
+                                <span class="absolute -top-2 left-2 bg-white px-1 text-[9px] text-slate-400">End</span>
+                            </div>
                         </div>
-                        <span class="text-slate-300">|</span>
-                        <div class="relative group">
-                            <input type="date" id="filterEnd" onchange="fetchData()" class="bg-transparent text-xs font-medium text-slate-600 px-2 py-1.5 focus:outline-none cursor-pointer">
-                            <span class="absolute -top-2 left-2 bg-white px-1 text-[9px] text-slate-400">End</span>
-                        </div>
+
+                        <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-700 text-white h-[42px] px-4 rounded-xl text-xs font-bold shadow-md shadow-blue-100 transition flex items-center gap-2">
+                            <i class="fas fa-filter"></i> Update
+                        </button>
                     </div>
 
                     <div class="flex gap-2">
