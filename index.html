@@ -81,25 +81,29 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
-    <div id="loginPage" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-100">
+<div id="loginPage" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-100">
         <div class="bg-white p-10 rounded-3xl shadow-2xl w-96 border border-slate-100 text-center">
             <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-200">
                 <i class="fas fa-wallet text-2xl"></i>
             </div>
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Kas Kecil</h2>
             <p class="text-slate-400 text-sm mb-8">Sign in to manage expenses</p>
-            <form onsubmit="handleLogin(event)" class="space-y-4 text-left">
-                <div class="relative">
-                    <input type="email" id="email" class="peer w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder=" " required>
-                    <label class="absolute left-4 top-3 text-slate-400 text-sm transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white peer-focus:px-1 peer-focus:text-blue-500 pointer-events-none">Email Address</label>
+            
+            <form onsubmit="handleLogin(event)" class="space-y-5 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Email Address</label>
+                    <input type="email" id="email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700" placeholder="nama@email.com" required>
                 </div>
-                <div class="relative">
-                    <input type="password" id="password" class="peer w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder=" " required>
-                    <label class="absolute left-4 top-3 text-slate-400 text-sm transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white peer-focus:px-1 peer-focus:text-blue-500 pointer-events-none">Password</label>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Password</label>
+                    <input type="password" id="password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700" placeholder="••••••••" required>
                 </div>
-                <button type="submit" id="btnLogin" class="w-full bg-slate-900 text-white font-medium py-3 rounded-xl hover:bg-slate-800 transition shadow-lg shadow-slate-200">Masuk</button>
+
+                <button type="submit" id="btnLogin" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition shadow-lg shadow-slate-200 mt-4">Masuk</button>
             </form>
-            <p id="loginError" class="text-red-500 text-xs mt-4 hidden"></p>
+            
+            <p id="loginError" class="text-red-500 text-xs mt-4 hidden font-medium bg-red-50 py-2 rounded-lg border border-red-100"></p>
         </div>
     </div>
 
