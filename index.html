@@ -3,992 +3,728 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kas Kecil Dashboard</title>
+    <title>Kas Kecil Modern</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; }
         
-        /* Select2 Customization to match Tailwind */
-        .select2-container .select2-selection--single {
-            height: 42px;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 6px;
+        /* Floating Label Logic */
+        .floating-input { 
+            padding-top: 1.25rem; 
+            padding-bottom: 0.25rem; 
         }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            top: 8px;
+        .floating-label {
+            position: absolute;
+            top: 0.25rem;
+            left: 0.75rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            transition: all 0.2s;
+            pointer-events: none;
         }
-        
-        .loading-overlay { background: rgba(255,255,255,0.8); z-index: 50; }
-        tbody tr:nth-child(even) { background-color: #f9fafb; }
-        tbody tr:hover { background-color: #f3f4f6; }
-        
-        .transition-width {
-            transition-property: width;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-            transition-duration: 300ms;
-        }
-
-        .cursor-not-allowed { cursor: not-allowed; }
-
-        /* Segmented Control */
-        .segmented-control {
-            display: flex;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: 12px;
-            position: relative;
-        }
-        .segmented-control input { display: none; }
-        .segmented-control label {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
+        .peer:placeholder-shown ~ .floating-label {
+            top: 0.75rem;
             font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            z-index: 2;
             color: #64748b;
         }
-        /* Active States */
-        #tipeKeluar:checked ~ .indicator {
-            transform: translateX(0);
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #fee2e2;
+        .peer:focus ~ .floating-label {
+            top: 0.25rem;
+            font-size: 0.75rem;
+            color: #3b82f6;
         }
-        #tipeKeluar:checked + label { color: #ef4444; } 
         
-        #tipeMasuk:checked ~ .indicator {
-            transform: translateX(100%);
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #dcfce7;
+        /* Select2 Modern Override */
+        .select2-container .select2-selection--single {
+            height: 52px; /* Match floating input height */
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
         }
-        #tipeMasuk:checked + label { color: #16a34a; } 
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            padding-left: 12px;
+            color: #334155;
+            font-size: 0.875rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            top: 13px;
+            right: 10px;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .indicator {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: calc(50% - 4px);
-            height: calc(100% - 8px);
-            border-radius: 8px;
-            transition: transform 0.2s ease;
-            z-index: 1;
-        }
-
-        .modern-input {
-            @apply w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:outline-none transition-all;
-        }
-        .modern-input:focus {
-            @apply border-blue-500 ring-blue-100;
-        }
-        .modern-input:read-only {
-            background-color: #f3f4f6;
-            cursor: not-allowed;
-        }
-        .input-error {
-            border-color: #ef4444 !important;
-            background-color: #fef2f2 !important;
-        }
-
-        /* PRINT STYLE FOR PDF */
+        /* Print Style */
         @media print {
             body * { visibility: hidden; }
             #printableArea, #printableArea * { visibility: visible; }
-            #printableArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 20px;
-                background: white;
-            }
-            /* Hide Buttons in Print */
-            .no-print { display: none !important; }
+            #printableArea { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; }
         }
+
+        /* Modal Transitions */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 200ms, transform 200ms; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 200ms, transform 200ms; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800 h-screen overflow-hidden">
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <div id="loginPage" class="fixed inset-0 flex items-center justify-center bg-gray-200 z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-96 border border-gray-100">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-800">Login Kas Kecil</h2>
-                <p class="text-gray-500 text-sm mt-1">Silakan masuk untuk melanjutkan</p>
+    <div id="loginPage" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-100">
+        <div class="bg-white p-10 rounded-3xl shadow-2xl w-96 border border-slate-100 text-center">
+            <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-200">
+                <i class="fas fa-wallet text-2xl"></i>
             </div>
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Email</label>
-                    <input type="email" id="email" class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="user@example.com" required>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Kas Kecil</h2>
+            <p class="text-slate-400 text-sm mb-8">Sign in to manage expenses</p>
+            <form onsubmit="handleLogin(event)" class="space-y-4 text-left">
+                <div class="relative">
+                    <input type="email" id="email" class="peer w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder=" " required>
+                    <label class="absolute left-4 top-3 text-slate-400 text-sm transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white peer-focus:px-1 peer-focus:text-blue-500 pointer-events-none">Email Address</label>
                 </div>
-                <div class="mb-6">
-                    <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Password</label>
-                    <input type="password" id="password" class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition" placeholder="••••••••" required>
+                <div class="relative">
+                    <input type="password" id="password" class="peer w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm" placeholder=" " required>
+                    <label class="absolute left-4 top-3 text-slate-400 text-sm transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white peer-focus:px-1 peer-focus:text-blue-500 pointer-events-none">Password</label>
                 </div>
-                <button type="submit" id="btnLogin" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition">Masuk</button>
-                <p id="loginError" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+                <button type="submit" id="btnLogin" class="w-full bg-slate-900 text-white font-medium py-3 rounded-xl hover:bg-slate-800 transition shadow-lg shadow-slate-200">Masuk</button>
             </form>
+            <p id="loginError" class="text-red-500 text-xs mt-4 hidden"></p>
         </div>
     </div>
 
-    <div id="dashboardPage" class="hidden flex flex-col h-full">
-        
-        <nav class="bg-white shadow-sm px-6 py-3 flex justify-between items-center z-20 relative flex-none border-b">
-            <h1 class="text-lg font-bold text-gray-700 flex items-center">
-                <span class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-                    <i class="fas fa-wallet text-sm"></i>
-                </span>
-                Kas Kecil Overview
-            </h1>
-            <div class="flex items-center gap-4">
-                <div id="lockStatus" class="hidden text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-full border border-red-100 font-medium">
-                    <i class="fas fa-lock mr-1.5"></i> Locked: <span id="lockDateDisplay">-</span>
+    <div id="dashboardPage" class="hidden flex flex-col h-full relative">
+        <header class="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-6 flex-none z-20">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center">
+                    <i class="fas fa-coins text-sm"></i>
                 </div>
+                <h1 class="font-bold text-slate-700 text-lg tracking-tight">Kas Kecil</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                 <div id="lockStatus" class="hidden text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-full border border-red-100 font-medium">
+                    <i class="fas fa-lock mr-1"></i> <span id="lockDateDisplay">-</span>
+                </div>
+                <div class="h-8 w-px bg-slate-200"></div>
                 <div class="flex items-center gap-2">
-                    <div class="text-right hidden md:block">
-                        <p id="userName" class="text-sm font-bold text-gray-700">User</p>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Active</p>
+                    <div class="text-right">
+                        <p id="userName" class="text-xs font-bold text-slate-700">User</p>
+                        <p class="text-[10px] text-slate-400">Admin</p>
                     </div>
-                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 transition flex items-center justify-center">
-                        <i class="fas fa-power-off"></i>
+                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 transition flex items-center justify-center">
+                        <i class="fas fa-power-off text-xs"></i>
                     </button>
                 </div>
             </div>
-        </nav>
+        </header>
 
-        <div class="flex-grow flex overflow-hidden relative">
-            
-            <div id="mainContent" class="w-full h-full overflow-y-auto p-6 transition-width custom-scrollbar">
+        <div class="flex-grow flex overflow-hidden">
+            <main id="mainContent" class="flex-grow overflow-y-auto p-6 transition-all duration-300">
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
-                        <div class="absolute right-0 top-0 h-full w-1 bg-blue-500"></div>
-                        <div class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Total Saldo Akhir</div>
-                        <div class="text-3xl font-bold text-gray-800" id="valSaldo">Rp 0</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
-                        <div class="absolute right-0 top-0 h-full w-1 bg-green-500"></div>
-                        <div class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Total Masuk</div>
-                        <div class="text-2xl font-bold text-green-600" id="valDebit">Rp 0</div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
-                        <div class="absolute right-0 top-0 h-full w-1 bg-red-500"></div>
-                        <div class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Total Keluar</div>
-                        <div class="text-2xl font-bold text-red-600" id="valKredit">Rp 0</div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-4 items-end justify-between">
-                    <div class="flex gap-3 items-end flex-wrap">
-                        <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex gap-3">
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Start Date</label>
-                                <input type="date" id="filterStart" onchange="fetchData()" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none">
-                            </div>
-                            <div class="w-px bg-gray-300"></div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">End Date</label>
-                                <input type="date" id="filterEnd" onchange="fetchData()" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none">
-                            </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md transition">
+                        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Saldo Akhir</div>
+                        <div class="text-2xl font-bold text-slate-800" id="valSaldo">...</div>
+                        <div class="h-1 w-full bg-slate-100 mt-4 rounded-full overflow-hidden">
+                            <div class="h-full bg-slate-800 w-full rounded-full"></div>
                         </div>
-                        
-                        <button onclick="downloadCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg shadow-sm font-medium text-sm transition flex items-center" title="Export CSV for Xero">
-                            <i class="fas fa-file-csv mr-2"></i> CSV
-                        </button>
-                        <button onclick="printPDF()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg shadow-sm font-medium text-sm transition flex items-center" title="Print Bank Statement">
-                            <i class="fas fa-print mr-2"></i> PDF
-                        </button>
                     </div>
-                    
-                    <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-md font-bold text-sm transition transform hover:-translate-y-0.5 flex items-center">
-                        <i class="fas fa-plus-circle mr-2 text-lg"></i> Add Transaction
-                    </button>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md transition">
+                        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Masuk</div>
+                        <div class="text-2xl font-bold text-emerald-600" id="valDebit">...</div>
+                        <div class="h-1 w-full bg-emerald-50 mt-4 rounded-full overflow-hidden">
+                            <div class="h-full bg-emerald-500 w-0 transition-all duration-1000" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md transition">
+                        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Keluar</div>
+                        <div class="text-2xl font-bold text-rose-600" id="valKredit">...</div>
+                        <div class="h-1 w-full bg-rose-50 mt-4 rounded-full overflow-hidden">
+                            <div class="h-full bg-rose-500 w-0 transition-all duration-1000" style="width: 45%"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-10">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
+                        <div class="relative group">
+                            <input type="date" id="filterStart" onchange="fetchData()" class="bg-transparent text-xs font-medium text-slate-600 px-2 py-1.5 focus:outline-none cursor-pointer">
+                            <span class="absolute -top-2 left-2 bg-white px-1 text-[9px] text-slate-400">Start</span>
+                        </div>
+                        <span class="text-slate-300">|</span>
+                        <div class="relative group">
+                            <input type="date" id="filterEnd" onchange="fetchData()" class="bg-transparent text-xs font-medium text-slate-600 px-2 py-1.5 focus:outline-none cursor-pointer">
+                            <span class="absolute -top-2 left-2 bg-white px-1 text-[9px] text-slate-400">End</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="downloadCSV()" class="bg-white border border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-200 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-2">
+                            <i class="fas fa-file-csv text-lg"></i> Export CSV
+                        </button>
+                        <button onclick="printPDF()" class="bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-2">
+                            <i class="fas fa-print text-lg"></i> PDF
+                        </button>
+                        <button onclick="openModal('add')" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-slate-200 transition flex items-center gap-2 transform hover:-translate-y-0.5">
+                            <i class="fas fa-plus"></i> Transaksi Baru
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full leading-normal">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-gray-50 border-b border-gray-200 text-left">
-                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Ref</th>
-                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                                    <th class="px-5 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Akun</th>
-                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Debit</th>
-                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Kredit</th>
-                                    <th class="px-5 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Saldo</th>
-                                    <th class="px-5 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
+                                <tr class="bg-slate-50/50 border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider">
+                                    <th class="px-6 py-4 font-semibold">Tanggal</th>
+                                    <th class="px-6 py-4 font-semibold">Ref</th>
+                                    <th class="px-6 py-4 font-semibold">Deskripsi</th>
+                                    <th class="px-6 py-4 font-semibold">Akun</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Nominal</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Saldo</th>
+                                    <th class="px-6 py-4 font-semibold text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody"></tbody>
+                            <tbody id="tableBody" class="text-sm text-slate-600"></tbody>
                         </table>
                     </div>
-                    <div id="tableLoading" class="p-12 text-center text-gray-500 hidden">
-                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600 mb-3"></div>
-                        <p class="text-sm font-medium">Mengambil data terbaru...</p>
+                    <div id="tableLoading" class="p-10 text-center hidden">
+                        <i class="fas fa-circle-notch fa-spin text-slate-300 text-2xl"></i>
+                        <p class="text-xs text-slate-400 mt-2">Memuat data...</p>
                     </div>
                 </div>
-            </div>
+                <div class="h-10"></div> </main>
 
-            <div id="previewPane" class="w-0 bg-white border-l border-gray-200 shadow-2xl transition-width flex flex-col hidden relative z-30">
-                <div class="flex justify-between items-center p-4 border-b flex-none bg-gray-50">
-                    <h3 class="font-bold text-gray-700 text-sm"><i class="fas fa-paperclip mr-2 text-gray-400"></i> Bukti</h3>
-                    <div class="flex gap-2">
-                        <a id="btnNewTab" href="#" target="_blank" class="text-gray-500 hover:text-blue-600 p-2 rounded hover:bg-gray-200 transition">
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
-                        <button onclick="closePreview()" class="text-gray-500 hover:text-red-600 p-2 rounded hover:bg-gray-200 transition">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+            <aside id="previewPane" class="w-0 bg-white border-l border-slate-200 shadow-2xl transition-all duration-300 flex flex-col z-30">
+                <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
+                    <span class="text-xs font-bold uppercase text-slate-500">Bukti Transaksi</span>
+                    <button onclick="closePreview()" class="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="flex-grow relative bg-gray-100 flex items-center justify-center">
-                    <div id="previewLoader" class="absolute inset-0 flex items-center justify-center text-gray-400 flex-col">
-                        <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i>
-                        <span class="text-xs">Memuat...</span>
-                    </div>
-                    <iframe id="previewFrame" class="w-full h-full hidden" src="" frameborder="0"></iframe>
+                <div class="flex-grow bg-slate-100 relative">
+                     <iframe id="previewFrame" class="w-full h-full" src=""></iframe>
                 </div>
-            </div>
-
+                <div class="p-3 bg-white border-t border-slate-100 text-center">
+                    <a id="btnNewTab" href="#" target="_blank" class="text-xs text-blue-600 font-semibold hover:underline">Buka di tab baru</a>
+                </div>
+            </aside>
         </div>
     </div>
 
-    <div id="modalAdd" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden backdrop-blur-sm h-full w-full z-50 flex items-center justify-center p-4">
-        <div class="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100 max-h-[95vh] overflow-y-auto">
+    <div id="modalAdd" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col transform scale-100 transition-transform">
             
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 sticky top-0 z-10">
-                <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Transaksi</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition">
-                    <i class="fas fa-times"></i>
+            <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                <div>
+                    <h3 id="modalTitle" class="text-lg font-bold text-slate-800">Transaksi Baru</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Isi detail transaksi dengan lengkap</p>
+                </div>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition flex items-center justify-center shadow-sm">
+                    <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
-            
-            <form id="addForm" onsubmit="submitTransaction(event)" class="p-8">
-                <input type="hidden" id="editRef">
-                <input type="hidden" id="formMode" value="add">
-                
-                <div class="mb-6 flex justify-center">
-                    <div class="segmented-control w-full md:w-1/2">
-                        <input type="radio" name="tipe" id="tipeKeluar" value="Keluar" checked onchange="handleTypeChange()">
-                        <label for="tipeKeluar"><i class="fas fa-arrow-up mr-1"></i> Expense</label>
-                        
-                        <input type="radio" name="tipe" id="tipeMasuk" value="Masuk" onchange="handleTypeChange()">
-                        <label for="tipeMasuk"><i class="fas fa-arrow-down mr-1"></i> Income</label>
-                        
-                        <div class="indicator"></div>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tanggal</label>
-                        <input type="date" id="tgl" class="modern-input text-sm bg-gray-50">
-                    </div>
-                    <div>
-                         <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Contact (Payee)</label>
-                         <input type="text" id="contact" class="modern-input text-sm" placeholder="Nama Vendor/Klien">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tax Type</label>
-                        <div class="relative">
-                             <select id="taxType" class="modern-input appearance-none bg-white text-sm">
-                                <option value="">-- Pilih Tax Type --</option>
-                             </select>
-                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                                 <i class="fas fa-chevron-down text-xs"></i>
-                             </div>
+            <div class="overflow-y-auto p-8 custom-scrollbar">
+                <form id="addForm" onsubmit="submitTransaction(event)">
+                    <input type="hidden" id="editRef">
+                    <input type="hidden" id="formMode" value="add">
+
+                    <div class="flex justify-center mb-8">
+                        <div class="bg-slate-100 p-1 rounded-xl inline-flex relative w-full md:w-auto">
+                            <div id="activeIndicator" class="absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 border border-slate-200/50"></div>
+                            
+                            <label class="relative z-10 w-full md:w-32 py-2 text-center text-xs font-bold cursor-pointer transition-colors duration-300 select-none text-rose-600" id="lblKeluar">
+                                <input type="radio" name="tipe" value="Keluar" checked onchange="toggleType('Keluar')" class="hidden">
+                                <i class="fas fa-arrow-up mr-1"></i> Expense
+                            </label>
+                            
+                            <label class="relative z-10 w-full md:w-32 py-2 text-center text-xs font-bold cursor-pointer transition-colors duration-300 select-none text-slate-400" id="lblMasuk">
+                                <input type="radio" name="tipe" value="Masuk" onchange="toggleType('Masuk')" class="hidden">
+                                <i class="fas fa-arrow-down mr-1"></i> Income
+                            </label>
                         </div>
                     </div>
-                </div>
 
-                <div class="mb-5">
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Akun (CoA)</label>
-                    <select id="akun" class="w-full text-sm" style="width: 100%;">
-                        <option value="">-- Cari Akun --</option>
-                    </select>
-                    <p class="text-[10px] text-gray-400 italic mt-1" id="coaHelpText">*Menampilkan akun Expense</p>
-                </div>
+                    <div class="grid grid-cols-12 gap-5">
+                        
+                        <div class="col-span-12 md:col-span-4 relative">
+                            <input type="date" id="tgl" class="peer floating-input w-full bg-slate-50 border border-slate-200 rounded-lg px-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 font-medium h-[52px]">
+                            <label class="floating-label">Tanggal Transaksi</label>
+                        </div>
+                        <div class="col-span-12 md:col-span-4 relative">
+                            <input type="text" id="contact" class="peer floating-input w-full bg-slate-50 border border-slate-200 rounded-lg px-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 h-[52px]" placeholder=" ">
+                            <label class="floating-label">Contact / Payee</label>
+                        </div>
+                        <div class="col-span-12 md:col-span-4 relative">
+                             <select id="taxType" class="peer w-full bg-slate-50 border border-slate-200 rounded-lg px-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 h-[52px] text-sm appearance-none pt-4 pb-1">
+                                <option value="">None</option>
+                            </select>
+                            <label class="floating-label">Tax Type</label>
+                            <i class="fas fa-chevron-down absolute right-3 top-4 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
 
-                <div class="mb-5">
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Deskripsi</label>
-                    <textarea id="desc" rows="2" class="modern-input text-sm" placeholder="Tuliskan detail transaksi..."></textarea>
-                </div>
+                        <div class="col-span-12">
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1 ml-1">Akun (CoA)</label>
+                            <select id="akun" class="w-full"></select>
+                        </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-5 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <div class="flex flex-col">
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Qty</label>
-                        <input type="number" id="qty" class="modern-input text-sm text-center" placeholder="1" value="1" min="1" oninput="updateNominal()">
-                    </div>
-                    <div class="flex flex-col">
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Price</label>
-                        <input type="number" id="price" class="modern-input text-sm" placeholder="0" oninput="updateNominal()">
-                    </div>
-                    <div class="flex flex-col">
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Total</label>
-                        <input type="number" id="nominal" class="modern-input text-sm bg-gray-200 font-bold text-gray-800" readonly>
-                    </div>
-                </div>
+                        <div class="col-span-12 relative group">
+                            <textarea id="desc" rows="1" class="peer w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 resize-none overflow-hidden" placeholder=" " oninput="autoResize(this)"></textarea>
+                            <label class="absolute left-3 top-3 text-slate-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white peer-focus:px-1 peer-focus:text-blue-500 pointer-events-none">Deskripsi Transaksi</label>
+                            <div class="absolute bottom-2 right-2 text-[10px] text-slate-300 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-pen"></i></div>
+                        </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">No Tagihan (Opsional)</label>
-                        <input type="text" id="tagihan" class="modern-input text-sm" placeholder="-">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">
-                            Bukti <span id="fileLabelInfo" class="font-normal text-gray-400 text-[9px] lowercase">(kosongkan jika tetap)</span>
-                        </label>
-                        <input type="file" id="file" class="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-full file:border-0
-                            file:text-xs file:font-semibold
-                            file:bg-blue-50 file:text-blue-700
-                            hover:file:bg-blue-100 cursor-pointer border border-gray-300 rounded-lg p-1" 
-                            accept="image/*,application/pdf">
-                    </div>
-                </div>
+                        <div class="col-span-12 bg-slate-50 rounded-xl p-4 border border-slate-100 grid grid-cols-12 gap-4 items-center">
+                            <div class="col-span-3">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Qty</label>
+                                <input type="number" id="qty" value="1" min="1" oninput="calcTotal()" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-center text-sm focus:border-blue-500 outline-none">
+                            </div>
+                            <div class="col-span-1 text-center text-slate-400 mt-4">x</div>
+                            <div class="col-span-4">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Price</label>
+                                <input type="number" id="price" oninput="calcTotal()" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm focus:border-blue-500 outline-none" placeholder="0">
+                            </div>
+                             <div class="col-span-1 text-center text-slate-400 mt-4">=</div>
+                            <div class="col-span-3">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Total</label>
+                                <input type="text" id="nominal" readonly class="w-full bg-slate-200/50 border border-slate-200 rounded-lg px-2 py-2 text-right font-bold text-slate-700 text-sm cursor-not-allowed">
+                                <input type="hidden" id="nominalVal">
+                            </div>
+                        </div>
 
-                <button type="submit" id="btnSubmit" class="w-full bg-red-500 text-white p-3 rounded-xl hover:bg-red-600 font-bold transition shadow-lg flex items-center justify-center text-lg">
-                    <i class="fas fa-save mr-2"></i> Simpan Transaksi
+                        <div class="col-span-6 relative">
+                            <input type="text" id="tagihan" class="peer floating-input w-full bg-slate-50 border border-slate-200 rounded-lg px-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 h-[52px]" placeholder=" ">
+                            <label class="floating-label">No. Tagihan (Ref Lain)</label>
+                        </div>
+                        <div class="col-span-6 relative">
+                            <label class="absolute -top-2 left-2 px-1 bg-white text-[10px] font-bold text-slate-400 z-10">Upload Bukti</label>
+                            <input type="file" id="file" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-200 rounded-lg cursor-pointer bg-slate-50 h-[52px] pt-1.5 pl-1.5">
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            <div class="p-6 border-t border-slate-100 bg-slate-50/50">
+                <button onclick="submitTransaction(event)" id="btnSubmit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-xl shadow-slate-200 hover:bg-slate-800 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <span id="btnText">Simpan Transaksi</span>
                 </button>
-            </form>
+            </div>
         </div>
     </div>
 
     <div id="printableArea" class="hidden">
-        <div class="mb-4 border-b pb-4">
-            <h1 class="text-2xl font-bold uppercase">Laporan Mutasi Kas Kecil</h1>
-            <p id="printDateRange" class="text-sm text-gray-600 mt-1"></p>
-            <p id="printUser" class="text-xs text-gray-400"></p>
-        </div>
-        <table class="w-full text-left text-xs border-collapse">
+        <h1 class="text-xl font-bold uppercase mb-2">Laporan Mutasi Kas Kecil</h1>
+        <p class="text-xs mb-4" id="printInfo"></p>
+        <table class="w-full text-xs border-collapse">
             <thead>
                 <tr class="border-b-2 border-black">
-                    <th class="py-2 w-24">Date</th>
-                    <th class="py-2 w-32">Reference</th>
-                    <th class="py-2">Description</th>
-                    <th class="py-2 text-right w-24">Debit</th>
-                    <th class="py-2 text-right w-24">Credit</th>
-                    <th class="py-2 text-right w-28">Balance</th>
+                    <th class="text-left py-1 w-20">Date</th>
+                    <th class="text-left py-1 w-24">Ref</th>
+                    <th class="text-left py-1">Description</th>
+                    <th class="text-right py-1 w-24">Debit</th>
+                    <th class="text-right py-1 w-24">Credit</th>
+                    <th class="text-right py-1 w-24">Balance</th>
                 </tr>
             </thead>
-            <tbody id="printTableBody"></tbody>
+            <tbody id="printBody"></tbody>
         </table>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyENVqwNX-feSAisvStsvWSC7kx9wMIhuXoDBfB9R80G_pyGMxpzNgTZqyoQSgVG_KG/exec"; 
+        // API CONFIG
+        const API_URL = "https://script.google.com/macros/s/AKfycbwgmIS7VOptcF1KotbW1h6s4M4QmLZhSRNv2PEXxsdWIgHSngdxDTggW7TFrr07RRCF/exec"; 
         
-        let globalTransactions = [];
-        let currentLockDate = null;
-        let coaData = { expense: [], income: [], taxTypes: [] };
+        let globalData = [];
+        let accountData = { expense: [], income: [], tax: [] };
+        let currentLock = null;
 
-        document.addEventListener("DOMContentLoaded", () => {
+        // INIT
+        $(document).ready(function() {
             checkSession();
-            document.getElementById('tgl').valueAsDate = new Date();
             
-            $('#akun').select2({
-                placeholder: "-- Pilih Akun --",
-                allowClear: true,
-                dropdownParent: $('#modalAdd')
-            });
+            // Setup Date Filters Default (This Month)
+            const d = new Date();
+            const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+            const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
+            
+            // Only set if empty
+            if(!$('#filterStart').val()) $('#filterStart').val(firstDay);
+            if(!$('#filterEnd').val()) $('#filterEnd').val(lastDay);
 
-            $('input, select, textarea').on('input change', function() {
-                $(this).removeClass('input-error');
+            $('#tgl').val(new Date().toISOString().split('T')[0]);
+
+            $('#akun').select2({
+                placeholder: "Pilih Akun",
+                dropdownParent: $('#modalAdd'),
+                width: '100%'
             });
-             $('#akun').on('select2:select', function (e) {
-                 $('#akun').next('.select2-container').find('.select2-selection').removeClass('border-red-500');
-             });
         });
 
-        // --- FILTER FUNCTION FOR EXPORT & PRINT (CLIENT SIDE) ---
-        // Ini fungsi kunci agar data export sesuai filter yang terlihat
-        function getFilteredData() {
-            const startVal = document.getElementById("filterStart").value;
-            const endVal = document.getElementById("filterEnd").value;
-            
-            return globalTransactions.filter(row => {
-                let include = true;
-                // row.dateISO formatnya YYYY-MM-DD
-                if (startVal && row.dateISO < startVal) include = false;
-                if (endVal && row.dateISO > endVal) include = false;
-                return include;
-            });
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
         }
 
-        // --- EXPORT LOGIC ---
-        function downloadCSV() {
-            // Ambil data yang SUDAH di-filter
-            const dataToExport = getFilteredData();
-
-            if (!dataToExport || dataToExport.length === 0) {
-                alert("Tidak ada data untuk diexport pada rentang tanggal ini.");
-                return;
-            }
-
-            const header = ["*Date", "*Amount", "Payee", "Description", "Reference", "Check Number"];
-            
-            const rows = dataToExport.map(row => {
-                let amount = 0;
-                if (row.debit > 0) amount = row.debit;
-                else amount = -row.kredit; 
-
-                return [
-                    row.date,          
-                    amount,            
-                    "",                
-                    `"${row.desc.replace(/"/g, '""')}"`, 
-                    row.ref,           
-                    ""                 
-                ].join(",");
-            });
-
-            const csvContent = "data:text/csv;charset=utf-8," + [header.join(","), ...rows].join("\n");
-            const encodedUri = encodeURI(csvContent);
-            
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Kas_Kecil_Export_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // --- PRINT LOGIC ---
-        function printPDF() {
-            // Ambil data yang SUDAH di-filter
-            const dataToPrint = getFilteredData();
-
-            if (!dataToPrint || dataToPrint.length === 0) return alert("Tidak ada data untuk dicetak pada rentang tanggal ini.");
-
-            const user = JSON.parse(localStorage.getItem("kasUser") || "{}");
-            document.getElementById("printUser").innerText = "Generated by: " + (user.name || "Unknown");
-            
-            const s = document.getElementById("filterStart").value || "Awal";
-            const e = document.getElementById("filterEnd").value || "Akhir";
-            document.getElementById("printDateRange").innerText = `Periode: ${s} s/d ${e}`;
-
-            const tbody = document.getElementById("printTableBody");
-            tbody.innerHTML = "";
-            
-            const fmt = (n) => n === 0 ? "-" : new Intl.NumberFormat('id-ID').format(n);
-
-            dataToPrint.forEach(row => {
-                const tr = document.createElement("tr");
-                tr.className = "border-b border-gray-200";
-                tr.innerHTML = `
-                    <td class="py-2 align-top">${row.date}</td>
-                    <td class="py-2 align-top font-mono text-[10px]">${row.ref}</td>
-                    <td class="py-2 align-top">${row.desc}</td>
-                    <td class="py-2 align-top text-right">${fmt(row.debit)}</td>
-                    <td class="py-2 align-top text-right">${fmt(row.kredit)}</td>
-                    <td class="py-2 align-top text-right font-bold">${fmt(row.saldo)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            window.print();
-        }
-
-        function updateNominal() {
-            const qty = parseFloat(document.getElementById("qty").value) || 0;
-            const price = parseFloat(document.getElementById("price").value) || 0;
-            const total = qty * price;
-            document.getElementById("nominal").value = total;
-            document.getElementById("nominal").classList.remove('input-error');
-        }
-
-        function handleTypeChange() {
-            const isIncome = document.getElementById("tipeMasuk").checked;
-            const btnSubmit = document.getElementById("btnSubmit");
-            const helpText = document.getElementById("coaHelpText");
-            
-            const listToUse = isIncome ? coaData.income : coaData.expense;
-            updateDropdown(listToUse);
-
-            if (isIncome) {
-                btnSubmit.classList.remove("bg-red-500", "hover:bg-red-600");
-                btnSubmit.classList.add("bg-green-600", "hover:bg-green-700");
-                helpText.innerText = "*Menampilkan akun Income (Pendapatan)";
-            } else {
-                btnSubmit.classList.remove("bg-green-600", "hover:bg-green-700");
-                btnSubmit.classList.add("bg-red-500", "hover:bg-red-600");
-                helpText.innerText = "*Menampilkan akun Expense (Pengeluaran)";
-            }
-        }
-
-        function updateDropdown(accounts) {
-            const $select = $('#akun');
-            $select.empty(); 
-            $select.append('<option value="">-- Pilih Akun --</option>');
-            
-            if(accounts && accounts.length > 0){
-                accounts.forEach(acc => {
-                    const opt = new Option(acc.name, acc.name, false, false);
-                    $select.append(opt);
-                });
-            }
-            $select.trigger('change');
-        }
-
-        function updateTaxDropdown(taxList) {
-            const sel = document.getElementById("taxType");
-            sel.innerHTML = '<option value="">-- Pilih Tax Type --</option>';
-            if(taxList && taxList.length > 0) {
-                taxList.forEach(tax => {
-                    const opt = document.createElement("option");
-                    opt.value = tax;
-                    opt.text = tax;
-                    sel.add(opt);
-                });
-            }
-        }
-
+        // --- AUTH & DATA ---
         function checkSession() {
-            const user = localStorage.getItem("kasUser");
-            if (user) {
-                document.getElementById("loginPage").classList.add("hidden");
-                document.getElementById("dashboardPage").classList.remove("hidden");
-                document.getElementById("userName").innerText = JSON.parse(user).name;
-                fetchData(); 
+            const u = localStorage.getItem("kasUser");
+            if(u) {
+                $('#loginPage').addClass('hidden');
+                $('#dashboardPage').removeClass('hidden');
+                $('#userName').text(JSON.parse(u).name);
+                fetchData();
             }
         }
 
         function handleLogin(e) {
             e.preventDefault();
-            const btn = document.getElementById("btnLogin");
-            const err = document.getElementById("loginError");
+            const b = $('#btnLogin');
+            b.prop('disabled', true).text('Loading...');
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            btn.disabled = true;
-            err.classList.add("hidden");
-
-            const payload = {
-                action: "login",
-                email: document.getElementById("email").value,
-                password: document.getElementById("password").value
-            };
-
             fetch(API_URL, {
                 method: "POST",
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    localStorage.setItem("kasUser", JSON.stringify(data.user));
+                body: JSON.stringify({
+                    action: "login",
+                    email: $('#email').val(),
+                    password: $('#password').val()
+                })
+            }).then(r=>r.json()).then(d=>{
+                if(d.status === "success") {
+                    localStorage.setItem("kasUser", JSON.stringify(d.user));
                     checkSession();
                 } else {
-                    err.innerText = data.message;
-                    err.classList.remove("hidden");
+                    $('#loginError').text(d.message).removeClass('hidden');
+                    b.prop('disabled', false).text('Masuk');
                 }
-            })
-            .catch(error => {
-                err.innerText = "Gagal terhubung server";
-                err.classList.remove("hidden");
-            })
-            .finally(() => {
-                btn.innerText = "Masuk";
-                btn.disabled = false;
             });
         }
 
-        function logout() {
-            localStorage.removeItem("kasUser");
-            location.reload();
-        }
+        function logout() { localStorage.clear(); location.reload(); }
 
         function fetchData() {
-            const tbody = document.getElementById("tableBody");
-            const loading = document.getElementById("tableLoading");
-            const start = document.getElementById("filterStart").value;
-            const end = document.getElementById("filterEnd").value;
+            const start = $('#filterStart').val();
+            const end = $('#filterEnd').val();
+            
+            $('#tableLoading').removeClass('hidden');
+            $('#tableBody').empty();
 
-            tbody.innerHTML = "";
-            loading.classList.remove("hidden");
-
-            let url = `${API_URL}?action=getData`;
-            if (start) url += `&start=${start}`;
-            if (end) url += `&end=${end}`;
-
-            fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                loading.classList.add("hidden");
-                if (data.status === "success") {
-                    globalTransactions = data.data;
+            fetch(`${API_URL}?action=getData&start=${start}&end=${end}`)
+            .then(r=>r.json())
+            .then(d => {
+                $('#tableLoading').addClass('hidden');
+                if(d.status === "success") {
+                    globalData = d.data; // Store for Export
                     
-                    if(data.accounts) {
-                        coaData.expense = data.accounts.expense || [];
-                        coaData.income = data.accounts.income || [];
-                        coaData.taxTypes = data.accounts.taxTypes || [];
+                    // Setup Accounts
+                    accountData.expense = d.accounts.expense;
+                    accountData.income = d.accounts.income;
+                    accountData.tax = d.accounts.taxTypes;
+                    currentLock = d.lockDate;
+
+                    if(currentLock) {
+                        $('#lockStatus').removeClass('hidden');
+                        $('#lockDateDisplay').text(formatDateID(currentLock));
                     }
 
-                    if (data.lockDate) currentLockDate = data.lockDate;
-                    
-                    updateLockDateUI();
-                    updateCards(data.stats);
-                    updateTable(globalTransactions);
+                    renderStats(d.stats);
+                    renderTable(d.data);
                 }
-            })
-            .catch(err => {
-                loading.innerHTML = `<span class="text-red-500">Error: ${err}</span>`;
             });
         }
 
-        function updateLockDateUI() {
-            const el = document.getElementById("lockStatus");
-            const txt = document.getElementById("lockDateDisplay");
-            
-            if (currentLockDate) {
-                el.classList.remove("hidden");
-                const d = new Date(currentLockDate);
-                txt.innerText = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-            } else {
-                el.classList.add("hidden");
-            }
+        // --- RENDERING ---
+        function renderStats(s) {
+            const fmt = n => "Rp " + new Intl.NumberFormat('id-ID').format(n);
+            $('#valSaldo').text(fmt(s.saldo));
+            $('#valDebit').text(fmt(s.debit));
+            $('#valKredit').text(fmt(s.kredit));
         }
 
-        function updateCards(stats) {
-            const fmt = (n) => "Rp " + new Intl.NumberFormat('id-ID').format(n);
-            document.getElementById("valDebit").innerText = fmt(stats.debit);
-            document.getElementById("valKredit").innerText = fmt(stats.kredit);
-            document.getElementById("valSaldo").innerText = fmt(stats.saldo);
-        }
-
-        function updateTable(rows) {
-            const tbody = document.getElementById("tableBody");
-            const fmt = (n) => n === 0 ? "-" : new Intl.NumberFormat('id-ID').format(n);
-            
+        function renderTable(rows) {
+            const tb = $('#tableBody');
             if(rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-gray-400 italic">Tidak ada data transaksi.</td></tr>';
+                tb.html('<tr><td colspan="7" class="text-center py-8 text-slate-400">Tidak ada data di periode ini.</td></tr>');
                 return;
             }
 
-            rows.forEach((row, index) => {
-                const tr = document.createElement("tr");
+            const fmt = n => n===0 ? '-' : new Intl.NumberFormat('id-ID').format(n);
+            const isLock = (dateISO) => currentLock && new Date(dateISO) <= new Date(currentLock);
 
-                let btnLihat = `<span class="text-gray-300 text-xs">-</span>`;
-                if (row.attach && row.attach.includes("http")) {
-                    btnLihat = `
-                        <button onclick="openPreview('${row.attach}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 p-2 rounded-full transition" title="Lihat Bukti">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    `;
-                }
+            rows.forEach((r, i) => {
+                let statusClass = "bg-slate-100 text-slate-500";
+                let debit = "-", kredit = "-";
+                
+                if(r.debit > 0) debit = `<span class="text-emerald-600 font-bold">+ ${fmt(r.debit)}</span>`;
+                if(r.kredit > 0) kredit = `<span class="text-rose-600 font-bold">- ${fmt(r.kredit)}</span>`;
 
-                let isLocked = false;
-                if (currentLockDate) {
-                    const lockDateObj = new Date(currentLockDate); 
-                    const transDateObj = new Date(row.dateISO || row.date); 
-                    lockDateObj.setHours(0,0,0,0);
-                    transDateObj.setHours(0,0,0,0);
-                    if (transDateObj <= lockDateObj) isLocked = true;
-                }
-
-                let btnAction = "";
-                if (isLocked) {
-                    btnAction = `<span class="text-gray-400 ml-2 cursor-not-allowed p-2"><i class="fas fa-lock"></i></span>`;
-                } else {
-                    btnAction = `
-                        <button onclick="openModal('edit', ${index})" class="text-amber-500 hover:text-amber-600 bg-amber-50 hover:bg-amber-100 p-2 rounded-full ml-2 transition">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                    `;
-                }
-
+                // Actions
+                let locked = isLock(r.dateISO);
+                let btnEdit = locked ? 
+                    `<span class="text-slate-300 cursor-not-allowed"><i class="fas fa-lock"></i></span>` :
+                    `<button onclick="openModal('edit', ${i})" class="text-amber-400 hover:text-amber-600 transition"><i class="fas fa-pen"></i></button>`;
+                
+                let btnView = r.attach ? `<button onclick="openPreview('${r.attach}')" class="text-blue-400 hover:text-blue-600"><i class="fas fa-eye"></i></button>` : '';
+                
                 let btnSync = "";
-                if (row.debit > 0) {
-                    btnSync = ""; 
-                } else {
-                    const isImported = (row.syncStatus && String(row.syncStatus).toLowerCase() === "imported");
-                    
-                    if (isImported) {
-                        btnSync = `<span class="text-green-500 ml-2 p-2" title="Sudah diimpor"><i class="fas fa-check-circle"></i></span>`;
+                if(r.kredit > 0) {
+                    if(String(r.syncStatus).toLowerCase() === 'imported') {
+                        btnSync = `<span class="text-emerald-400" title="Synced"><i class="fas fa-check-circle"></i></span>`;
                     } else {
-                        btnSync = `
-                            <button onclick="syncData('${row.ref}')" class="text-indigo-500 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-full ml-2 transition" title="Sinkronkan">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        `;
+                        btnSync = `<button onclick="sync('${r.ref}')" class="text-indigo-400 hover:text-indigo-600" title="Sync to Xero"><i class="fas fa-sync"></i></button>`;
                     }
                 }
 
-                tr.innerHTML = `
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-gray-900 whitespace-nowrap">${row.date}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-xs text-gray-500 font-mono bg-gray-50 rounded">${row.ref}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-gray-700 font-medium truncate max-w-xs" title="${row.desc}">${row.desc}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-xs text-gray-500">${row.account}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
-                        ${row.debit > 0 ? '<span class="text-green-600 bg-green-50 px-2 py-1 rounded">+ '+fmt(row.debit)+'</span>' : '-'}
-                    </td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm font-bold text-right text-gray-700">
-                        ${row.kredit > 0 ? '<span class="text-red-600 bg-red-50 px-2 py-1 rounded">- '+fmt(row.kredit)+'</span>' : '-'}
-                    </td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-sm text-right text-gray-900 font-bold">${fmt(row.saldo)}</td>
-                    <td class="px-5 py-4 border-b border-gray-200 text-center text-lg whitespace-nowrap">
-                        ${btnLihat} ${btnAction} ${btnSync}
-                    </td>
+                const tr = `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
+                        <td class="px-6 py-4 whitespace-nowrap">${r.date}</td>
+                        <td class="px-6 py-4 font-mono text-xs text-slate-500">${r.ref}</td>
+                        <td class="px-6 py-4 truncate max-w-xs" title="${r.desc}">${r.desc}</td>
+                        <td class="px-6 py-4 text-xs bg-slate-50 rounded mx-2">${r.account}</td>
+                        <td class="px-6 py-4 text-right">${r.debit > 0 ? debit : kredit}</td>
+                        <td class="px-6 py-4 text-right font-bold text-slate-700">${fmt(r.saldo)}</td>
+                        <td class="px-6 py-4 text-center space-x-3">
+                            ${btnView} ${btnEdit} ${btnSync}
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
+                tb.append(tr);
             });
         }
 
-        function syncData(ref) {
-            if(!confirm("Anda yakin ingin menandai transaksi " + ref + " untuk sinkronisasi?")) return;
+        // --- MODAL LOGIC ---
+        function toggleType(type) {
+            const ind = $('#activeIndicator');
+            const lblM = $('#lblMasuk');
+            const lblK = $('#lblKeluar');
+            const btn = $('#btnSubmit');
+
+            if(type === 'Masuk') {
+                ind.css('transform', 'translateX(100%)');
+                lblM.removeClass('text-slate-400').addClass('text-emerald-600');
+                lblK.removeClass('text-rose-600').addClass('text-slate-400');
+                btn.removeClass('bg-slate-900').addClass('bg-emerald-600');
+                populateCoa(accountData.income);
+            } else {
+                ind.css('transform', 'translateX(0)');
+                lblK.removeClass('text-slate-400').addClass('text-rose-600');
+                lblM.removeClass('text-emerald-600').addClass('text-slate-400');
+                btn.removeClass('bg-emerald-600').addClass('bg-slate-900');
+                populateCoa(accountData.expense);
+            }
+        }
+
+        function populateCoa(list) {
+            const s = $('#akun');
+            s.empty();
+            s.append(new Option('', ''));
+            if(list) list.forEach(x => s.append(new Option(x.name, x.name)));
+            s.trigger('change');
+        }
+
+        function populateTax() {
+            const s = $('#taxType');
+            s.empty().append('<option value="">None</option>');
+            if(accountData.tax) accountData.tax.forEach(x => s.append(`<option value="${x}">${x}</option>`));
+        }
+
+        function calcTotal() {
+            const q = parseFloat($('#qty').val()) || 0;
+            const p = parseFloat($('#price').val()) || 0;
+            const tot = q * p;
+            $('#nominal').val("Rp " + new Intl.NumberFormat('id-ID').format(tot));
+            $('#nominalVal').val(tot);
+        }
+
+        function openModal(mode, idx=null) {
+            $('#modalAdd').removeClass('hidden');
+            $('#addForm')[0].reset();
+            populateTax();
             
-            const loadingHtml = `<div class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[60] flex items-center justify-center text-white flex-col">
-                <i class="fas fa-sync fa-spin text-4xl mb-3"></i>
-                <p>Sedang sinkronisasi...</p>
-            </div>`;
-            const loadingEl = document.createElement('div');
-            loadingEl.innerHTML = loadingHtml;
-            document.body.appendChild(loadingEl);
-
-            const payload = {
-                action: "syncTransaction",
-                ref: ref
-            };
-
-            fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.body.removeChild(loadingEl);
-                if (data.status === "success") {
-                    alert(data.message);
-                    fetchData(); 
-                } else {
-                    alert("Gagal: " + data.message);
-                }
-            })
-            .catch(err => {
-                document.body.removeChild(loadingEl);
-                alert("Gagal koneksi: " + err);
-            });
-        }
-
-        function openPreview(url) {
-            if(!url) return alert("Link file tidak valid");
-            const mainContent = document.getElementById("mainContent");
-            const previewPane = document.getElementById("previewPane");
-            const iframe = document.getElementById("previewFrame");
-            const btnNewTab = document.getElementById("btnNewTab");
-            const loader = document.getElementById("previewLoader");
-
-            let previewUrl = url;
-            if (url.includes("drive.google.com") && url.includes("/view")) {
-                previewUrl = url.replace(/\/view.*/, "/preview");
-            }
-
-            previewPane.classList.remove("hidden");
-            setTimeout(() => {
-                mainContent.classList.remove("w-full");
-                mainContent.classList.add("w-2/3"); 
-                previewPane.classList.remove("w-0");
-                previewPane.classList.add("w-1/3"); 
-            }, 10);
-
-            loader.classList.remove("hidden");
-            iframe.classList.add("hidden");
-            iframe.src = previewUrl;
-            iframe.onload = function() {
-                loader.classList.add("hidden");
-                iframe.classList.remove("hidden");
-            };
-            btnNewTab.href = url;
-        }
-
-        function closePreview() {
-            const mainContent = document.getElementById("mainContent");
-            const previewPane = document.getElementById("previewPane");
-            const iframe = document.getElementById("previewFrame");
-
-            mainContent.classList.remove("w-2/3");
-            mainContent.classList.add("w-full");
-            previewPane.classList.remove("w-1/3");
-            previewPane.classList.add("w-0");
-
-            setTimeout(() => {
-                previewPane.classList.add("hidden");
-                iframe.src = ""; 
-            }, 300);
-        }
-
-        function openModal(mode, index = null) {
-            const modal = document.getElementById("modalAdd");
-            const form = document.getElementById("addForm");
-            const title = document.getElementById("modalTitle");
-            const fileInfo = document.getElementById("fileLabelInfo");
+            // Default State
+            $('#qty').val(1);
             
-            document.getElementById("formMode").value = mode;
-            updateTaxDropdown(coaData.taxTypes);
-
-            if (mode === 'add') {
-                form.reset();
-                $('#akun').val(null).trigger('change'); 
-
-                title.innerText = "Tambah Transaksi";
-                fileInfo.classList.add("hidden");
-                document.getElementById("editRef").value = "";
-                document.getElementById('tgl').valueAsDate = new Date();
+            if(mode === 'add') {
+                $('#modalTitle').text('Transaksi Baru');
+                $('#formMode').val('add');
+                $('#tgl').val(new Date().toISOString().split('T')[0]);
+                $('input[name=tipe][value=Keluar]').prop('checked', true).trigger('change');
+            } else {
+                const d = globalData[idx];
+                $('#modalTitle').text(`Edit ${d.ref}`);
+                $('#formMode').val('edit');
+                $('#editRef').val(d.ref);
                 
-                document.getElementById("tipeKeluar").checked = true;
-                handleTypeChange(); 
-
-            } else if (mode === 'edit') {
-                const data = globalTransactions[index];
+                $('#tgl').val(d.dateISO);
+                $('#desc').val(d.desc);
+                $('#contact').val(d.contact);
+                $('#taxType').val(d.taxType);
+                $('#tagihan').val(d.noTagihan);
                 
-                title.innerText = "Edit Transaksi (" + data.ref + ")";
-                fileInfo.classList.remove("hidden");
+                // Set Values for Calc
+                $('#qty').val(d.qty || 1);
+                $('#price').val(d.price || 0);
+                calcTotal();
 
-                document.getElementById("editRef").value = data.ref;
-                document.getElementById("tgl").value = data.dateISO; 
-                document.getElementById("desc").value = data.desc;
-                document.getElementById("tagihan").value = data.noTagihan || "";
+                // Set Type
+                const type = d.debit > 0 ? 'Masuk' : 'Keluar';
+                $(`input[name=tipe][value=${type}]`).prop('checked', true).trigger('change');
                 
-                document.getElementById("contact").value = data.contact || "";
-                document.getElementById("qty").value = data.qty || 1;
-                document.getElementById("price").value = data.price || 0;
-                document.getElementById("taxType").value = data.taxType || "";
-
-                updateNominal();
-
-                if (data.debit > 0) {
-                    document.getElementById("tipeMasuk").checked = true;
-                } else {
-                    document.getElementById("tipeKeluar").checked = true;
-                }
-
-                handleTypeChange();
-
-                setTimeout(() => {
-                    $('#akun').val(data.account).trigger('change');
-                }, 50);
+                setTimeout(() => $('#akun').val(d.account).trigger('change'), 100);
             }
-
-            modal.classList.remove("hidden");
+            // Auto resize textarea
+            setTimeout(() => autoResize(document.getElementById('desc')), 100);
         }
 
-        function closeModal() { document.getElementById("modalAdd").classList.add("hidden"); }
-
-        function validateForm() {
-            let isValid = true;
-            const elTgl = document.getElementById('tgl');
-            const elContact = document.getElementById('contact'); 
-            const elTaxType = document.getElementById('taxType'); 
-            const elDesc = document.getElementById('desc');
-            const elQty = document.getElementById('qty');
-            const elPrice = document.getElementById('price');
-            const elNominal = document.getElementById('nominal');
-
-            $('.input-error').removeClass('input-error');
-            $('#akun').next('.select2-container').find('.select2-selection').removeClass('border-red-500');
-
-            if (!elTgl.value) { elTgl.classList.add('input-error'); isValid = false; }
-            if (!elContact.value.trim()) { elContact.classList.add('input-error'); isValid = false; }
-            if (!elTaxType.value) { elTaxType.classList.add('input-error'); isValid = false; }
-            if (!elDesc.value.trim()) { elDesc.classList.add('input-error'); isValid = false; }
-            if (!$('#akun').val()) {
-                $('#akun').next('.select2-container').find('.select2-selection').addClass('border-red-500');
-                isValid = false;
-            }
-            if (!elQty.value || elQty.value <= 0) { elQty.classList.add('input-error'); isValid = false; }
-            if (elPrice.value === "" || elPrice.value < 0) { elPrice.classList.add('input-error'); isValid = false; }
-            const nom = parseFloat(elNominal.value) || 0;
-            if (nom <= 0) { elNominal.classList.add('input-error'); isValid = false; }
-
-            if (!isValid) alert("Mohon lengkapi data yang wajib diisi (Contact, Tax Type, Akun, dll).");
-            return isValid;
-        }
+        function closeModal() { $('#modalAdd').addClass('hidden'); }
 
         function submitTransaction(e) {
             e.preventDefault();
-            if (!validateForm()) return;
+            // Validate
+            const req = ['#tgl', '#contact', '#desc', '#nominalVal'];
+            let valid = true;
+            req.forEach(id => {
+                if(!$(id).val()) { $(id).addClass('border-red-500'); valid=false; }
+                else $(id).removeClass('border-red-500');
+            });
+            if(!$('#akun').val()) { alert("Pilih Akun!"); return; }
+            if(!valid) return;
 
-            const btn = document.getElementById("btnSubmit");
-            const originalText = btn.innerHTML;
-            btn.innerText = "Menyimpan...";
-            btn.disabled = true;
+            const btn = $('#btnSubmit');
+            const orig = $('#btnText').text();
+            btn.prop('disabled', true);
+            $('#btnText').text('Menyimpan...');
 
-            const fileInput = document.getElementById("file");
-            const mode = document.getElementById("formMode").value;
-            const actionType = (mode === 'edit') ? "editTransaction" : "addTransaction";
-            const select2Val = $('#akun').val();
-
-            const payload = {
-                action: actionType,
-                ref: document.getElementById("editRef").value,
-                tanggal: document.getElementById("tgl").value,
-                tipe: document.querySelector('input[name="tipe"]:checked').value,
-                akun: select2Val,
-                deskripsi: document.getElementById("desc").value,
-                nominal: document.getElementById("nominal").value,
-                noTagihan: document.getElementById("tagihan").value,
-                contact: document.getElementById("contact").value,
-                taxType: document.getElementById("taxType").value,
-                qty: document.getElementById("qty").value,
-                price: document.getElementById("price").value
+            const formData = {
+                action: $('#formMode').val() === 'edit' ? 'editTransaction' : 'addTransaction',
+                ref: $('#editRef').val(),
+                tanggal: $('#tgl').val(),
+                tipe: $('input[name=tipe]:checked').val(),
+                akun: $('#akun').val(),
+                deskripsi: $('#desc').val(),
+                nominal: $('#nominalVal').val(),
+                noTagihan: $('#tagihan').val(),
+                contact: $('#contact').val(),
+                taxType: $('#taxType').val(),
+                qty: $('#qty').val(),
+                price: $('#price').val()
             };
 
-            const send = (finalPayload) => {
-                fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify(finalPayload)
+            const fileInput = document.getElementById('file');
+            const send = (pl) => {
+                fetch(API_URL, { method: "POST", body: JSON.stringify(pl) })
+                .then(r=>r.json())
+                .then(d=>{
+                    if(d.status === "success") {
+                        closeModal();
+                        fetchData();
+                    } else { alert(d.message); }
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === "success") {
-                        const title = document.getElementById("modalTitle");
-                        title.innerHTML = '<span class="text-green-500"><i class="fas fa-check"></i> Berhasil!</span>';
-                        setTimeout(() => {
-                            closeModal();
-                            document.getElementById("addForm").reset();
-                            $('#akun').val(null).trigger('change');
-                            fetchData();
-                        }, 800);
-                    } else {
-                        alert("Gagal: " + data.message);
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
-                })
-                .catch(err => {
-                    alert("Gagal koneksi: " + err);
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
+                .finally(() => {
+                    btn.prop('disabled', false);
+                    $('#btnText').text(orig);
                 });
             };
 
-            if (fileInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    payload.fileData = e.target.result;
-                    payload.fileName = fileInput.files[0].name;
-                    send(payload);
+            if(fileInput.files.length > 0) {
+                const r = new FileReader();
+                r.onload = x => {
+                    formData.fileData = x.target.result;
+                    formData.fileName = fileInput.files[0].name;
+                    send(formData);
                 };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                send(payload);
-            }
+                r.readAsDataURL(fileInput.files[0]);
+            } else { send(formData); }
+        }
+
+        function sync(ref) {
+            if(!confirm("Sync ke Xero?")) return;
+            fetch(API_URL, { method: "POST", body: JSON.stringify({action:'syncTransaction', ref:ref}) })
+            .then(r=>r.json()).then(d=> { alert(d.message); fetchData(); });
+        }
+
+        // --- PREVIEW ---
+        function openPreview(url) {
+            if(url.includes('drive.google')) url = url.replace('/view', '/preview');
+            $('#previewFrame').attr('src', url);
+            $('#btnNewTab').attr('href', url);
+            $('#previewPane').removeClass('w-0').addClass('w-[400px]');
+            $('#mainContent').addClass('mr-[400px]');
+        }
+        function closePreview() {
+            $('#previewPane').removeClass('w-[400px]').addClass('w-0');
+            $('#mainContent').removeClass('mr-[400px]');
+            setTimeout(() => $('#previewFrame').attr('src', ''), 300);
+        }
+
+        // --- EXPORT FIX (POINT 2) ---
+        function downloadCSV() {
+            // Kita gunakan globalData yang SUDAH TERSARING oleh logika fetchData (server-side filter)
+            // Jadi apa yang tampil di tabel, itu yang di download.
+            if(!globalData || globalData.length === 0) return alert("Tidak ada data untuk diekspor");
+
+            const rows = [
+                ["*Date", "*Amount", "Payee", "Description", "Reference"] // Header Xero Simple
+            ];
+
+            globalData.forEach(d => {
+                let amt = d.debit > 0 ? d.debit : (d.kredit * -1);
+                // Escape quotes for CSV
+                let desc = d.desc.replace(/"/g, '""');
+                rows.push([
+                    d.date,
+                    amt,
+                    `"${d.contact}"`,
+                    `"${desc}"`,
+                    d.ref
+                ]);
+            });
+
+            const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+            const link = document.createElement("a");
+            link.href = encodeURI(csvContent);
+            link.download = `KasKecil_${$('#filterStart').val()}_${$('#filterEnd').val()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        function printPDF() {
+            if(!globalData || globalData.length === 0) return alert("Empty Data");
+            
+            $('#printInfo').text(`Periode: ${$('#filterStart').val()} s/d ${$('#filterEnd').val()}`);
+            const tb = $('#printBody');
+            tb.empty();
+            
+            const fmt = n => n===0?'-':new Intl.NumberFormat('id-ID').format(n);
+
+            globalData.forEach(d => {
+                tb.append(`
+                    <tr class="border-b border-gray-200">
+                        <td class="py-1">${d.date}</td>
+                        <td class="py-1">${d.ref}</td>
+                        <td class="py-1">${d.desc}</td>
+                        <td class="text-right py-1">${fmt(d.debit)}</td>
+                        <td class="text-right py-1">${fmt(d.kredit)}</td>
+                        <td class="text-right py-1 font-bold">${fmt(d.saldo)}</td>
+                    </tr>
+                `);
+            });
+            window.print();
+        }
+
+        function formatDateID(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
         }
     </script>
 </body>
