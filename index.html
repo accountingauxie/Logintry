@@ -10,41 +10,25 @@
   
   <style>
     body { background-color: #f6f7fa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    
-    /* Header Style */
     .dashboard-header { margin-bottom: 25px; }
-    
-    /* Card Summary Style */
     .xero-card { background: white; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 20px; border-left: 4px solid transparent; }
     .xero-card.total { border-left-color: #0d6efd; }
     .xero-card.success { border-left-color: #198754; }
     .xero-card.warning { border-left-color: #ffc107; }
     .xero-card h2 { font-weight: 700; margin-bottom: 0; margin-top: 5px; }
     .xero-card small { font-weight: 600; text-transform: uppercase; color: #6c757d; font-size: 0.75rem; letter-spacing: 0.5px; }
-
-    /* Controls Area */
     .controls-area { background: white; padding: 15px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 20px; }
-
-    /* Table Style */
-    .table-container { background: white; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; }
+    .table-container { background: white; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; min-height: 300px; }
     .table thead th { background-color: #f8f9fa; border-bottom: 2px solid #e9ecef; color: #495057; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; padding: 12px 16px; }
     .table tbody td { padding: 14px 16px; vertical-align: middle; color: #212529; font-size: 0.95rem; border-bottom: 1px solid #f2f2f2; }
     .table tbody tr:hover { background-color: #f8f9fa; }
-    
-    /* Badges */
     .badge-xero { font-weight: 600; font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; letter-spacing: 0.5px; }
     .badge-imported { background-color: #e6f7ed; color: #1e7e34; border: 1px solid #c3e6cb; }
     .badge-pending { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
-    
-    /* Links */
     .inv-link { color: #0099ff; font-weight: 600; text-decoration: none; cursor: pointer; }
     .inv-link:hover { text-decoration: underline; color: #0056b3; }
-
-    /* Modal */
     .modal-header { background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; }
     .modal-total-box { background-color: #f1f8ff; padding: 15px; border-radius: 6px; text-align: right; }
-    
-    /* Loading */
     #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   </style>
 </head>
@@ -193,9 +177,9 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // ==========================================
-  // ⚠️ PASTE URL APPS SCRIPT DI BAWAH INI
+  // ⚠️ PASTE URL APPS SCRIPT BARU DI BAWAH INI
   // ==========================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbxVGSsEVKrYzwcd8pRtHr0t8Ifg4v5241Yqv3X2yMJLgoLvyLfHLZ5ZgyDPsi0F0D2Q/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbyDtF-fspJkFINjDlcwrfKCN_0uK1djMkwA_DRhuiaqiQu1i_w7R8Qi9611waYOZ71A/exec"; 
 
   let STATE = {
     page: 1,
@@ -206,10 +190,9 @@
     data: [] 
   };
 
-  // Saat Load
   window.onload = () => {
-    if(API_URL.includes("PASTE_URL")) {
-        alert("PERINGATAN: Anda belum memasukkan URL Apps Script di file HTML baris 178.");
+    if(!API_URL || API_URL.includes("PASTE_URL")) {
+        alert("PERINGATAN: URL Apps Script belum dimasukkan di baris 156.");
     } else {
         reloadData();
     }
@@ -230,18 +213,30 @@
 
     const url = `${API_URL}?type=${STATE.type}&page=${STATE.page}&limit=${STATE.limit}&status=${STATE.status}&search=${encodeURIComponent(STATE.search)}`;
 
+    // FITUR UTAMA PERBAIKAN: Pemisahan Error Jaringan vs Error Coding
     fetch(url)
-      .then(res => res.json())
+      .then(res => {
+         if(!res.ok) throw new Error("HTTP Error: " + res.status);
+         return res.json();
+      })
       .then(json => {
+        // Cek jika Backend mengirim error logic (misal salah nama sheet)
         if(json.error) {
-            alert(json.error);
+            alert("Server Error: " + json.error);
         } else {
-            renderUI(json);
+            // Gunakan Try-Catch disini agar jika render gagal, errornya jelas
+            try {
+                renderUI(json);
+            } catch (renderErr) {
+                console.error("Render Error:", renderErr);
+                alert("Data berhasil ditarik, tapi gagal ditampilkan di layar. Cek Console.");
+            }
         }
       })
       .catch(err => {
-        console.error(err);
-        alert("Gagal koneksi. Cek apakah Script sudah dideploy sebagai 'Anyone'.");
+        // Ini hanya akan jalan jika internet mati atau URL salah
+        console.error("Network Error:", err);
+        alert("Gagal koneksi ke server Google. Cek internet atau URL Deployment.");
       })
       .finally(() => {
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -249,31 +244,36 @@
   }
 
   function renderUI(res) {
-    STATE.data = res.data; // Simpan data halaman ini untuk modal
+    if (!res || !res.stats) throw new Error("Respon data tidak valid/kosong");
 
-    // Stats
-    document.getElementById('stat-total').innerText = res.stats.totalCount;
-    document.getElementById('stat-imported').innerText = res.stats.importedCount;
-    document.getElementById('stat-pending').innerText = res.stats.pendingCount;
+    STATE.data = res.data || []; 
+
+    // Update Stats dengan safety check (|| 0)
+    document.getElementById('stat-total').innerText = res.stats.totalCount || 0;
+    document.getElementById('stat-imported').innerText = res.stats.importedCount || 0;
+    document.getElementById('stat-pending').innerText = res.stats.pendingCount || 0;
 
     // Table
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
 
-    if (res.data.length === 0) {
+    if (!res.data || res.data.length === 0) {
       tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Data tidak ditemukan</td></tr>`;
     } else {
       res.data.forEach((item, idx) => {
         const isImported = item.status === 'Imported';
         const badgeClass = isImported ? 'badge-imported' : 'badge-pending';
         const badgeText = isImported ? 'IMPORTED' : 'PENDING';
+        
+        // Safety ID
+        const invId = item.id || "Unknown";
 
         const row = `
           <tr>
-            <td class="ps-4"><a onclick="openModal(${idx})" class="inv-link">${item.id}</a></td>
-            <td>${item.customer}</td>
-            <td>${item.date}</td>
-            <td>${item.dueDate}</td>
+            <td class="ps-4"><a onclick="openModal(${idx})" class="inv-link">${invId}</a></td>
+            <td>${item.customer || '-'}</td>
+            <td>${item.date || '-'}</td>
+            <td>${item.dueDate || '-'}</td>
             <td class="text-end fw-bold text-dark">${formatRupiah(item.totalAmount)}</td>
             <td class="text-center"><span class="badge-xero ${badgeClass}">${badgeText}</span></td>
             <td class="text-center">
@@ -294,25 +294,29 @@
     const item = STATE.data[idx];
     if(!item) return;
 
-    document.getElementById('modalTitle').innerText = item.id;
+    document.getElementById('modalTitle').innerText = item.id || "No ID";
     document.getElementById('modalTypeBadge').innerText = STATE.type === 'general' ? 'General Order' : 'Pre Order';
-    document.getElementById('modalCustomer').innerText = item.customer;
-    document.getElementById('modalDueDate').innerText = item.dueDate;
+    document.getElementById('modalCustomer').innerText = item.customer || "-";
+    document.getElementById('modalDueDate').innerText = item.dueDate || "-";
     document.getElementById('modalTotalBig').innerText = formatRupiah(item.totalAmount);
 
     const tbody = document.getElementById('modalItemsBody');
     tbody.innerHTML = '';
 
-    item.items.forEach(prod => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${prod.name}</td>
-          <td class="text-end">${prod.qty}</td>
-          <td class="text-end">${formatRupiah(prod.price)}</td>
-          <td class="text-end fw-bold">${formatRupiah(prod.total)}</td>
-        </tr>
-      `;
-    });
+    if (item.items && item.items.length > 0) {
+        item.items.forEach(prod => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${prod.name || "Item"}</td>
+              <td class="text-end">${prod.qty || 0}</td>
+              <td class="text-end">${formatRupiah(prod.price)}</td>
+              <td class="text-end fw-bold">${formatRupiah(prod.total)}</td>
+            </tr>
+          `;
+        });
+    } else {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center">Tidak ada item detail</td></tr>`;
+    }
 
     new bootstrap.Modal(document.getElementById('detailModal')).show();
   }
@@ -337,7 +341,10 @@
   }
 
   function formatRupiah(num) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+    // Safety: Pastikan num adalah angka
+    const n = parseFloat(num);
+    if (isNaN(n)) return "Rp 0";
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
   }
 </script>
 
