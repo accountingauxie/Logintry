@@ -3,61 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kas Kecil Modern</title>
+    <title>Kas Kecil Modern - Auxilium Style</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
+        /* --- STYLE BAWAAN KAS KECIL --- */
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; }
+        .hidden { display: none !important; }
         
         /* Floating Label Logic */
-        .floating-input { 
-            padding-top: 1.25rem; 
-            padding-bottom: 0.25rem; 
-        }
-        .floating-label {
-            position: absolute;
-            top: 0.25rem;
-            left: 0.75rem;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            transition: all 0.2s;
-            pointer-events: none;
-        }
-        .peer:placeholder-shown ~ .floating-label {
-            top: 0.75rem;
-            font-size: 0.875rem;
-            color: #64748b;
-        }
-        .peer:focus ~ .floating-label {
-            top: 0.25rem;
-            font-size: 0.75rem;
-            color: #3b82f6;
-        }
+        .floating-input { padding-top: 1.25rem; padding-bottom: 0.25rem; }
+        .floating-label { position: absolute; top: 0.25rem; left: 0.75rem; font-size: 0.75rem; color: #94a3b8; transition: all 0.2s; pointer-events: none; }
+        .peer:placeholder-shown ~ .floating-label { top: 0.75rem; font-size: 0.875rem; color: #64748b; }
+        .peer:focus ~ .floating-label { top: 0.25rem; font-size: 0.75rem; color: #3b82f6; }
         
         /* Select2 Modern Override */
-        .select2-container .select2-selection--single {
-            height: 52px; /* Match floating input height */
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            padding-left: 12px;
-            color: #334155;
-            font-size: 0.875rem;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            top: 13px;
-            right: 10px;
-        }
+        .select2-container .select2-selection--single { height: 52px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; display: flex; align-items: center; }
+        .select2-container--default .select2-selection--single .select2-selection__rendered { padding-left: 12px; color: #334155; font-size: 0.875rem; }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { top: 13px; right: 10px; }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -65,11 +37,83 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Modal Transitions */
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 200ms, transform 200ms; }
-        .modal-exit { opacity: 1; transform: scale(1); }
-        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 200ms, transform 200ms; }
+
+        /* =========================================
+           AUXILIUM NAVBAR STYLE (BARU)
+           ========================================= */
+        :root { 
+            --primary-color: #116999; 
+            --primary-hover: #0e5a85;
+            --border-color: #eaecf0;
+            --red-bg: #fee2e2; 
+            --red-text: #991b1b;
+        }
+
+        /* Navbar Container */
+        .aux-navbar {
+            background-color: #ffffff;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            position: sticky; top: 0; 
+            z-index: 40; /* Z-Index 40 agar dibawah Modal Tailwind (50) & Login (60) */
+            flex: none; /* Mencegah shrink di flex container tailwind */
+        }
+
+        .aux-logo { display: flex; align-items: center; gap: 10px; }
+        .aux-logo img { height: 45px; width: auto; object-fit: contain; }
+
+        .aux-menu { display: flex; gap: 8px; align-items: center; height: 100%; }
+        .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
+
+        .aux-link { 
+            text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; 
+            padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .aux-link:hover, .nav-item:hover .aux-link { background-color: #f2f4f7; color: #101828; }
+        .aux-link.active { background-color: #eff8ff; color: var(--primary-color); font-weight: 700; }
+
+        .chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
+        .nav-item:hover .chevron-down { transform: rotate(180deg); }
+
+        /* Dropdown Menu */
+        .dropdown-menu-aux {
+            visibility: hidden; opacity: 0; position: absolute; 
+            top: 85%; left: 0; background: white; min-width: 240px;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 8px; z-index: 9999; transform: translateY(10px);
+            transition: all 0.2s ease-in-out;
+            display: block; 
+        }
+        .dropdown-menu-aux::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
+        .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateY(0); }
+
+        .dropdown-item-aux {
+            display: flex; align-items: center; padding: 10px 12px; color: #344054;
+            text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s;
+        }
+        .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
+        .dropdown-header-aux {
+            font-size: 11px; text-transform: uppercase; color: #98a2b3;
+            font-weight: 600; padding: 8px 12px 4px; letter-spacing: 0.5px;
+        }
+        .dropdown-divider { height: 1px; background-color: #eaecf0; margin: 6px 0; }
+
+        /* User Panel */
+        .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border-color); }
+        .user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
+        .user-name { font-weight: 700; font-size: 13px; color: #101828; }
+        .user-role { font-size: 11px; color: #667085; }
+        .user-avatar { width: 36px; height: 36px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; user-select: none; }
+        .logout-btn { background: none; border: 1px solid var(--border-color); color: #666; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
+
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -101,33 +145,74 @@
     </div>
 
     <div id="dashboardPage" class="hidden flex flex-col h-full relative">
-        <header class="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-6 flex-none z-20">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center">
-                    <i class="fas fa-coins text-sm"></i>
-                </div>
-                <h1 class="font-bold text-slate-700 text-lg tracking-tight">Kas Kecil</h1>
+        
+        <div class="aux-navbar">
+            <div class="aux-logo">
+                <img src="https://raw.githubusercontent.com/accountingauxie/Asset/refs/heads/main/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
             </div>
-            <div class="flex items-center gap-4">
-                 <div id="lockStatus" class="hidden text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-full border border-red-100 font-medium">
-                    <i class="fas fa-lock mr-1"></i> <span id="lockDateDisplay">-</span>
+            
+            <nav class="aux-menu">
+                <div class="nav-item">
+                    <a href="#" class="aux-link">Home</a>
                 </div>
-                <div class="h-8 w-px bg-slate-200"></div>
-                <div class="flex items-center gap-2">
-                    <div class="text-right">
-                        <p id="userName" class="text-xs font-bold text-slate-700">User</p>
-                        <p class="text-[10px] text-slate-400">Admin</p>
-                    </div>
-                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 transition flex items-center justify-center">
-                        <i class="fas fa-power-off text-xs"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
 
+                <div class="nav-item">
+                    <div class="aux-link">
+                        Penjualan 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu-aux">
+                        <div class="dropdown-header-aux">Sales Orders</div>
+                        <a href="#" class="dropdown-item-aux">Order Penjualan</a>
+                        <a href="#" class="dropdown-item-aux">Review Penjualan</a>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <div class="aux-link">
+                        Pembelian 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu-aux">
+                        <div class="dropdown-header-aux">Purchasing</div>
+                        <a href="#" class="dropdown-item-aux">Pemesanan Pembelian</a>
+                        <a href="#" class="dropdown-item-aux">Penerimaan Barang (Entry)</a>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-header-aux">Finance</div>
+                        <a href="#" class="dropdown-item-aux">Daftar Tagihan (Bill)</a>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <div class="aux-link active">
+                        Finance 
+                        <i data-feather="chevron-down" class="chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu-aux">
+                        <div class="dropdown-header-aux">Petty Cash</div>
+                        <a href="#" class="dropdown-item-aux" style="color:var(--primary-color); font-weight:700; background:#f9fafb;">Mutasi Kas Kecil</a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="user-panel">
+                <div class="user-details">
+                    <span class="user-name" id="userName">User</span>
+                    <span class="user-role">Finance Staff</span>
+                </div>
+                <div class="user-avatar" id="display-initial">U</div>
+                <button class="logout-btn" onclick="logout()" title="Keluar Akun">
+                    <i data-feather="log-out" style="width:16px; height:16px;"></i>
+                </button>
+            </div>
+        </div>
         <div class="flex-grow flex overflow-hidden">
             <main id="mainContent" class="flex-grow overflow-y-auto p-6 transition-all duration-300">
                 
+                <div id="lockStatus" class="hidden mb-4 inline-flex items-center text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-full border border-red-100 font-medium">
+                    <i class="fas fa-lock mr-2"></i> Periode Terkunci: <span id="lockDateDisplay" class="ml-1">-</span>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md transition">
                         <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Saldo Akhir</div>
@@ -274,7 +359,7 @@
                             <select id="akun" class="w-full"></select>
                         </div>
 
-                       <div class="col-span-12 relative group">
+                        <div class="col-span-12 relative group">
     <textarea 
         id="desc" 
         rows="1" 
@@ -352,6 +437,9 @@
     </div>
 
     <script>
+        // Init Feather Icons (UNTUK NAV BAR BARU)
+        feather.replace();
+
         // API CONFIG
         // PASTIKAN GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT APPSCRIPT TERBARU
         const API_URL = "https://script.google.com/macros/s/AKfycbylqHZwW9X7aJa9x-3JGVUDEuWmlY1syioThBpZOLMfdrWZGOjKnF4OLBKomJgyIJe0/exec"; 
@@ -393,6 +481,7 @@
             if(u) {
                 $('#loginPage').addClass('hidden');
                 $('#dashboardPage').removeClass('hidden');
+                // Menggunakan ID #userName (sudah ada di nav bar baru)
                 $('#userName').text(JSON.parse(u).name);
                 fetchData();
             }
@@ -446,6 +535,8 @@
                     if(currentLock) {
                         $('#lockStatus').removeClass('hidden');
                         $('#lockDateDisplay').text(formatDateID(currentLock));
+                    } else {
+                        $('#lockStatus').addClass('hidden');
                     }
 
                     renderStats(d.stats);
