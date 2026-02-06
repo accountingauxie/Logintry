@@ -339,6 +339,7 @@
 
     <script>
         // API CONFIG
+        // PASTIKAN GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT APPSCRIPT TERBARU
         const API_URL = "https://script.google.com/macros/s/AKfycbwgmIS7VOptcF1KotbW1h6s4M4QmLZhSRNv2PEXxsdWIgHSngdxDTggW7TFrr07RRCF/exec"; 
         
         let globalData = [];
@@ -466,10 +467,17 @@
 
                 // Actions
                 let locked = isLock(r.dateISO);
+                
+                // Edit Button Logic
                 let btnEdit = locked ? 
                     `<span class="text-slate-300 cursor-not-allowed"><i class="fas fa-lock"></i></span>` :
                     `<button onclick="openModal('edit', ${i})" class="text-amber-400 hover:text-amber-600 transition"><i class="fas fa-pen"></i></button>`;
                 
+                // Delete Button Logic (NEW)
+                let btnDelete = locked ?
+                    `<span class="text-slate-300 cursor-not-allowed" title="Terkunci"><i class="fas fa-trash"></i></span>` :
+                    `<button onclick="deleteTransaction('${r.ref}')" class="text-rose-400 hover:text-rose-600 transition" title="Hapus"><i class="fas fa-trash"></i></button>`;
+
                 let btnView = r.attach ? `<button onclick="openPreview('${r.attach}')" class="text-blue-400 hover:text-blue-600"><i class="fas fa-eye"></i></button>` : '';
                 
                 let btnSync = "";
@@ -490,11 +498,37 @@
                         <td class="px-6 py-4 text-right">${r.debit > 0 ? debit : kredit}</td>
                         <td class="px-6 py-4 text-right font-bold text-slate-700">${fmt(r.saldo)}</td>
                         <td class="px-6 py-4 text-center space-x-3">
-                            ${btnView} ${btnEdit} ${btnSync}
+                            ${btnView} ${btnEdit} ${btnDelete} ${btnSync}
                         </td>
                     </tr>
                 `;
                 tb.append(tr);
+            });
+        }
+
+        // --- DELETE FUNCTION (NEW) ---
+        function deleteTransaction(ref) {
+            if(!confirm(`PERINGATAN!\n\nApakah Anda yakin ingin menghapus transaksi dengan Ref: ${ref}?\nTindakan ini tidak dapat dibatalkan.`)) return;
+
+            // Tampilkan loading sederhana (optional: bisa dibuat lebih bagus)
+            $('#tableLoading').removeClass('hidden');
+            $('#tableBody').empty();
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "deleteTransaction",
+                    ref: ref
+                })
+            })
+            .then(r => r.json())
+            .then(d => {
+                alert(d.message);
+                fetchData(); // Refresh data table
+            })
+            .catch(err => {
+                alert("Error: " + err);
+                fetchData();
             });
         }
 
@@ -859,4 +893,4 @@ function printPDF() {
         }
     </script>
 </body>
-</html>\
+</html>
