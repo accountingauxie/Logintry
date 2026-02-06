@@ -15,66 +15,35 @@
         
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; }
         
-        /* Floating Label Logic */
-        .floating-input { 
-            padding-top: 1.25rem; 
-            padding-bottom: 0.25rem; 
-        }
+        /* Floating Label Logic (Masih dipakai untuk Contact & Tagihan) */
+        .floating-input { padding-top: 1.25rem; padding-bottom: 0.25rem; }
         .floating-label {
-            position: absolute;
-            top: 0.25rem;
-            left: 0.75rem;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            transition: all 0.2s;
-            pointer-events: none;
+            position: absolute; top: 0.25rem; left: 0.75rem; font-size: 0.75rem;
+            color: #94a3b8; transition: all 0.2s; pointer-events: none;
         }
-        .peer:placeholder-shown ~ .floating-label {
-            top: 0.75rem;
-            font-size: 0.875rem;
-            color: #64748b;
-        }
-        .peer:focus ~ .floating-label {
-            top: 0.25rem;
-            font-size: 0.75rem;
-            color: #3b82f6;
-        }
+        .peer:placeholder-shown ~ .floating-label { top: 0.75rem; font-size: 0.875rem; color: #64748b; }
+        .peer:focus ~ .floating-label { top: 0.25rem; font-size: 0.75rem; color: #3b82f6; }
         
         /* Select2 Modern Override */
         .select2-container .select2-selection--single {
-            height: 52px; /* Match floating input height */
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
+            height: 52px; background-color: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 0.5rem; display: flex; align-items: center;
         }
         .select2-container--default .select2-selection--single .select2-selection__rendered {
-            padding-left: 12px;
-            color: #334155;
-            font-size: 0.875rem;
+            padding-left: 12px; color: #334155; font-size: 0.875rem;
         }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            top: 13px;
-            right: 10px;
-        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { top: 13px; right: 10px; }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Modal Transitions */
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 200ms, transform 200ms; }
-        .modal-exit { opacity: 1; transform: scale(1); }
-        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 200ms, transform 200ms; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
-<div id="loginPage" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-100">
+    <div id="loginPage" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-100">
         <div class="bg-white p-10 rounded-3xl shadow-2xl w-96 border border-slate-100 text-center">
             <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-200">
                 <i class="fas fa-wallet text-2xl"></i>
@@ -87,15 +56,12 @@
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Email Address</label>
                     <input type="email" id="email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700" placeholder="nama@email.com" required>
                 </div>
-
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Password</label>
                     <input type="password" id="password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700" placeholder="••••••••" required>
                 </div>
-
                 <button type="submit" id="btnLogin" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition shadow-lg shadow-slate-200 mt-4">Masuk</button>
             </form>
-            
             <p id="loginError" class="text-red-500 text-xs mt-4 hidden font-medium bg-red-50 py-2 rounded-lg border border-red-100"></p>
         </div>
     </div>
@@ -178,18 +144,20 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                    <div class="overflow-x-auto w-full custom-scrollbar pb-4">
+                        <table class="w-full min-w-[1000px] text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50/50 border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider">
-                                    <th class="px-6 py-4 font-semibold">Tanggal</th>
-                                    <th class="px-6 py-4 font-semibold">Ref</th>
-                                    <th class="px-6 py-4 font-semibold">Deskripsi</th>
-                                    <th class="px-6 py-4 font-semibold">Akun</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Nominal</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Saldo</th>
-                                    <th class="px-6 py-4 font-semibold text-center">Aksi</th>
+                                    <th class="px-6 py-4 font-semibold whitespace-nowrap sticky left-0 bg-slate-50 z-10 shadow-sm border-r border-slate-100">Tanggal</th>
+                                    
+                                    <th class="px-6 py-4 font-semibold whitespace-nowrap">Ref</th>
+                                    <th class="px-6 py-4 font-semibold whitespace-nowrap">Deskripsi</th>
+                                    <th class="px-6 py-4 font-semibold whitespace-nowrap">Akun</th>
+                                    <th class="px-6 py-4 font-semibold text-right whitespace-nowrap">Masuk / Keluar</th>
+                                    <th class="px-6 py-4 font-semibold text-right whitespace-nowrap">Saldo</th>
+                                    
+                                    <th class="px-6 py-4 font-semibold text-center whitespace-nowrap sticky right-0 bg-slate-50 z-10 shadow-sm border-l border-slate-100">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="text-sm text-slate-600"></tbody>
@@ -200,7 +168,8 @@
                         <p class="text-xs text-slate-400 mt-2">Memuat data...</p>
                     </div>
                 </div>
-                <div class="h-10"></div> </main>
+                <div class="h-10"></div>
+            </main>
 
             <aside id="previewPane" class="w-0 bg-white border-l border-slate-200 shadow-2xl transition-all duration-300 flex flex-col z-30">
                 <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
@@ -274,10 +243,12 @@
                             <select id="akun" class="w-full"></select>
                         </div>
 
-                        <div class="col-span-12 relative group">
-                            <textarea id="desc" rows="1" class="peer w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 resize-none overflow-hidden" placeholder=" " oninput="autoResize(this)"></textarea>
-                            <label class="absolute left-3 top-3 text-slate-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white peer-focus:px-1 peer-focus:text-blue-500 pointer-events-none">Deskripsi Transaksi</label>
-                            <div class="absolute bottom-2 right-2 text-[10px] text-slate-300 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-pen"></i></div>
+                        <div class="col-span-12">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Deskripsi Transaksi</label>
+                            <div class="relative">
+                                <textarea id="desc" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700 resize-none" placeholder="Contoh: Makan siang tim marketing..." oninput="autoResize(this)"></textarea>
+                                <div class="absolute bottom-3 right-3 text-slate-400 opacity-50 pointer-events-none"><i class="fas fa-pen text-xs"></i></div>
+                            </div>
                         </div>
 
                         <div class="col-span-12 bg-slate-50 rounded-xl p-4 border border-slate-100 grid grid-cols-12 gap-4 items-center">
@@ -319,42 +290,21 @@
         </div>
     </div>
 
-    <div id="printableArea" class="hidden">
-        <h1 class="text-xl font-bold uppercase mb-2">Laporan Mutasi Kas Kecil</h1>
-        <p class="text-xs mb-4" id="printInfo"></p>
-        <table class="w-full text-xs border-collapse">
-            <thead>
-                <tr class="border-b-2 border-black">
-                    <th class="text-left py-1 w-20">Date</th>
-                    <th class="text-left py-1 w-24">Ref</th>
-                    <th class="text-left py-1">Description</th>
-                    <th class="text-right py-1 w-24">Debit</th>
-                    <th class="text-right py-1 w-24">Credit</th>
-                    <th class="text-right py-1 w-24">Balance</th>
-                </tr>
-            </thead>
-            <tbody id="printBody"></tbody>
-        </table>
-    </div>
-
     <script>
-        // API CONFIG
         const API_URL = "https://script.google.com/macros/s/AKfycbwgmIS7VOptcF1KotbW1h6s4M4QmLZhSRNv2PEXxsdWIgHSngdxDTggW7TFrr07RRCF/exec"; 
         
         let globalData = [];
         let accountData = { expense: [], income: [], tax: [] };
         let currentLock = null;
 
-        // INIT
         $(document).ready(function() {
             checkSession();
             
-            // Setup Date Filters Default (This Month)
+            // Set Default Filter Dates (First & Last Day of Month)
             const d = new Date();
             const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
             const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
             
-            // Only set if empty
             if(!$('#filterStart').val()) $('#filterStart').val(firstDay);
             if(!$('#filterEnd').val()) $('#filterEnd').val(lastDay);
 
@@ -420,9 +370,7 @@
             .then(d => {
                 $('#tableLoading').addClass('hidden');
                 if(d.status === "success") {
-                    globalData = d.data; // Store for Export
-                    
-                    // Setup Accounts
+                    globalData = d.data; 
                     accountData.expense = d.accounts.expense;
                     accountData.income = d.accounts.income;
                     accountData.tax = d.accounts.taxTypes;
@@ -439,7 +387,6 @@
             });
         }
 
-        // --- RENDERING ---
         function renderStats(s) {
             const fmt = n => "Rp " + new Intl.NumberFormat('id-ID').format(n);
             $('#valSaldo').text(fmt(s.saldo));
@@ -449,6 +396,7 @@
 
         function renderTable(rows) {
             const tb = $('#tableBody');
+            tb.empty();
             if(rows.length === 0) {
                 tb.html('<tr><td colspan="7" class="text-center py-8 text-slate-400">Tidak ada data di periode ini.</td></tr>');
                 return;
@@ -458,38 +406,35 @@
             const isLock = (dateISO) => currentLock && new Date(dateISO) <= new Date(currentLock);
 
             rows.forEach((r, i) => {
-                let statusClass = "bg-slate-100 text-slate-500";
                 let debit = "-", kredit = "-";
-                
                 if(r.debit > 0) debit = `<span class="text-emerald-600 font-bold">+ ${fmt(r.debit)}</span>`;
                 if(r.kredit > 0) kredit = `<span class="text-rose-600 font-bold">- ${fmt(r.kredit)}</span>`;
 
-                // Actions
                 let locked = isLock(r.dateISO);
                 let btnEdit = locked ? 
                     `<span class="text-slate-300 cursor-not-allowed"><i class="fas fa-lock"></i></span>` :
-                    `<button onclick="openModal('edit', ${i})" class="text-amber-400 hover:text-amber-600 transition"><i class="fas fa-pen"></i></button>`;
+                    `<button onclick="openModal('edit', ${i})" class="text-amber-400 hover:text-amber-600 transition p-2"><i class="fas fa-pen"></i></button>`;
                 
-                let btnView = r.attach ? `<button onclick="openPreview('${r.attach}')" class="text-blue-400 hover:text-blue-600"><i class="fas fa-eye"></i></button>` : '';
+                let btnView = r.attach ? `<button onclick="openPreview('${r.attach}')" class="text-blue-400 hover:text-blue-600 p-2"><i class="fas fa-eye"></i></button>` : '';
                 
                 let btnSync = "";
                 if(r.kredit > 0) {
                     if(String(r.syncStatus).toLowerCase() === 'imported') {
-                        btnSync = `<span class="text-emerald-400" title="Synced"><i class="fas fa-check-circle"></i></span>`;
+                        btnSync = `<span class="text-emerald-400 p-2" title="Synced"><i class="fas fa-check-circle"></i></span>`;
                     } else {
-                        btnSync = `<button onclick="sync('${r.ref}')" class="text-indigo-400 hover:text-indigo-600" title="Sync to Xero"><i class="fas fa-sync"></i></button>`;
+                        btnSync = `<button onclick="sync('${r.ref}')" class="text-indigo-400 hover:text-indigo-600 p-2" title="Sync to Xero"><i class="fas fa-sync"></i></button>`;
                     }
                 }
 
                 const tr = `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
-                        <td class="px-6 py-4 whitespace-nowrap">${r.date}</td>
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition group">
+                        <td class="px-6 py-4 whitespace-nowrap sticky left-0 bg-white group-hover:bg-slate-50 z-10 border-r border-slate-100 shadow-sm">${r.date}</td>
                         <td class="px-6 py-4 font-mono text-xs text-slate-500">${r.ref}</td>
                         <td class="px-6 py-4 truncate max-w-xs" title="${r.desc}">${r.desc}</td>
                         <td class="px-6 py-4 text-xs bg-slate-50 rounded mx-2">${r.account}</td>
                         <td class="px-6 py-4 text-right">${r.debit > 0 ? debit : kredit}</td>
                         <td class="px-6 py-4 text-right font-bold text-slate-700">${fmt(r.saldo)}</td>
-                        <td class="px-6 py-4 text-center space-x-3">
+                        <td class="px-6 py-4 text-center space-x-1 sticky right-0 bg-white group-hover:bg-slate-50 z-10 border-l border-slate-100 shadow-sm">
                             ${btnView} ${btnEdit} ${btnSync}
                         </td>
                     </tr>
@@ -546,8 +491,6 @@
             $('#modalAdd').removeClass('hidden');
             $('#addForm')[0].reset();
             populateTax();
-            
-            // Default State
             $('#qty').val(1);
             
             if(mode === 'add') {
@@ -566,19 +509,14 @@
                 $('#contact').val(d.contact);
                 $('#taxType').val(d.taxType);
                 $('#tagihan').val(d.noTagihan);
-                
-                // Set Values for Calc
                 $('#qty').val(d.qty || 1);
                 $('#price').val(d.price || 0);
                 calcTotal();
 
-                // Set Type
                 const type = d.debit > 0 ? 'Masuk' : 'Keluar';
                 $(`input[name=tipe][value=${type}]`).prop('checked', true).trigger('change');
-                
                 setTimeout(() => $('#akun').val(d.account).trigger('change'), 100);
             }
-            // Auto resize textarea
             setTimeout(() => autoResize(document.getElementById('desc')), 100);
         }
 
@@ -586,7 +524,6 @@
 
         function submitTransaction(e) {
             e.preventDefault();
-            // Validate
             const req = ['#tgl', '#contact', '#desc', '#nominalVal'];
             let valid = true;
             req.forEach(id => {
@@ -649,209 +586,161 @@
             .then(r=>r.json()).then(d=> { alert(d.message); fetchData(); });
         }
 
-     // --- PREVIEW LOGIC (FIXED WIDTH 50%) ---
-function openPreview(url) {
-    // 1. Validasi URL & Fix Google Drive Link
-    if(!url) return alert("Link file tidak valid");
-    let previewUrl = url;
-    if (url.includes("drive.google.com") && url.includes("/view")) {
-        previewUrl = url.replace(/\/view.*/, "/preview");
-    }
+        // --- PREVIEW (50%) ---
+        function openPreview(url) {
+            if(!url) return alert("Link file tidak valid");
+            let previewUrl = url;
+            if (url.includes("drive.google.com") && url.includes("/view")) {
+                previewUrl = url.replace(/\/view.*/, "/preview");
+            }
 
-    // 2. Setup Elemen DOM
-    const mainContent = document.getElementById("mainContent");
-    const previewPane = document.getElementById("previewPane");
-    const iframe = document.getElementById("previewFrame");
-    const btnNewTab = document.getElementById("btnNewTab");
-    
-    // 3. Set Source & Link
-    iframe.src = previewUrl;
-    btnNewTab.href = url;
+            const mainContent = document.getElementById("mainContent");
+            const previewPane = document.getElementById("previewPane");
+            const iframe = document.getElementById("previewFrame");
+            const btnNewTab = document.getElementById("btnNewTab");
+            
+            iframe.src = previewUrl;
+            btnNewTab.href = url;
 
-    // 4. Animasi Layout (Menggunakan Width Class Tailwind)
-    // Hapus margin kanan paksa (mr-...) yang bikin layout rusak
-    mainContent.classList.remove("mr-[50%]"); 
-    
-    // Transisi Lebar: Main Content mengecil, Preview membesar
-    previewPane.classList.remove("w-0", "hidden");
-    previewPane.classList.add("w-1/2"); // Preview jadi 50%
-    
-    // Kita paksa Main Content jadi 50% juga agar seimbang
-    // Tapi karena ini Flexbox, biasanya cukup biarkan 'flex-grow' bekerja atau set explicit width
-    // Cara paling aman dengan struktur HTML yang ada:
-    mainContent.style.width = "50%"; 
-}
+            mainContent.classList.remove("mr-[50%]"); 
+            previewPane.classList.remove("w-0", "hidden");
+            previewPane.classList.add("w-1/2");
+            mainContent.style.width = "50%"; 
+        }
 
-function closePreview() {
-    const mainContent = document.getElementById("mainContent");
-    const previewPane = document.getElementById("previewPane");
-    const iframe = document.getElementById("previewFrame");
+        function closePreview() {
+            const mainContent = document.getElementById("mainContent");
+            const previewPane = document.getElementById("previewPane");
+            const iframe = document.getElementById("previewFrame");
 
-    // Kembalikan Layout
-    previewPane.classList.remove("w-1/2");
-    previewPane.classList.add("w-0");
-    
-    // Kembalikan Main Content jadi Full Width
-    mainContent.style.width = "100%";
+            previewPane.classList.remove("w-1/2");
+            previewPane.classList.add("w-0");
+            mainContent.style.width = "100%";
 
-    // Bersihkan Iframe setelah animasi selesai (300ms)
-    setTimeout(() => {
-        iframe.src = ""; 
-        previewPane.classList.add("hidden"); 
-    }, 300);
-}
+            setTimeout(() => {
+                iframe.src = ""; 
+                previewPane.classList.add("hidden"); 
+            }, 300);
+        }
 
-        // --- EXPORT FIX (POINT 2) ---
-        // --- UPDATE FUNGSI EXPORT CSV ---
-function downloadCSV() {
-    // Cek apakah ada data
-    if(!globalData || globalData.length === 0) return alert("Tidak ada data untuk diekspor");
+        // --- EXPORT CSV (Updated) ---
+        function downloadCSV() {
+            if(!globalData || globalData.length === 0) return alert("Tidak ada data untuk diekspor");
 
-    // 1. UPDATE HEADER: Tambahkan "Check Number" di akhir array
-    const rows = [
-        ["*Date", "*Amount", "Payee", "Description", "Reference", "Check Number"] 
-    ];
+            const rows = [
+                ["*Date", "*Amount", "Payee", "Description", "Reference", "Check Number"] 
+            ];
 
-    globalData.forEach(d => {
-        // Hitung amount (+ untuk income, - untuk expense)
-        let amt = d.debit > 0 ? d.debit : (d.kredit * -1);
-        
-        // Bersihkan tanda kutip ganda pada deskripsi agar CSV tidak error
-        let desc = d.desc ? d.desc.replace(/"/g, '""') : "";
-        let contact = d.contact ? d.contact.replace(/"/g, '""') : "";
+            globalData.forEach(d => {
+                let amt = d.debit > 0 ? d.debit : (d.kredit * -1);
+                let desc = d.desc ? d.desc.replace(/"/g, '""') : "";
+                let contact = d.contact ? d.contact.replace(/"/g, '""') : "";
 
-        // 2. UPDATE DATA: Tambahkan string kosong "" di akhir untuk mengisi kolom Check Number
-        rows.push([
-            d.date,          // *Date
-            amt,             // *Amount
-            `"${contact}"`,  // Payee
-            `"${desc}"`,     // Description
-            d.ref,           // Reference
-            ""               // Check Number (Dikosongkan default)
-        ]);
-    });
+                rows.push([
+                    d.date, amt, `"${contact}"`, `"${desc}"`, d.ref, ""
+                ]);
+            });
 
-    // Proses pembuatan file CSV
-    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-    const link = document.createElement("a");
-    link.href = encodeURI(csvContent);
-    
-    // Nama file dinamis sesuai filter tanggal
-    link.download = `KasKecil_${$('#filterStart').val()}_${$('#filterEnd').val()}.csv`;
-    
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-}
+            const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+            const link = document.createElement("a");
+            link.href = encodeURI(csvContent);
+            link.download = `KasKecil_${$('#filterStart').val()}_${$('#filterEnd').val()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
 
-    // --- FIXED PRINT PDF FUNCTION ---
-function printPDF() {
-    // 1. Cek Data
-    if (!globalData || globalData.length === 0) return alert("Tidak ada data untuk dicetak!");
+        // --- PRINT PDF (Popup) ---
+        function printPDF() {
+            if (!globalData || globalData.length === 0) return alert("Tidak ada data!");
 
-    // 2. Siapkan Format Angka
-    const fmt = n => n === 0 ? '-' : new Intl.NumberFormat('id-ID').format(n);
-    const startDate = $('#filterStart').val();
-    const endDate = $('#filterEnd').val();
-    const user = JSON.parse(localStorage.getItem("kasUser") || "{}").name || "Admin";
+            const fmt = n => n === 0 ? '-' : new Intl.NumberFormat('id-ID').format(n);
+            const startDate = $('#filterStart').val();
+            const endDate = $('#filterEnd').val();
+            const user = JSON.parse(localStorage.getItem("kasUser") || "{}").name || "Admin";
 
-    // 3. Generate Baris Tabel (HTML String)
-    let rowsHtml = "";
-    globalData.forEach(d => {
-        let debitClass = d.debit > 0 ? "text-emerald-700 font-medium" : "text-gray-400";
-        let kreditClass = d.kredit > 0 ? "text-rose-700 font-medium" : "text-gray-400";
-        
-        // Escape karakter khusus agar HTML tidak error
-        const cleanDesc = d.desc.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            let rowsHtml = "";
+            globalData.forEach(d => {
+                let debitClass = d.debit > 0 ? "text-emerald-700 font-medium" : "text-gray-400";
+                let kreditClass = d.kredit > 0 ? "text-rose-700 font-medium" : "text-gray-400";
+                const cleanDesc = d.desc.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-        rowsHtml += `
-            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                <td class="py-2 pr-2 align-top whitespace-nowrap">${d.date}</td>
-                <td class="py-2 px-2 align-top font-mono text-[10px] text-gray-500">${d.ref}</td>
-                <td class="py-2 px-2 align-top">${cleanDesc}</td>
-                <td class="py-2 px-2 align-top text-right ${debitClass}">${fmt(d.debit)}</td>
-                <td class="py-2 px-2 align-top text-right ${kreditClass}">${fmt(d.kredit)}</td>
-                <td class="py-2 pl-2 align-top text-right font-bold text-gray-800">${fmt(d.saldo)}</td>
-            </tr>
-        `;
-    });
-
-    // 4. Buat Halaman HTML Baru (Isolated Environment)
-    const printContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Laporan Kas Kecil</title>
-            <script src="https://cdn.tailwindcss.com"><\/script>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-                body { font-family: 'Inter', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                @page { size: A4; margin: 1cm; }
-            </style>
-        </head>
-        <body class="p-8 text-gray-800">
-            <div class="mb-8 border-b-2 border-gray-800 pb-4 flex justify-between items-end">
-                <div>
-                    <h1 class="text-2xl font-bold uppercase tracking-wide text-gray-900">Laporan Mutasi Kas</h1>
-                    <p class="text-sm text-gray-500 mt-1">Periode: <span class="font-semibold text-gray-700">${startDate}</span> s/d <span class="font-semibold text-gray-700">${endDate}</span></p>
-                </div>
-                <div class="text-right text-xs text-gray-400">
-                    <p>Printed by: ${user}</p>
-                    <p>Date: ${new Date().toLocaleString('id-ID')}</p>
-                </div>
-            </div>
-
-            <table class="w-full text-xs border-collapse">
-                <thead>
-                    <tr class="border-b-2 border-gray-300 bg-gray-50">
-                        <th class="py-3 pr-2 text-left font-bold text-gray-600 uppercase w-20">Tanggal</th>
-                        <th class="py-3 px-2 text-left font-bold text-gray-600 uppercase w-24">Ref</th>
-                        <th class="py-3 px-2 text-left font-bold text-gray-600 uppercase">Deskripsi</th>
-                        <th class="py-3 px-2 text-right font-bold text-gray-600 uppercase w-24">Masuk</th>
-                        <th class="py-3 px-2 text-right font-bold text-gray-600 uppercase w-24">Keluar</th>
-                        <th class="py-3 pl-2 text-right font-bold text-gray-600 uppercase w-28">Saldo</th>
+                rowsHtml += `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                        <td class="py-2 pr-2 align-top whitespace-nowrap">${d.date}</td>
+                        <td class="py-2 px-2 align-top font-mono text-[10px] text-gray-500">${d.ref}</td>
+                        <td class="py-2 px-2 align-top">${cleanDesc}</td>
+                        <td class="py-2 px-2 align-top text-right ${debitClass}">${fmt(d.debit)}</td>
+                        <td class="py-2 px-2 align-top text-right ${kreditClass}">${fmt(d.kredit)}</td>
+                        <td class="py-2 pl-2 align-top text-right font-bold text-gray-800">${fmt(d.saldo)}</td>
                     </tr>
-                </thead>
-                <tbody>
-                    ${rowsHtml}
-                </tbody>
-            </table>
+                `;
+            });
 
-            <div class="mt-8 flex justify-end">
-                <div class="w-1/3 bg-gray-50 p-4 rounded border border-gray-200">
-                    <div class="flex justify-between text-xs mb-2">
-                        <span class="text-gray-500">Total Masuk</span>
-                        <span class="font-bold text-emerald-600">${$("#valDebit").text()}</span>
+            const printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Laporan Kas Kecil</title>
+                    <script src="https://cdn.tailwindcss.com"><\/script>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+                        body { font-family: 'Inter', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        @page { size: A4; margin: 1cm; }
+                    </style>
+                </head>
+                <body class="p-8 text-gray-800">
+                    <div class="mb-8 border-b-2 border-gray-800 pb-4 flex justify-between items-end">
+                        <div>
+                            <h1 class="text-2xl font-bold uppercase tracking-wide text-gray-900">Laporan Mutasi Kas</h1>
+                            <p class="text-sm text-gray-500 mt-1">Periode: <span class="font-semibold text-gray-700">${startDate}</span> s/d <span class="font-semibold text-gray-700">${endDate}</span></p>
+                        </div>
+                        <div class="text-right text-xs text-gray-400">
+                            <p>Printed by: ${user}</p>
+                            <p>Date: ${new Date().toLocaleString('id-ID')}</p>
+                        </div>
                     </div>
-                    <div class="flex justify-between text-xs mb-2">
-                        <span class="text-gray-500">Total Keluar</span>
-                        <span class="font-bold text-rose-600">${$("#valKredit").text()}</span>
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b-2 border-gray-300 bg-gray-50">
+                                <th class="py-3 pr-2 text-left font-bold text-gray-600 uppercase w-20">Tanggal</th>
+                                <th class="py-3 px-2 text-left font-bold text-gray-600 uppercase w-24">Ref</th>
+                                <th class="py-3 px-2 text-left font-bold text-gray-600 uppercase">Deskripsi</th>
+                                <th class="py-3 px-2 text-right font-bold text-gray-600 uppercase w-24">Masuk</th>
+                                <th class="py-3 px-2 text-right font-bold text-gray-600 uppercase w-24">Keluar</th>
+                                <th class="py-3 pl-2 text-right font-bold text-gray-600 uppercase w-28">Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                    <div class="mt-8 flex justify-end">
+                        <div class="w-1/3 bg-gray-50 p-4 rounded border border-gray-200">
+                            <div class="flex justify-between text-xs mb-2">
+                                <span class="text-gray-500">Total Masuk</span>
+                                <span class="font-bold text-emerald-600">${$("#valDebit").text()}</span>
+                            </div>
+                            <div class="flex justify-between text-xs mb-2">
+                                <span class="text-gray-500">Total Keluar</span>
+                                <span class="font-bold text-rose-600">${$("#valKredit").text()}</span>
+                            </div>
+                            <div class="border-t border-gray-300 my-2"></div>
+                            <div class="flex justify-between text-sm font-bold">
+                                <span>Saldo Akhir</span>
+                                <span>${$("#valSaldo").text()}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="border-t border-gray-300 my-2"></div>
-                    <div class="flex justify-between text-sm font-bold">
-                        <span>Saldo Akhir</span>
-                        <span>${$("#valSaldo").text()}</span>
-                    </div>
-                </div>
-            </div>
-
-            <script>
-                // Tunggu sebentar agar Tailwind load, lalu print
-                setTimeout(() => {
-                    window.print();
-                    // window.close(); // Opsional: tutup otomatis setelah print
-                }, 800);
-            <\/script>
-        </body>
-        </html>
-    `;
-
-    // 5. Eksekusi Popup
-    const popup = window.open('', '_blank', 'width=1000,height=800');
-    popup.document.open();
-    popup.document.write(printContent);
-    popup.document.close();
-}
+                    <script>
+                        setTimeout(() => { window.print(); }, 800);
+                    <\/script>
+                </body>
+                </html>
+            `;
+            const popup = window.open('', '_blank', 'width=1000,height=800');
+            popup.document.open();
+            popup.document.write(printContent);
+            popup.document.close();
+        }
 
         function formatDateID(dateStr) {
             const d = new Date(dateStr);
@@ -859,5 +748,4 @@ function printPDF() {
         }
     </script>
 </body>
-</html>\
-
+</html>
