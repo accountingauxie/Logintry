@@ -1,103 +1,276 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xero Style Invoice Dashboard</title>
+  <title>Sales Synch Dashboard</title>
   
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   
   <style>
-    body { background-color: #f6f7fa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .dashboard-header { margin-bottom: 25px; }
-    .xero-card { background: white; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); padding: 20px; border-left: 4px solid transparent; }
-    .xero-card.total { border-left-color: #0d6efd; }
-    .xero-card.success { border-left-color: #198754; }
-    .xero-card.warning { border-left-color: #ffc107; }
-    .xero-card h2 { font-weight: 700; margin-bottom: 0; margin-top: 5px; }
-    .xero-card small { font-weight: 600; text-transform: uppercase; color: #6c757d; font-size: 0.75rem; letter-spacing: 0.5px; }
-    .controls-area { background: white; padding: 15px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .table-container { background: white; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; min-height: 300px; }
-    .table thead th { background-color: #f8f9fa; border-bottom: 2px solid #e9ecef; color: #495057; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; padding: 12px 16px; }
-    .table tbody td { padding: 14px 16px; vertical-align: middle; color: #212529; font-size: 0.95rem; border-bottom: 1px solid #f2f2f2; }
-    .table tbody tr:hover { background-color: #f8f9fa; }
-    .badge-xero { font-weight: 600; font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; letter-spacing: 0.5px; }
-    .badge-imported { background-color: #e6f7ed; color: #1e7e34; border: 1px solid #c3e6cb; }
-    .badge-pending { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
-    .inv-link { color: #0099ff; font-weight: 600; text-decoration: none; cursor: pointer; }
-    .inv-link:hover { text-decoration: underline; color: #0056b3; }
-    .modal-header { background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; }
-    .modal-total-box { background-color: #f1f8ff; padding: 15px; border-radius: 6px; text-align: right; }
-    #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    :root {
+      --primary: #2563eb;
+      --primary-soft: #eff6ff;
+      --text-dark: #1e293b;
+      --text-gray: #64748b;
+      --bg-body: #f1f5f9;
+      --white: #ffffff;
+      --border-color: #e2e8f0;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-bg: #fffbeb;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- Utilities --- */
+    .card-clean {
+      background: var(--white);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card-stat {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+    
+    .card-stat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+    }
+
+    .stat-label { font-size: 0.875rem; color: var(--text-gray); font-weight: 500; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; }
+
+    /* --- Navbar & Tabs --- */
+    .header-section {
+      padding: 30px 0;
+      margin-bottom: 20px;
+    }
+
+    .app-brand { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-dark); }
+    .app-brand i { color: var(--primary); }
+
+    .nav-tabs-custom {
+      border: none;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 10px;
+      display: inline-flex;
+    }
+    
+    .nav-tabs-custom .nav-link {
+      border: none;
+      border-radius: 8px;
+      color: var(--text-gray);
+      font-weight: 500;
+      padding: 8px 20px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    
+    .nav-tabs-custom .nav-link.active {
+      background-color: var(--white);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      font-weight: 600;
+    }
+    
+    .nav-tabs-custom .nav-link:hover:not(.active) { color: var(--text-dark); }
+
+    /* --- Filters --- */
+    .search-input {
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      padding: 12px 16px 12px 45px;
+      font-size: 0.95rem;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2394a3b8" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 16px center;
+      background-color: var(--white);
+    }
+    
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+      outline: none;
+    }
+
+    .form-select-custom {
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    /* --- Table --- */
+    .table-responsive { border-radius: 0 0 16px 16px; }
+    .table { margin-bottom: 0; }
+    
+    .table thead th {
+      background-color: #f8fafc;
+      color: var(--text-gray);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 24px;
+    }
+
+    .table tbody td {
+      padding: 16px 24px;
+      vertical-align: middle;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.9rem;
+      color: var(--text-dark);
+    }
+    
+    .table tbody tr:last-child td { border-bottom: none; }
+    .table tbody tr:hover { background-color: #f8fafc; }
+
+    .inv-link {
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .inv-link:hover { text-decoration: underline; }
+
+    /* --- Status Badges --- */
+    .badge-status {
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .badge-imported { background-color: var(--success-bg); color: var(--success); }
+    .badge-pending { background-color: var(--warning-bg); color: var(--warning); }
+
+    /* --- Loading Overlay --- */
+    #loadingOverlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+    }
+    .spinner-custom {
+      width: 40px; height: 40px; border: 4px solid var(--primary-soft);
+      border-top: 4px solid var(--primary); border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* --- Modal --- */
+    .modal-content { border-radius: 20px; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    .modal-header { border-bottom: 1px solid var(--border-color); padding: 24px; background-color: #f8fafc; border-radius: 20px 20px 0 0; }
+    .modal-body { padding: 30px; }
+    .modal-total-box {
+      background: var(--primary-soft); color: var(--primary);
+      padding: 20px; border-radius: 12px; text-align: right;
+    }
   </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
-  <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
-  <h6 class="text-muted">Memuat Data Invoice...</h6>
+  <div class="spinner-custom mb-3"></div>
+  <h6 class="text-secondary fw-medium">Syncing Data...</h6>
 </div>
 
-<div class="container-fluid py-4 px-lg-5">
+<div class="container py-4">
   
-  <div class="d-flex justify-content-between align-items-center dashboard-header">
-    <h3 class="fw-bold text-dark mb-0"><i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Sales Dashboard</h3>
+  <div class="header-section d-flex justify-content-between align-items-center">
+    <div>
+      <div class="app-brand mb-1"><i class="fas fa-bolt me-2"></i>Sales Synch</div>
+      <div class="text-muted small">Real-time invoice monitoring dashboard</div>
+    </div>
     
-    <div class="btn-group" role="group">
-      <input type="radio" class="btn-check" name="sheetType" id="tabGen" value="general" checked onchange="changeTab()">
-      <label class="btn btn-outline-primary px-4" for="tabGen">General Order</label>
-
-      <input type="radio" class="btn-check" name="sheetType" id="tabPre" value="preorder" onchange="changeTab()">
-      <label class="btn btn-outline-primary px-4" for="tabPre">Pre Order</label>
+    <div class="nav-tabs-custom">
+      <a href="#" class="nav-link active" id="tabGen" onclick="switchTab('general')">General Order</a>
+      <a href="#" class="nav-link" id="tabPre" onclick="switchTab('preorder')">Pre Order</a>
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
+  <div class="row g-4 mb-4">
     <div class="col-md-4">
-      <div class="xero-card total">
-        <small>Total Invoices</small>
-        <h2 id="stat-total">0</h2>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="xero-card success">
-        <small>Status Imported</small>
-        <h2 id="stat-imported" class="text-success">0</h2>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="xero-card warning">
-        <small>Pending Import</small>
-        <h2 id="stat-pending" class="text-warning">0</h2>
-      </div>
-    </div>
-  </div>
-
-  <div class="controls-area">
-    <div class="row g-3 align-items-center">
-      <div class="col-md-4">
-        <div class="input-group">
-          <span class="input-group-text bg-white text-muted border-end-0"><i class="fas fa-search"></i></span>
-          <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Cari No Invoice / Customer..." onkeyup="debounceSearch()">
+      <div class="card-clean card-stat">
+        <div>
+          <div class="stat-icon bg-light text-primary"><i class="fas fa-file-invoice"></i></div>
+          <div class="stat-label">TOTAL INVOICES</div>
+          <div class="stat-value" id="stat-total">0</div>
         </div>
       </div>
-      <div class="col-md-3">
-        <select id="statusFilter" class="form-select" onchange="reloadData()">
-          <option value="All">Semua Status</option>
+    </div>
+    <div class="col-md-4">
+      <div class="card-clean card-stat">
+        <div>
+          <div class="stat-icon" style="background-color: var(--success-bg); color: var(--success);"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-label">IMPORTED TO XERO</div>
+          <div class="stat-value" style="color: var(--success);" id="stat-imported">0</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-clean card-stat">
+        <div>
+          <div class="stat-icon" style="background-color: var(--warning-bg); color: var(--warning);"><i class="fas fa-clock"></i></div>
+          <div class="stat-label">PENDING IMPORT</div>
+          <div class="stat-value" style="color: var(--warning);" id="stat-pending">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-clean p-0">
+    
+    <div class="p-4 border-bottom d-flex flex-column flex-md-row gap-3 align-items-center justify-content-between bg-white" style="border-radius: 16px 16px 0 0;">
+      <div style="flex: 1; min-width: 300px;">
+        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by Invoice # or Customer..." onkeyup="applyLocalFilter()">
+      </div>
+      
+      <div class="d-flex gap-3 w-100 w-md-auto">
+        <select id="statusFilter" class="form-select form-select-custom" style="min-width: 180px;" onchange="applyLocalFilter()">
+          <option value="All">All Statuses</option>
           <option value="Imported">Imported Only</option>
           <option value="Pending">Pending Only</option>
         </select>
-      </div>
-      <div class="col-md-5 text-end">
-        <button class="btn btn-light border text-muted" onclick="reloadData()"><i class="fas fa-sync-alt me-1"></i> Refresh</button>
+        
+        <button class="btn btn-light border px-3" onclick="fetchInitialData()" title="Refresh Data">
+          <i class="fas fa-sync-alt text-muted"></i>
+        </button>
       </div>
     </div>
-  </div>
 
-  <div class="table-container">
     <div class="table-responsive">
-      <table class="table mb-0">
+      <table class="table">
         <thead>
           <tr>
             <th class="ps-4">Invoice #</th>
@@ -106,24 +279,28 @@
             <th>Due Date</th>
             <th class="text-end">Amount</th>
             <th class="text-center">Status</th>
-            <th class="text-center">Action</th>
+            <th class="text-center pe-4">Action</th>
           </tr>
         </thead>
         <tbody id="tableBody">
           </tbody>
       </table>
     </div>
-    
-    <div class="d-flex justify-content-between align-items-center p-3 border-top bg-light">
-      <span class="text-muted small" id="pageInfo">Showing 0 results</span>
+
+    <div class="p-3 border-top d-flex justify-content-between align-items-center bg-white" style="border-radius: 0 0 16px 16px;">
+      <span class="text-muted small ps-2" id="pageInfo">Loading data...</span>
       <nav>
-        <ul class="pagination pagination-sm mb-0">
-          <li class="page-item"><button class="page-link" onclick="changePage(-1)">Previous</button></li>
-          <li class="page-item disabled"><span class="page-link fw-bold text-dark" id="currPageDisplay">1</span></li>
-          <li class="page-item"><button class="page-link" onclick="changePage(1)">Next</button></li>
+        <ul class="pagination pagination-sm mb-0 gap-1">
+          <li class="page-item"><button class="page-link border-0 text-dark" onclick="changePage(-1)"><i class="fas fa-chevron-left"></i></button></li>
+          <li class="page-item disabled"><span class="page-link border-0 fw-bold text-primary" id="currPageDisplay">1</span></li>
+          <li class="page-item"><button class="page-link border-0 text-dark" onclick="changePage(1)"><i class="fas fa-chevron-right"></i></button></li>
         </ul>
       </nav>
     </div>
+  </div>
+
+  <div class="text-center mt-4 text-muted small">
+    &copy; 2024 Sales Synch System
   </div>
 
 </div>
@@ -134,150 +311,180 @@
       <div class="modal-header">
         <div>
           <h5 class="modal-title fw-bold" id="modalTitle">INV-00000</h5>
-          <span class="badge bg-secondary" id="modalTypeBadge">General Order</span>
+          <span class="badge bg-light text-dark border mt-1" id="modalTypeBadge">General Order</span>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-4">
+      <div class="modal-body">
         
-        <div class="row mb-4">
+        <div class="row mb-4 align-items-center">
           <div class="col-sm-6">
-            <label class="small text-muted text-uppercase fw-bold">Customer</label>
+            <label class="small text-muted text-uppercase fw-bold mb-1">Customer Details</label>
             <div class="fs-5 fw-bold text-dark" id="modalCustomer">-</div>
-            <div class="text-muted small mt-1">Due Date: <span id="modalDueDate">-</span></div>
+            <div class="text-muted small">Due Date: <span id="modalDueDate">-</span></div>
           </div>
           <div class="col-sm-6">
              <div class="modal-total-box">
-               <label class="small text-muted text-uppercase fw-bold">Grand Total</label>
-               <div class="fs-3 fw-bold text-primary" id="modalTotalBig">Rp 0</div>
+               <label class="small text-uppercase fw-bold opacity-75">Grand Total</label>
+               <div class="fs-2 fw-bold" id="modalTotalBig">Rp 0</div>
              </div>
           </div>
         </div>
 
-        <table class="table table-bordered table-sm">
-          <thead class="table-light">
-            <tr>
-              <th>Item Description</th>
-              <th class="text-end" style="width: 80px;">Qty</th>
-              <th class="text-end" style="width: 120px;">Unit Price</th>
-              <th class="text-end" style="width: 120px;">Total</th>
-            </tr>
-          </thead>
-          <tbody id="modalItemsBody"></tbody>
-        </table>
+        <h6 class="fw-bold text-muted text-uppercase small mb-3">Item Breakdown</h6>
+        <div class="table-responsive border rounded-3">
+          <table class="table table-sm mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th class="ps-3 py-2">Item Description</th>
+                <th class="text-end py-2" style="width: 80px;">Qty</th>
+                <th class="text-end py-2" style="width: 140px;">Unit Price</th>
+                <th class="text-end py-2 pe-3" style="width: 140px;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="modalItemsBody"></tbody>
+          </table>
+        </div>
 
       </div>
-      <div class="modal-footer bg-light">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <div class="modal-footer bg-light border-0" style="border-radius: 0 0 20px 20px;">
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
   // ==========================================
-  // ⚠️ PASTE URL APPS SCRIPT BARU DI BAWAH INI
+  // CONFIGURATION
   // ==========================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbyDtF-fspJkFINjDlcwrfKCN_0uK1djMkwA_DRhuiaqiQu1i_w7R8Qi9611waYOZ71A/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbycEhmGAG_iG82c9L2BsldWBLRRsX45Hg9UjejwAG3iUB2OFZzQKuHoqnN9uVN0Ag9g/exec"; 
 
+  // DATA STORE
+  let MASTER_DATA = []; 
+  let DISPLAY_DATA = []; 
+  
   let STATE = {
     page: 1,
-    limit: 15,
-    type: 'general', 
+    limit: 10, // Menampilkan 10 item agar lebih rapi
+    type: 'general',
     status: 'All',
-    search: '',
-    data: [] 
+    search: ''
   };
 
   window.onload = () => {
-    if(!API_URL || API_URL.includes("PASTE_URL")) {
-        alert("PERINGATAN: URL Apps Script belum dimasukkan di baris 156.");
-    } else {
-        reloadData();
-    }
+     fetchInitialData();
   };
 
-  function changeTab() {
-    const radios = document.getElementsByName('sheetType');
-    for (let r of radios) { if (r.checked) STATE.type = r.value; }
-    STATE.page = 1; 
-    reloadData();
+  // 1. SWITCH TABS
+  function switchTab(type) {
+    // Update UI Tabs
+    document.getElementById('tabGen').classList.remove('active');
+    document.getElementById('tabPre').classList.remove('active');
+    if(type === 'general') document.getElementById('tabGen').classList.add('active');
+    else document.getElementById('tabPre').classList.add('active');
+
+    STATE.type = type;
+    STATE.page = 1;
+    STATE.search = "";
+    document.getElementById('searchInput').value = "";
+    
+    // Clear current data visually before loading
+    document.getElementById('tableBody').innerHTML = '';
+    
+    fetchInitialData();
   }
 
-  function reloadData() {
+  // 2. FETCH DATA FROM SERVER
+  function fetchInitialData() {
     document.getElementById('loadingOverlay').style.display = 'flex';
     
-    STATE.status = document.getElementById('statusFilter').value;
-    STATE.search = document.getElementById('searchInput').value;
+    const url = `${API_URL}?type=${STATE.type}`;
 
-    const url = `${API_URL}?type=${STATE.type}&page=${STATE.page}&limit=${STATE.limit}&status=${STATE.status}&search=${encodeURIComponent(STATE.search)}`;
-
-    // FITUR UTAMA PERBAIKAN: Pemisahan Error Jaringan vs Error Coding
     fetch(url)
-      .then(res => {
-         if(!res.ok) throw new Error("HTTP Error: " + res.status);
-         return res.json();
-      })
+      .then(res => res.json())
       .then(json => {
-        // Cek jika Backend mengirim error logic (misal salah nama sheet)
         if(json.error) {
-            alert("Server Error: " + json.error);
+           alert("Server Error: " + json.error);
         } else {
-            // Gunakan Try-Catch disini agar jika render gagal, errornya jelas
-            try {
-                renderUI(json);
-            } catch (renderErr) {
-                console.error("Render Error:", renderErr);
-                alert("Data berhasil ditarik, tapi gagal ditampilkan di layar. Cek Console.");
-            }
+           MASTER_DATA = json.data || [];
+           applyLocalFilter(); // Langsung filter & render
         }
       })
       .catch(err => {
-        // Ini hanya akan jalan jika internet mati atau URL salah
-        console.error("Network Error:", err);
-        alert("Gagal koneksi ke server Google. Cek internet atau URL Deployment.");
+        console.error(err);
+        alert("Gagal koneksi ke database.");
       })
       .finally(() => {
         document.getElementById('loadingOverlay').style.display = 'none';
       });
   }
 
-  function renderUI(res) {
-    if (!res || !res.stats) throw new Error("Respon data tidak valid/kosong");
+  // 3. FILTER LOGIC (CLIENT SIDE)
+  function applyLocalFilter() {
+    STATE.status = document.getElementById('statusFilter').value;
+    STATE.search = document.getElementById('searchInput').value.toLowerCase();
+    STATE.page = 1; 
 
-    STATE.data = res.data || []; 
+    // Calculate Stats
+    let stats = { total: 0, imported: 0, pending: 0 };
+    MASTER_DATA.forEach(item => {
+        stats.total++;
+        if(item.status === 'Imported') stats.imported++;
+        else stats.pending++;
+    });
+    
+    // Animate numbers? (Optional, here just plain text update)
+    document.getElementById('stat-total').innerText = stats.total;
+    document.getElementById('stat-imported').innerText = stats.imported;
+    document.getElementById('stat-pending').innerText = stats.pending;
 
-    // Update Stats dengan safety check (|| 0)
-    document.getElementById('stat-total').innerText = res.stats.totalCount || 0;
-    document.getElementById('stat-imported').innerText = res.stats.importedCount || 0;
-    document.getElementById('stat-pending').innerText = res.stats.pendingCount || 0;
+    // Filter Logic
+    DISPLAY_DATA = MASTER_DATA.filter(item => {
+        const searchMatch = (item.id || "").toLowerCase().includes(STATE.search) || 
+                            (item.customer || "").toLowerCase().includes(STATE.search);
+        
+        const statusMatch = (STATE.status === 'All') || (item.status === STATE.status);
+        return searchMatch && statusMatch;
+    });
 
-    // Table
+    renderTable();
+  }
+
+  // 4. RENDER TABLE
+  function renderTable() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
 
-    if (!res.data || res.data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">Data tidak ditemukan</td></tr>`;
+    const totalItems = DISPLAY_DATA.length;
+    const totalPages = Math.ceil(totalItems / STATE.limit) || 1;
+    
+    // Pagination Slicing
+    const startIndex = (STATE.page - 1) * STATE.limit;
+    const endIndex = startIndex + STATE.limit;
+    const paginatedItems = DISPLAY_DATA.slice(startIndex, endIndex);
+
+    if (paginatedItems.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-inbox fa-2x mb-3 text-light"></i><br>No invoices found</td></tr>`;
     } else {
-      res.data.forEach((item, idx) => {
+      paginatedItems.forEach((item) => {
         const isImported = item.status === 'Imported';
         const badgeClass = isImported ? 'badge-imported' : 'badge-pending';
-        const badgeText = isImported ? 'IMPORTED' : 'PENDING';
         
-        // Safety ID
-        const invId = item.id || "Unknown";
-
         const row = `
           <tr>
-            <td class="ps-4"><a onclick="openModal(${idx})" class="inv-link">${invId}</a></td>
-            <td>${item.customer || '-'}</td>
-            <td>${item.date || '-'}</td>
-            <td>${item.dueDate || '-'}</td>
+            <td class="ps-4 fw-medium text-dark">${item.id}</td>
+            <td class="fw-medium text-secondary">${item.customer}</td>
+            <td class="text-muted small">${item.date}</td>
+            <td class="text-muted small">${item.dueDate}</td>
             <td class="text-end fw-bold text-dark">${formatRupiah(item.totalAmount)}</td>
-            <td class="text-center"><span class="badge-xero ${badgeClass}">${badgeText}</span></td>
-            <td class="text-center">
-              <button class="btn btn-sm btn-outline-secondary" onclick="openModal(${idx})"><i class="fas fa-eye"></i></button>
+            <td class="text-center"><span class="badge-status ${badgeClass}">${item.status.toUpperCase()}</span></td>
+            <td class="text-center pe-4">
+              <button class="btn btn-sm btn-light text-primary border-0" onclick="openModal('${item.id}')" title="View Detail">
+                <i class="fas fa-arrow-right"></i>
+              </button>
             </td>
           </tr>
         `;
@@ -285,19 +492,20 @@
       });
     }
 
-    // Pagination Info
-    document.getElementById('currPageDisplay').innerText = res.pagination.currentPage;
-    document.getElementById('pageInfo').innerText = `Page ${res.pagination.currentPage} of ${res.pagination.totalPages} (${res.pagination.totalItems} Records)`;
+    // Update Pagination Info
+    document.getElementById('currPageDisplay').innerText = STATE.page;
+    document.getElementById('pageInfo').innerText = `Showing ${Math.min(endIndex, totalItems)} of ${totalItems} results`;
   }
 
-  function openModal(idx) {
-    const item = STATE.data[idx];
+  // 5. MODAL DETAIL
+  function openModal(id) {
+    const item = MASTER_DATA.find(x => x.id === id);
     if(!item) return;
 
-    document.getElementById('modalTitle').innerText = item.id || "No ID";
+    document.getElementById('modalTitle').innerText = item.id;
     document.getElementById('modalTypeBadge').innerText = STATE.type === 'general' ? 'General Order' : 'Pre Order';
-    document.getElementById('modalCustomer').innerText = item.customer || "-";
-    document.getElementById('modalDueDate').innerText = item.dueDate || "-";
+    document.getElementById('modalCustomer').innerText = item.customer;
+    document.getElementById('modalDueDate').innerText = item.dueDate;
     document.getElementById('modalTotalBig').innerText = formatRupiah(item.totalAmount);
 
     const tbody = document.getElementById('modalItemsBody');
@@ -307,44 +515,34 @@
         item.items.forEach(prod => {
           tbody.innerHTML += `
             <tr>
-              <td>${prod.name || "Item"}</td>
-              <td class="text-end">${prod.qty || 0}</td>
-              <td class="text-end">${formatRupiah(prod.price)}</td>
-              <td class="text-end fw-bold">${formatRupiah(prod.total)}</td>
+              <td class="ps-3">${prod.name}</td>
+              <td class="text-end">${prod.qty}</td>
+              <td class="text-end text-muted">${formatRupiah(prod.price)}</td>
+              <td class="text-end fw-bold pe-3">${formatRupiah(prod.total)}</td>
             </tr>
           `;
         });
     } else {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center">Tidak ada item detail</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3">No item details available</td></tr>`;
     }
 
     new bootstrap.Modal(document.getElementById('detailModal')).show();
   }
 
+  // 6. PAGINATION CONTROLS
   function changePage(dir) {
-    if (dir === -1 && STATE.page > 1) {
-      STATE.page--;
-      reloadData();
-    } else if (dir === 1) {
-      STATE.page++;
-      reloadData();
+    const totalPages = Math.ceil(DISPLAY_DATA.length / STATE.limit);
+    const nextPage = STATE.page + dir;
+    
+    if (nextPage > 0 && nextPage <= totalPages) {
+      STATE.page = nextPage;
+      renderTable(); 
     }
   }
 
-  let searchTimeout;
-  function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      STATE.page = 1;
-      reloadData();
-    }, 800);
-  }
-
+  // UTILS
   function formatRupiah(num) {
-    // Safety: Pastikan num adalah angka
-    const n = parseFloat(num);
-    if (isNaN(n)) return "Rp 0";
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
   }
 </script>
 
