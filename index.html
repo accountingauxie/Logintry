@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales Synch Dashboard</title>
+  <title>Sales Synch | Outstanding Dashboard</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -18,10 +18,9 @@
       --bg-body: #f1f5f9;
       --white: #ffffff;
       --border-color: #e2e8f0;
-      --success: #10b981;
-      --success-bg: #ecfdf5;
       --warning: #f59e0b;
       --warning-bg: #fffbeb;
+      --danger: #ef4444;
     }
 
     body {
@@ -36,8 +35,8 @@
       background: var(--white);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+      transition: transform 0.2s ease;
     }
     
     .card-stat {
@@ -47,175 +46,86 @@
       justify-content: space-between;
       height: 100%;
     }
-    
-    .card-stat:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-    }
 
     .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      margin-bottom: 16px;
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; margin-bottom: 16px;
     }
 
-    .stat-label { font-size: 0.875rem; color: var(--text-gray); font-weight: 500; }
-    .stat-value { font-size: 2rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; }
+    .stat-label { font-size: 0.875rem; color: var(--text-gray); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; }
 
-    /* --- Navbar & Tabs --- */
-    .header-section {
-      padding: 30px 0;
-      margin-bottom: 20px;
-    }
-
-    .app-brand { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-dark); }
-    .app-brand i { color: var(--primary); }
-
+    /* --- Tabs --- */
     .nav-tabs-custom {
-      border: none;
-      background: #e2e8f0;
-      padding: 4px;
-      border-radius: 10px;
-      display: inline-flex;
+      border: none; background: #e2e8f0; padding: 4px; border-radius: 10px; display: inline-flex;
     }
     
     .nav-tabs-custom .nav-link {
-      border: none;
-      border-radius: 8px;
-      color: var(--text-gray);
-      font-weight: 500;
-      padding: 8px 20px;
-      font-size: 0.9rem;
-      transition: all 0.2s;
+      border: none; border-radius: 8px; color: var(--text-gray);
+      font-weight: 500; padding: 8px 20px; font-size: 0.9rem; transition: all 0.2s;
+      cursor: pointer; text-decoration: none;
     }
     
     .nav-tabs-custom .nav-link.active {
-      background-color: var(--white);
-      color: var(--primary);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      font-weight: 600;
+      background-color: var(--white); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600;
     }
-    
-    .nav-tabs-custom .nav-link:hover:not(.active) { color: var(--text-dark); }
 
-    /* --- Filters --- */
+    /* --- Search & Inputs --- */
     .search-input {
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      padding: 12px 16px 12px 45px;
-      font-size: 0.95rem;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2394a3b8" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 16px center;
+      border-radius: 10px; border: 1px solid var(--border-color);
+      padding: 12px 16px 12px 45px; font-size: 0.95rem;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2394a3b8" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 16px center;
       background-color: var(--white);
     }
-    
-    .search-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-soft);
-      outline: none;
-    }
 
-    .form-select-custom {
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      padding: 12px;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
-
-    /* --- Table --- */
-    .table-responsive { border-radius: 0 0 16px 16px; }
-    .table { margin-bottom: 0; }
-    
+    /* --- Table & Badges --- */
     .table thead th {
-      background-color: #f8fafc;
-      color: var(--text-gray);
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-      border-bottom: 1px solid var(--border-color);
-      padding: 16px 24px;
+      background-color: #f8fafc; color: var(--text-gray);
+      font-weight: 600; text-transform: uppercase; font-size: 0.75rem;
+      padding: 16px 24px; border-bottom: 1px solid var(--border-color);
     }
 
-    .table tbody td {
-      padding: 16px 24px;
-      vertical-align: middle;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 0.9rem;
-      color: var(--text-dark);
-    }
+    .table tbody td { padding: 16px 24px; font-size: 0.9rem; border-bottom: 1px solid var(--border-color); }
     
-    .table tbody tr:last-child td { border-bottom: none; }
-    .table tbody tr:hover { background-color: #f8fafc; }
-
-    .inv-link {
-      font-weight: 600;
-      color: var(--primary);
-      text-decoration: none;
-      cursor: pointer;
+    .badge-pending {
+      background-color: var(--warning-bg); color: var(--warning);
+      padding: 6px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700;
     }
-    .inv-link:hover { text-decoration: underline; }
 
-    /* --- Status Badges --- */
-    .badge-status {
-      padding: 6px 12px;
-      border-radius: 30px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-    }
-    .badge-imported { background-color: var(--success-bg); color: var(--success); }
-    .badge-pending { background-color: var(--warning-bg); color: var(--warning); }
-
-    /* --- Loading Overlay --- */
     #loadingOverlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(5px);
-      z-index: 9999;
-      display: flex; flex-direction: column;
+      background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px);
+      z-index: 9999; display: none; flex-direction: column;
       justify-content: center; align-items: center;
     }
+
     .spinner-custom {
       width: 40px; height: 40px; border: 4px solid var(--primary-soft);
       border-top: 4px solid var(--primary); border-radius: 50%;
       animation: spin 1s linear infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* --- Modal --- */
-    .modal-content { border-radius: 20px; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-    .modal-header { border-bottom: 1px solid var(--border-color); padding: 24px; background-color: #f8fafc; border-radius: 20px 20px 0 0; }
-    .modal-body { padding: 30px; }
-    .modal-total-box {
-      background: var(--primary-soft); color: var(--primary);
-      padding: 20px; border-radius: 12px; text-align: right;
-    }
   </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
   <div class="spinner-custom mb-3"></div>
-  <h6 class="text-secondary fw-medium">Syncing Data...</h6>
+  <h6 class="text-secondary fw-medium">Fetching Outstanding Data...</h6>
 </div>
 
 <div class="container py-4">
   
-  <div class="header-section d-flex justify-content-between align-items-center">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
     <div>
-      <div class="app-brand mb-1"><i class="fas fa-bolt me-2"></i>Sales Synch</div>
-      <div class="text-muted small">Real-time invoice monitoring dashboard</div>
+      <div class="h3 fw-bold mb-1"><i class="fas fa-bolt text-primary me-2"></i>Sales Synch</div>
+      <p class="text-muted small mb-0">Monitoring data yang belum di-import ke Xero</p>
     </div>
     
     <div class="nav-tabs-custom">
-      <a href="#" class="nav-link active" id="tabGen" onclick="switchTab('general')">General Order</a>
-      <a href="#" class="nav-link" id="tabPre" onclick="switchTab('preorder')">Pre Order</a>
+      <div class="nav-link active" id="tabGen" onclick="switchTab('general')">General Order</div>
+      <div class="nav-link" id="tabPre" onclick="switchTab('preorder')">Pre Order</div>
     </div>
   </div>
 
@@ -223,54 +133,36 @@
     <div class="col-md-4">
       <div class="card-clean card-stat">
         <div>
-          <div class="stat-icon bg-light text-primary"><i class="fas fa-file-invoice"></i></div>
-          <div class="stat-label">TOTAL INVOICES</div>
-          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-icon bg-light text-primary"><i class="fas fa-clock"></i></div>
+          <div class="stat-label">Total Antrean</div>
+          <div class="stat-value" id="stat-count">0</div>
         </div>
       </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-8">
       <div class="card-clean card-stat">
         <div>
-          <div class="stat-icon" style="background-color: var(--success-bg); color: var(--success);"><i class="fas fa-check-circle"></i></div>
-          <div class="stat-label">IMPORTED TO XERO</div>
-          <div class="stat-value" style="color: var(--success);" id="stat-imported">0</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card-clean card-stat">
-        <div>
-          <div class="stat-icon" style="background-color: var(--warning-bg); color: var(--warning);"><i class="fas fa-clock"></i></div>
-          <div class="stat-label">PENDING IMPORT</div>
-          <div class="stat-value" style="color: var(--warning);" id="stat-pending">0</div>
+          <div class="stat-icon bg-light text-success"><i class="fas fa-wallet"></i></div>
+          <div class="stat-label">Total Nilai Outstanding</div>
+          <div class="stat-value" id="stat-amount">Rp 0</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="card-clean p-0">
-    
-    <div class="p-4 border-bottom d-flex flex-column flex-md-row gap-3 align-items-center justify-content-between bg-white" style="border-radius: 16px 16px 0 0;">
-      <div style="flex: 1; min-width: 300px;">
-        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by Invoice # or Customer..." onkeyup="applyLocalFilter()">
+  <div class="card-clean p-0 overflow-hidden">
+    <div class="p-4 border-bottom d-flex flex-column flex-md-row gap-3 align-items-center justify-content-between bg-white">
+      <div class="position-relative w-100" style="max-width: 400px;">
+        <input type="text" id="searchInput" class="form-control search-input w-100" placeholder="Cari No. Invoice atau Customer..." onkeyup="applyLocalFilter()">
       </div>
       
-      <div class="d-flex gap-3 w-100 w-md-auto">
-        <select id="statusFilter" class="form-select form-select-custom" style="min-width: 180px;" onchange="applyLocalFilter()">
-          <option value="All">All Statuses</option>
-          <option value="Imported">Imported Only</option>
-          <option value="Pending">Pending Only</option>
-        </select>
-        
-        <button class="btn btn-light border px-3" onclick="fetchInitialData()" title="Refresh Data">
-          <i class="fas fa-sync-alt text-muted"></i>
-        </button>
-      </div>
+      <button class="btn btn-outline-primary px-4" onclick="fetchInitialData()">
+        <i class="fas fa-sync-alt me-2"></i>Refresh Data
+      </button>
     </div>
 
     <div class="table-responsive">
-      <table class="table">
+      <table class="table mb-0">
         <thead>
           <tr>
             <th class="ps-4">Invoice #</th>
@@ -287,8 +179,8 @@
       </table>
     </div>
 
-    <div class="p-3 border-top d-flex justify-content-between align-items-center bg-white" style="border-radius: 0 0 16px 16px;">
-      <span class="text-muted small ps-2" id="pageInfo">Loading data...</span>
+    <div class="p-3 border-top d-flex justify-content-between align-items-center bg-white">
+      <span class="text-muted small ps-2" id="pageInfo">Menampilkan 0 data</span>
       <nav>
         <ul class="pagination pagination-sm mb-0 gap-1">
           <li class="page-item"><button class="page-link border-0 text-dark" onclick="changePage(-1)"><i class="fas fa-chevron-left"></i></button></li>
@@ -300,55 +192,49 @@
   </div>
 
   <div class="text-center mt-4 text-muted small">
-    &copy; 2024 Sales Synch System
+    &copy; 2024 Sales Synch System &bull; Berbasis Real-time Spreadsheet
   </div>
-
 </div>
 
 <div class="modal fade" id="detailModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div>
-          <h5 class="modal-title fw-bold" id="modalTitle">INV-00000</h5>
-          <span class="badge bg-light text-dark border mt-1" id="modalTypeBadge">General Order</span>
-        </div>
+    <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
+      <div class="modal-header border-0 p-4 pb-0">
+        <h5 class="modal-title fw-bold" id="modalTitle">INV-00000</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        
-        <div class="row mb-4 align-items-center">
-          <div class="col-sm-6">
-            <label class="small text-muted text-uppercase fw-bold mb-1">Customer Details</label>
+      <div class="modal-body p-4">
+        <div class="row mb-4 g-3">
+          <div class="col-sm-7">
+            <label class="small text-muted text-uppercase fw-bold mb-1 d-block">Detail Pelanggan</label>
             <div class="fs-5 fw-bold text-dark" id="modalCustomer">-</div>
-            <div class="text-muted small">Due Date: <span id="modalDueDate">-</span></div>
+            <div class="text-muted small mt-1">Jatuh Tempo: <span class="fw-medium text-dark" id="modalDueDate">-</span></div>
           </div>
-          <div class="col-sm-6">
-             <div class="modal-total-box">
-               <label class="small text-uppercase fw-bold opacity-75">Grand Total</label>
-               <div class="fs-2 fw-bold" id="modalTotalBig">Rp 0</div>
-             </div>
+          <div class="col-sm-5 text-sm-end">
+            <div class="p-3 rounded-4" style="background: var(--primary-soft);">
+              <label class="small text-uppercase fw-bold text-primary opacity-75 d-block mb-1">Total Invoice</label>
+              <div class="fs-3 fw-bold text-primary" id="modalTotalBig">Rp 0</div>
+            </div>
           </div>
         </div>
 
-        <h6 class="fw-bold text-muted text-uppercase small mb-3">Item Breakdown</h6>
+        <h6 class="fw-bold text-muted text-uppercase small mb-3">Rincian Produk</h6>
         <div class="table-responsive border rounded-3">
           <table class="table table-sm mb-0">
             <thead class="bg-light">
               <tr>
-                <th class="ps-3 py-2">Item Description</th>
-                <th class="text-end py-2" style="width: 80px;">Qty</th>
-                <th class="text-end py-2" style="width: 140px;">Unit Price</th>
-                <th class="text-end py-2 pe-3" style="width: 140px;">Total</th>
+                <th class="ps-3 py-2">Nama Item</th>
+                <th class="text-end py-2">Qty</th>
+                <th class="text-end py-2">Harga</th>
+                <th class="text-end py-2 pe-3">Subtotal</th>
               </tr>
             </thead>
             <tbody id="modalItemsBody"></tbody>
           </table>
         </div>
-
       </div>
-      <div class="modal-footer bg-light border-0" style="border-radius: 0 0 20px 20px;">
-        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+      <div class="modal-footer border-0 p-4 pt-0">
+        <button type="button" class="btn btn-secondary w-100 py-2 rounded-3" data-bs-dismiss="modal">Tutup Detail</button>
       </div>
     </div>
   </div>
@@ -357,190 +243,132 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  // ==========================================
-  // CONFIGURATION
-  // ==========================================
+  // Ganti URL dengan URL Web App hasil deploy terakhir
   const API_URL = "https://script.google.com/macros/s/AKfycbxRSqbKK9XtzgsE3TLpGR49Gt0FskyhiDVbyQyyR9RznViaJFSZ1MV207tS1BPo5VCM/exec"; 
 
-  // DATA STORE
   let MASTER_DATA = []; 
   let DISPLAY_DATA = []; 
   
   let STATE = {
     page: 1,
-    limit: 10, // Menampilkan 10 item agar lebih rapi
+    limit: 10,
     type: 'general',
-    status: 'All',
     search: ''
   };
 
-  window.onload = () => {
-     fetchInitialData();
-  };
+  window.onload = () => fetchInitialData();
 
-  // 1. SWITCH TABS
   function switchTab(type) {
-    // Update UI Tabs
-    document.getElementById('tabGen').classList.remove('active');
-    document.getElementById('tabPre').classList.remove('active');
-    if(type === 'general') document.getElementById('tabGen').classList.add('active');
-    else document.getElementById('tabPre').classList.add('active');
+    document.getElementById('tabGen').classList.toggle('active', type === 'general');
+    document.getElementById('tabPre').classList.toggle('active', type === 'preorder');
 
     STATE.type = type;
     STATE.page = 1;
     STATE.search = "";
     document.getElementById('searchInput').value = "";
-    
-    // Clear current data visually before loading
-    document.getElementById('tableBody').innerHTML = '';
-    
     fetchInitialData();
   }
 
-  // 2. FETCH DATA FROM SERVER
   function fetchInitialData() {
     document.getElementById('loadingOverlay').style.display = 'flex';
     
-    const url = `${API_URL}?type=${STATE.type}`;
-
-    fetch(url)
+    fetch(`${API_URL}?type=${STATE.type}`)
       .then(res => res.json())
       .then(json => {
         if(json.error) {
-           alert("Server Error: " + json.error);
+           alert("Error: " + json.error);
         } else {
            MASTER_DATA = json.data || [];
-           applyLocalFilter(); // Langsung filter & render
+           applyLocalFilter();
         }
       })
-      .catch(err => {
-        console.error(err);
-        alert("Gagal koneksi ke database.");
-      })
-      .finally(() => {
-        document.getElementById('loadingOverlay').style.display = 'none';
-      });
+      .catch(err => alert("Gagal mengambil data dari server."))
+      .finally(() => document.getElementById('loadingOverlay').style.display = 'none');
   }
 
-  // 3. FILTER LOGIC (CLIENT SIDE)
   function applyLocalFilter() {
-    STATE.status = document.getElementById('statusFilter').value;
     STATE.search = document.getElementById('searchInput').value.toLowerCase();
     STATE.page = 1; 
 
-    // Calculate Stats
-    let stats = { total: 0, imported: 0, pending: 0 };
-    MASTER_DATA.forEach(item => {
-        stats.total++;
-        if(item.status === 'Imported') stats.imported++;
-        else stats.pending++;
-    });
-    
-    // Animate numbers? (Optional, here just plain text update)
-    document.getElementById('stat-total').innerText = stats.total;
-    document.getElementById('stat-imported').innerText = stats.imported;
-    document.getElementById('stat-pending').innerText = stats.pending;
-
     // Filter Logic
     DISPLAY_DATA = MASTER_DATA.filter(item => {
-        const searchMatch = (item.id || "").toLowerCase().includes(STATE.search) || 
-                            (item.customer || "").toLowerCase().includes(STATE.search);
-        
-        const statusMatch = (STATE.status === 'All') || (item.status === STATE.status);
-        return searchMatch && statusMatch;
+      return (item.id || "").toLowerCase().includes(STATE.search) || 
+             (item.customer || "").toLowerCase().includes(STATE.search);
     });
+
+    // Update Stats (Hanya dari data yang ditampilkan/pending)
+    const totalAmount = DISPLAY_DATA.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+    document.getElementById('stat-count').innerText = DISPLAY_DATA.length;
+    document.getElementById('stat-amount').innerText = formatRupiah(totalAmount);
 
     renderTable();
   }
 
-  // 4. RENDER TABLE
   function renderTable() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
 
     const totalItems = DISPLAY_DATA.length;
-    const totalPages = Math.ceil(totalItems / STATE.limit) || 1;
-    
-    // Pagination Slicing
     const startIndex = (STATE.page - 1) * STATE.limit;
-    const endIndex = startIndex + STATE.limit;
-    const paginatedItems = DISPLAY_DATA.slice(startIndex, endIndex);
+    const paginatedItems = DISPLAY_DATA.slice(startIndex, startIndex + STATE.limit);
 
     if (paginatedItems.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-inbox fa-2x mb-3 text-light"></i><br>No invoices found</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-check-circle fa-2x mb-3 text-light"></i><br>Semua invoice sudah ter-import!</td></tr>`;
     } else {
       paginatedItems.forEach((item) => {
-        const isImported = item.status === 'Imported';
-        const badgeClass = isImported ? 'badge-imported' : 'badge-pending';
-        
-        const row = `
+        tbody.innerHTML += `
           <tr>
-            <td class="ps-4 fw-medium text-dark">${item.id}</td>
-            <td class="fw-medium text-secondary">${item.customer}</td>
+            <td class="ps-4 fw-bold text-primary">${item.id}</td>
+            <td class="fw-medium">${item.customer}</td>
             <td class="text-muted small">${item.date}</td>
             <td class="text-muted small">${item.dueDate}</td>
-            <td class="text-end fw-bold text-dark">${formatRupiah(item.totalAmount)}</td>
-            <td class="text-center"><span class="badge-status ${badgeClass}">${item.status.toUpperCase()}</span></td>
+            <td class="text-end fw-bold">${formatRupiah(item.totalAmount)}</td>
+            <td class="text-center"><span class="badge-pending">PENDING</span></td>
             <td class="text-center pe-4">
-              <button class="btn btn-sm btn-light text-primary border-0" onclick="openModal('${item.id}')" title="View Detail">
-                <i class="fas fa-arrow-right"></i>
+              <button class="btn btn-sm btn-light border" onclick="openModal('${item.id}')">
+                <i class="fas fa-search-plus text-primary"></i>
               </button>
             </td>
           </tr>
         `;
-        tbody.innerHTML += row;
       });
     }
 
-    // Update Pagination Info
     document.getElementById('currPageDisplay').innerText = STATE.page;
-    document.getElementById('pageInfo').innerText = `Showing ${Math.min(endIndex, totalItems)} of ${totalItems} results`;
+    document.getElementById('pageInfo').innerText = `Menampilkan ${paginatedItems.length} dari ${totalItems} data`;
   }
 
-  // 5. MODAL DETAIL
   function openModal(id) {
     const item = MASTER_DATA.find(x => x.id === id);
     if(!item) return;
 
     document.getElementById('modalTitle').innerText = item.id;
-    document.getElementById('modalTypeBadge').innerText = STATE.type === 'general' ? 'General Order' : 'Pre Order';
     document.getElementById('modalCustomer').innerText = item.customer;
     document.getElementById('modalDueDate').innerText = item.dueDate;
     document.getElementById('modalTotalBig').innerText = formatRupiah(item.totalAmount);
 
     const tbody = document.getElementById('modalItemsBody');
-    tbody.innerHTML = '';
-
-    if (item.items && item.items.length > 0) {
-        item.items.forEach(prod => {
-          tbody.innerHTML += `
-            <tr>
-              <td class="ps-3">${prod.name}</td>
-              <td class="text-end">${prod.qty}</td>
-              <td class="text-end text-muted">${formatRupiah(prod.price)}</td>
-              <td class="text-end fw-bold pe-3">${formatRupiah(prod.total)}</td>
-            </tr>
-          `;
-        });
-    } else {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3">No item details available</td></tr>`;
-    }
+    tbody.innerHTML = item.items.map(prod => `
+      <tr>
+        <td class="ps-3">${prod.name}</td>
+        <td class="text-end">${prod.qty}</td>
+        <td class="text-end text-muted">${formatRupiah(prod.price)}</td>
+        <td class="text-end fw-bold pe-3">${formatRupiah(prod.total)}</td>
+      </tr>
+    `).join('');
 
     new bootstrap.Modal(document.getElementById('detailModal')).show();
   }
 
-  // 6. PAGINATION CONTROLS
   function changePage(dir) {
     const totalPages = Math.ceil(DISPLAY_DATA.length / STATE.limit);
     const nextPage = STATE.page + dir;
-    
     if (nextPage > 0 && nextPage <= totalPages) {
       STATE.page = nextPage;
       renderTable(); 
     }
   }
 
-  // UTILS
   function formatRupiah(num) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
   }
