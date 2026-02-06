@@ -3,1006 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kas Kecil Modern - Auxilium Style</title>
+    <title>Order Portal</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons"></script>
-
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                },
+                extend: {
+                    colors: {
+                        primary: '#2563EB', // Royal Blue
+                        secondary: '#64748B', // Slate
+                        bgLight: '#F8FAFC',
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
-        /* --- STYLE BAWAAN KAS KECIL --- */
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; }
-        .hidden { display: none !important; }
-        
-        /* Floating Label Logic */
-        .floating-input { padding-top: 1.25rem; padding-bottom: 0.25rem; }
-        .floating-label { position: absolute; top: 0.25rem; left: 0.75rem; font-size: 0.75rem; color: #94a3b8; transition: all 0.2s; pointer-events: none; }
-        .peer:placeholder-shown ~ .floating-label { top: 0.75rem; font-size: 0.875rem; color: #64748b; }
-        .peer:focus ~ .floating-label { top: 0.25rem; font-size: 0.75rem; color: #3b82f6; }
-        
-        /* Select2 Modern Override */
-        .select2-container .select2-selection--single { height: 52px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; display: flex; align-items: center; }
-        .select2-container--default .select2-selection--single .select2-selection__rendered { padding-left: 12px; color: #334155; font-size: 0.875rem; }
-        .select2-container--default .select2-selection--single .select2-selection__arrow { top: 13px; right: 10px; }
-        
-        /* Custom Scrollbar */
+        /* Custom Scrollbar for sleek look */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-
-        /* =========================================
-           AUXILIUM NAVBAR STYLE (BARU)
-           ========================================= */
-        :root { 
-            --primary-color: #116999; 
-            --primary-hover: #0e5a85;
-            --border-color: #eaecf0;
-            --red-bg: #fee2e2; 
-            --red-text: #991b1b;
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        
+        /* Loading Animation */
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
         }
-
-        /* Navbar Container */
-        .aux-navbar {
-            background-color: #ffffff;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            position: sticky; top: 0; 
-            z-index: 40; /* Z-Index 40 agar dibawah Modal Tailwind (50) & Login (60) */
-            flex: none; /* Mencegah shrink di flex container tailwind */
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
-
-        .aux-logo { display: flex; align-items: center; gap: 10px; }
-        .aux-logo img { height: 45px; width: auto; object-fit: contain; }
-
-        .aux-menu { display: flex; gap: 8px; align-items: center; height: 100%; }
-        .nav-item { position: relative; height: 100%; display: flex; align-items: center; }
-
-        .aux-link { 
-            text-decoration: none; color: #475467; font-weight: 600; font-size: 14px; 
-            padding: 8px 16px; border-radius: 6px; transition: all 0.2s; cursor: pointer;
-            display: flex; align-items: center; gap: 6px;
-        }
-
-        .aux-link:hover, .nav-item:hover .aux-link { background-color: #f2f4f7; color: #101828; }
-        .aux-link.active { background-color: #eff8ff; color: var(--primary-color); font-weight: 700; }
-
-        .chevron-down { width: 14px; height: 14px; transition: transform 0.2s; }
-        .nav-item:hover .chevron-down { transform: rotate(180deg); }
-
-        /* Dropdown Menu */
-        .dropdown-menu-aux {
-            visibility: hidden; opacity: 0; position: absolute; 
-            top: 85%; left: 0; background: white; min-width: 240px;
-            border: 1px solid var(--border-color); border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            padding: 8px; z-index: 9999; transform: translateY(10px);
-            transition: all 0.2s ease-in-out;
-            display: block; 
-        }
-        .dropdown-menu-aux::before { content: ""; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent; }
-        .nav-item:hover .dropdown-menu-aux { visibility: visible; opacity: 1; transform: translateY(0); }
-
-        .dropdown-item-aux {
-            display: flex; align-items: center; padding: 10px 12px; color: #344054;
-            text-decoration: none; font-size: 14px; border-radius: 6px; transition: background 0.2s;
-        }
-        .dropdown-item-aux:hover { background-color: #f9fafb; color: var(--primary-color); }
-        .dropdown-header-aux {
-            font-size: 11px; text-transform: uppercase; color: #98a2b3;
-            font-weight: 600; padding: 8px 12px 4px; letter-spacing: 0.5px;
-        }
-        .dropdown-divider { height: 1px; background-color: #eaecf0; margin: 6px 0; }
-
-        /* User Panel */
-        .user-panel { display: flex; align-items: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--border-color); }
-        .user-details { display: flex; flex-direction: column; text-align: right; line-height: 1.3; }
-        .user-name { font-weight: 700; font-size: 13px; color: #101828; }
-        .user-role { font-size: 11px; color: #667085; }
-        .user-avatar { width: 36px; height: 36px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; user-select: none; }
-        .logout-btn { background: none; border: 1px solid var(--border-color); color: #666; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .logout-btn:hover { background-color: var(--red-bg); color: var(--red-text); border-color: var(--red-bg); }
-
+        
+        /* Modal Transition */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.2s ease-out; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: all 0.2s ease-in; }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="bg-bgLight text-slate-800 antialiased min-h-screen flex flex-col">
 
-<div id="loginPage" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-100">
-        <div class="bg-white p-10 rounded-3xl shadow-2xl w-96 border border-slate-100 text-center">
-            <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-200">
-                <i class="fas fa-wallet text-2xl"></i>
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-lg">X</div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Xero<span class="text-primary">View</span></h1>
             </div>
-            <h2 class="text-2xl font-bold text-slate-800 mb-2">Kas Kecil</h2>
-            <p class="text-slate-400 text-sm mb-8">Sign in to manage expenses</p>
-            
-            <form onsubmit="handleLogin(event)" class="space-y-5 text-left">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Email Address</label>
-                    <input type="email" id="email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700" placeholder="nama@email.com" required>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Password</label>
-                    <input type="password" id="password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700" placeholder="••••••••" required>
-                </div>
-
-                <button type="submit" id="btnLogin" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition shadow-lg shadow-slate-200 mt-4">Masuk</button>
-            </form>
-            
-            <p id="loginError" class="text-red-500 text-xs mt-4 hidden font-medium bg-red-50 py-2 rounded-lg border border-red-100"></p>
+            <div class="text-xs text-slate-400 font-medium">Data Sync v1.0</div>
         </div>
-    </div>
+    </nav>
 
-    <div id="dashboardPage" class="hidden flex flex-col h-full relative">
+    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
-        <div class="aux-navbar">
-            <div class="aux-logo">
-                <img src="https://raw.githubusercontent.com/accountingauxie/Asset/refs/heads/main/auxilium_logo_pure_white_bg.png" alt="Auxilium Logo">
+        <div class="flex space-x-1 bg-slate-200 p-1 rounded-xl w-fit mb-8">
+            <button onclick="switchModule('general')" id="btn-general" class="px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm bg-white text-slate-900">
+                General Order
+            </button>
+            <button onclick="switchModule('preorder')" id="btn-preorder" class="px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-500 hover:text-slate-700">
+                Pre-Order
+            </button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                            <th class="px-6 py-4">Order Number</th>
+                            <th class="px-6 py-4">Customer</th>
+                            <th class="px-6 py-4">Issue Date</th>
+                            <th class="px-6 py-4 text-center">Status</th>
+                            <th class="px-6 py-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
+                        </tbody>
+                </table>
             </div>
             
-            <nav class="aux-menu">
-                <div class="nav-item">
-                    <a href="#" class="aux-link">Home</a>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link">
-                        Penjualan 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Sales Orders</div>
-                        <a href="#" class="dropdown-item-aux">Order Penjualan</a>
-                        <a href="#" class="dropdown-item-aux">Review Penjualan</a>
-                    </div>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link">
-                        Pembelian 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Purchasing</div>
-                        <a href="#" class="dropdown-item-aux">Pemesanan Pembelian</a>
-                        <a href="#" class="dropdown-item-aux">Penerimaan Barang (Entry)</a>
-                        <div class="dropdown-divider"></div>
-                        <div class="dropdown-header-aux">Finance</div>
-                        <a href="#" class="dropdown-item-aux">Daftar Tagihan (Bill)</a>
-                    </div>
-                </div>
-
-                <div class="nav-item">
-                    <div class="aux-link active">
-                        Finance 
-                        <i data-feather="chevron-down" class="chevron-down"></i>
-                    </div>
-                    <div class="dropdown-menu-aux">
-                        <div class="dropdown-header-aux">Petty Cash</div>
-                        <a href="#" class="dropdown-item-aux" style="color:var(--primary-color); font-weight:700; background:#f9fafb;">Mutasi Kas Kecil</a>
-                    </div>
-                </div>
-            </nav>
-
-            <div class="user-panel">
-                <div class="user-details">
-                    <span class="user-name" id="userName">User</span>
-                    <span class="user-role">Finance Staff</span>
-                </div>
-                <div class="user-avatar" id="display-initial">U</div>
-                <button class="logout-btn" onclick="logout()" title="Keluar Akun">
-                    <i data-feather="log-out" style="width:16px; height:16px;"></i>
-                </button>
+            <div id="loading-state" class="hidden p-12 text-center">
+                <div class="inline-block w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
+                <p class="mt-4 text-slate-400 text-sm">Mengambil data terbaru...</p>
+            </div>
+            
+            <div id="empty-state" class="hidden p-12 text-center">
+                <i class="ph ph-folder-open text-4xl text-slate-300 mb-2"></i>
+                <p class="text-slate-500 font-medium">Tidak ada data ditemukan.</p>
             </div>
         </div>
-        <div class="flex-grow flex overflow-hidden">
-            <main id="mainContent" class="flex-grow overflow-y-auto p-6 transition-all duration-300">
-                
-                <div id="lockStatus" class="hidden mb-4 inline-flex items-center text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-full border border-red-100 font-medium">
-                    <i class="fas fa-lock mr-2"></i> Periode Terkunci: <span id="lockDateDisplay" class="ml-1">-</span>
-                </div>
+    </main>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md transition">
-                        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Saldo Akhir</div>
-                        <div class="text-2xl font-bold text-slate-800" id="valSaldo">...</div>
-                        <div class="h-1 w-full bg-slate-100 mt-4 rounded-full overflow-hidden">
-                            <div class="h-full bg-slate-800 w-full rounded-full"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md transition">
-                        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Masuk</div>
-                        <div class="text-2xl font-bold text-emerald-600" id="valDebit">...</div>
-                        <div class="h-1 w-full bg-emerald-50 mt-4 rounded-full overflow-hidden">
-                            <div class="h-full bg-emerald-500 w-0 transition-all duration-1000" style="width: 60%"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group hover:shadow-md transition">
-                        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Keluar</div>
-                        <div class="text-2xl font-bold text-rose-600" id="valKredit">...</div>
-                        <div class="h-1 w-full bg-rose-50 mt-4 rounded-full overflow-hidden">
-                            <div class="h-full bg-rose-500 w-0 transition-all duration-1000" style="width: 45%"></div>
-                        </div>
-                    </div>
-                </div>
-
-               <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                    
-                    <div class="flex items-center gap-2">
-                        <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
-                            <div class="relative group">
-                                <input type="date" id="filterStart" class="bg-transparent text-xs font-medium text-slate-600 px-2 py-1.5 focus:outline-none cursor-pointer">
-                                <span class="absolute -top-2 left-2 bg-white px-1 text-[9px] text-slate-400">Start</span>
-                            </div>
-                            <span class="text-slate-300">|</span>
-                            <div class="relative group">
-                                <input type="date" id="filterEnd" class="bg-transparent text-xs font-medium text-slate-600 px-2 py-1.5 focus:outline-none cursor-pointer">
-                                <span class="absolute -top-2 left-2 bg-white px-1 text-[9px] text-slate-400">End</span>
-                            </div>
-                        </div>
-
-                        <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-700 text-white h-[42px] px-4 rounded-xl text-xs font-bold shadow-md shadow-blue-100 transition flex items-center gap-2">
-                            <i class="fas fa-filter"></i> Update
-                        </button>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button onclick="downloadCSV()" class="bg-white border border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-200 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-2">
-                            <i class="fas fa-file-csv text-lg"></i> Export CSV
-                        </button>
-                        <button onclick="printPDF()" class="bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-2">
-                            <i class="fas fa-print text-lg"></i> PDF
-                        </button>
-                        <button onclick="openModal('add')" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-slate-200 transition flex items-center gap-2 transform hover:-translate-y-0.5">
-                            <i class="fas fa-plus"></i> Transaksi Baru
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50/50 border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider">
-                                    <th class="px-6 py-4 font-semibold">Tanggal</th>
-                                    <th class="px-6 py-4 font-semibold">Ref</th>
-                                    <th class="px-6 py-4 font-semibold">Deskripsi</th>
-                                    <th class="px-6 py-4 font-semibold">Akun</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Nominal</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Saldo</th>
-                                    <th class="px-6 py-4 font-semibold text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody" class="text-sm text-slate-600"></tbody>
-                        </table>
-                    </div>
-                    <div id="tableLoading" class="p-10 text-center hidden">
-                        <i class="fas fa-circle-notch fa-spin text-slate-300 text-2xl"></i>
-                        <p class="text-xs text-slate-400 mt-2">Memuat data...</p>
-                    </div>
-                </div>
-                <div class="h-10"></div> </main>
-
-            <aside id="previewPane" class="w-0 bg-white border-l border-slate-200 shadow-2xl transition-all duration-300 flex flex-col z-30">
-                <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
-                    <span class="text-xs font-bold uppercase text-slate-500">Bukti Transaksi</span>
-                    <button onclick="closePreview()" class="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 transition flex items-center justify-center"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="flex-grow bg-slate-100 relative">
-                     <iframe id="previewFrame" class="w-full h-full" src=""></iframe>
-                </div>
-                <div class="p-3 bg-white border-t border-slate-100 text-center">
-                    <a id="btnNewTab" href="#" target="_blank" class="text-xs text-blue-600 font-semibold hover:underline">Buka di tab baru</a>
-                </div>
-            </aside>
-        </div>
-    </div>
-
-    <div id="modalAdd" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col transform scale-100 transition-transform">
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden transition-opacity opacity-0" aria-hidden="true"></div>
+    
+    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden pointer-events-none">
+        <div id="modal-content" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto max-h-[90vh] flex flex-col">
             
-            <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-start bg-slate-50/50 rounded-t-2xl">
                 <div>
-                    <h3 id="modalTitle" class="text-lg font-bold text-slate-800">Transaksi Baru</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Isi detail transaksi dengan lengkap</p>
+                    <div class="flex items-center gap-3 mb-1">
+                        <h2 class="text-2xl font-bold text-slate-900" id="detail-title">Order #...</h2>
+                        <span id="detail-status" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Pending</span>
+                    </div>
+                    <p class="text-slate-500 text-sm">General Order Detail</p>
                 </div>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition flex items-center justify-center shadow-sm">
-                    <i class="fas fa-times text-sm"></i>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-full transition">
+                    <i class="ph ph-x text-xl"></i>
                 </button>
             </div>
 
-            <div class="overflow-y-auto p-8 custom-scrollbar">
-                <form id="addForm" onsubmit="submitTransaction(event)">
-                    <input type="hidden" id="editRef">
-                    <input type="hidden" id="formMode" value="add">
-
-                    <div class="flex justify-center mb-8">
-                        <div class="bg-slate-100 p-1 rounded-xl inline-flex relative w-full md:w-auto">
-                            <div id="activeIndicator" class="absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 border border-slate-200/50"></div>
-                            
-                            <label class="relative z-10 w-full md:w-32 py-2 text-center text-xs font-bold cursor-pointer transition-colors duration-300 select-none text-rose-600" id="lblKeluar">
-                                <input type="radio" name="tipe" value="Keluar" checked onchange="toggleType('Keluar')" class="hidden">
-                                <i class="fas fa-arrow-up mr-1"></i> Expense
-                            </label>
-                            
-                            <label class="relative z-10 w-full md:w-32 py-2 text-center text-xs font-bold cursor-pointer transition-colors duration-300 select-none text-slate-400" id="lblMasuk">
-                                <input type="radio" name="tipe" value="Masuk" onchange="toggleType('Masuk')" class="hidden">
-                                <i class="fas fa-arrow-down mr-1"></i> Income
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-12 gap-5">
+            <div class="p-8 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Customer</p>
+                        <p class="text-lg font-medium text-slate-800" id="detail-customer">-</p>
                         
-                        <div class="col-span-12 md:col-span-4 relative">
-                            <input type="date" id="tgl" class="peer floating-input w-full bg-slate-50 border border-slate-200 rounded-lg px-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 font-medium h-[52px]">
-                            <label class="floating-label">Tanggal Transaksi</label>
-                        </div>
-                        <div class="col-span-12 md:col-span-4 relative">
-                            <input type="text" id="contact" class="peer floating-input w-full bg-slate-50 border border-slate-200 rounded-lg px-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 h-[52px]" placeholder=" ">
-                            <label class="floating-label">Contact / Payee</label>
-                        </div>
-                        <div class="col-span-12 md:col-span-4 relative">
-                             <select id="taxType" class="peer w-full bg-slate-50 border border-slate-200 rounded-lg px-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 h-[52px] text-sm appearance-none pt-4 pb-1">
-                                <option value="">None</option>
-                            </select>
-                            <label class="floating-label">Tax Type</label>
-                            <i class="fas fa-chevron-down absolute right-3 top-4 text-slate-400 text-xs pointer-events-none"></i>
-                        </div>
-
-                        <div class="col-span-12">
-                            <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1 ml-1">Akun (CoA)</label>
-                            <select id="akun" class="w-full"></select>
-                        </div>
-
-                        <div class="col-span-12 relative group">
-    <textarea 
-        id="desc" 
-        rows="1" 
-        class="peer w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-3 outline-none focus:border-blue-500 focus:bg-white transition-colors duration-200 text-slate-700 resize-none overflow-hidden" 
-        placeholder=" " 
-        oninput="autoResize(this)"></textarea>
-    
-    <label class="absolute left-3 -top-2.5 text-slate-400 text-xs bg-white px-1 transition-all 
-                  peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:bg-transparent 
-                  peer-focus:-top-2.5 peer-focus:text-xs peer-focus:bg-white peer-focus:px-1 peer-focus:text-blue-500 
-                  pointer-events-none">
-        Deskripsi Transaksi
-    </label>
-    
-    <div class="absolute bottom-2 right-2 text-[10px] text-slate-300 opacity-0 group-hover:opacity-100 transition">
-        <i class="fas fa-pen"></i>
-    </div>
-</div>
-
-                        <div class="col-span-12 bg-slate-50 rounded-xl p-4 border border-slate-100 grid grid-cols-12 gap-4 items-center">
-                            <div class="col-span-3">
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Qty</label>
-                                <input type="number" id="qty" value="1" min="1" oninput="calcTotal()" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-center text-sm focus:border-blue-500 outline-none">
-                            </div>
-                            <div class="col-span-1 text-center text-slate-400 mt-4">x</div>
-                            <div class="col-span-4">
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Price</label>
-                                <input type="number" id="price" oninput="calcTotal()" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm focus:border-blue-500 outline-none" placeholder="0">
-                            </div>
-                             <div class="col-span-1 text-center text-slate-400 mt-4">=</div>
-                            <div class="col-span-3">
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Total</label>
-                                <input type="text" id="nominal" readonly class="w-full bg-slate-200/50 border border-slate-200 rounded-lg px-2 py-2 text-right font-bold text-slate-700 text-sm cursor-not-allowed">
-                                <input type="hidden" id="nominalVal">
-                            </div>
-                        </div>
-
-                        <div class="col-span-6 relative">
-                            <input type="text" id="tagihan" class="peer floating-input w-full bg-slate-50 border border-slate-200 rounded-lg px-3 outline-none focus:border-blue-500 focus:bg-white transition-all text-slate-700 h-[52px]" placeholder=" ">
-                            <label class="floating-label">No. Tagihan (Ref Lain)</label>
-                        </div>
-                        <div class="col-span-6 relative">
-                            <label class="absolute -top-2 left-2 px-1 bg-white text-[10px] font-bold text-slate-400 z-10">Upload Bukti</label>
-                            <input type="file" id="file" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-200 rounded-lg cursor-pointer bg-slate-50 h-[52px] pt-1.5 pl-1.5">
-                        </div>
-
+                        <p class="text-xs font-semibold text-slate-400 uppercase mt-4 mb-1">Payment Term</p>
+                        <p class="text-sm text-slate-700" id="detail-term">-</p>
                     </div>
-                </form>
-            </div>
+                    <div class="md:text-right">
+                        <div class="inline-block text-left md:text-right">
+                            <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Issue Date</p>
+                            <p class="text-sm font-medium text-slate-800 mb-3" id="detail-date">-</p>
+                            
+                            <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Est. Delivery</p>
+                            <p class="text-sm font-medium text-slate-800" id="detail-delivery">-</p>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="p-6 border-t border-slate-100 bg-slate-50/50">
-                <button onclick="submitTransaction(event)" id="btnSubmit" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-xl shadow-slate-200 hover:bg-slate-800 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                    <span id="btnText">Simpan Transaksi</span>
-                </button>
+                <div class="border border-slate-200 rounded-lg overflow-hidden mb-6">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50 text-xs font-semibold text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-4 py-3 text-left w-1/3">Item Name</th>
+                                <th class="px-4 py-3 text-center">Meter</th>
+                                <th class="px-4 py-3 text-center">Qty</th>
+                                <th class="px-4 py-3 text-right">Price</th>
+                                <th class="px-4 py-3 text-right text-red-500">Disc</th>
+                                <th class="px-4 py-3 text-right">Net</th>
+                                <th class="px-4 py-3 text-right bg-slate-100/50">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-items" class="divide-y divide-slate-100 text-slate-700">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-end">
+                    <div class="bg-blue-50/50 p-6 rounded-xl min-w-[250px] text-right">
+                        <p class="text-sm text-slate-500 mb-1">Total Amount (Inc. PPN)</p>
+                        <p class="text-3xl font-bold text-slate-900" id="grand-total">Rp 0</p>
+                        <p class="text-xs text-slate-400 mt-1 italic">Harga sudah termasuk PPN</p>
+                    </div>
+                </div>
             </div>
+            
         </div>
-    </div>
-
-    <div id="printableArea" class="hidden">
-        <h1 class="text-xl font-bold uppercase mb-2">Laporan Mutasi Kas Kecil</h1>
-        <p class="text-xs mb-4" id="printInfo"></p>
-        <table class="w-full text-xs border-collapse">
-            <thead>
-                <tr class="border-b-2 border-black">
-                    <th class="text-left py-1 w-20">Date</th>
-                    <th class="text-left py-1 w-24">Ref</th>
-                    <th class="text-left py-1">Description</th>
-                    <th class="text-right py-1 w-24">Debit</th>
-                    <th class="text-right py-1 w-24">Credit</th>
-                    <th class="text-right py-1 w-24">Balance</th>
-                </tr>
-            </thead>
-            <tbody id="printBody"></tbody>
-        </table>
     </div>
 
     <script>
-        // Init Feather Icons (UNTUK NAV BAR BARU)
-        feather.replace();
-
-        // API CONFIG
-        // PASTIKAN GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT APPSCRIPT TERBARU
-        const API_URL = "https://script.google.com/macros/s/AKfycbylqHZwW9X7aJa9x-3JGVUDEuWmlY1syioThBpZOLMfdrWZGOjKnF4OLBKomJgyIJe0/exec"; 
+        // --- CONFIG ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbysLDiLHEVphuE9lTbJ32Hm2Bit2xUt6V16BOEGpjWQXwsCkwfup5Y5pGWSO8xdpgo6/exec";
         
-        let globalData = [];
-        let accountData = { expense: [], income: [], tax: [] };
-        let currentLock = null;
-
-        // INIT
-        $(document).ready(function() {
-            checkSession();
-            
-            // Setup Date Filters Default (This Month)
-            const d = new Date();
-            const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
-            const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
-            
-            // Only set if empty
-            if(!$('#filterStart').val()) $('#filterStart').val(firstDay);
-            if(!$('#filterEnd').val()) $('#filterEnd').val(lastDay);
-
-            $('#tgl').val(new Date().toISOString().split('T')[0]);
-
-            $('#akun').select2({
-                placeholder: "Pilih Akun",
-                dropdownParent: $('#modalAdd'),
-                width: '100%'
-            });
+        let currentModule = 'general';
+        
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData(currentModule);
         });
 
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        }
+        // --- FUNCTIONS ---
+        
+        function switchModule(module) {
+            if (currentModule === module) return;
+            currentModule = module;
+            
+            // UI Toggle
+            const btnGen = document.getElementById('btn-general');
+            const btnPre = document.getElementById('btn-preorder');
+            const activeClass = "bg-white text-slate-900 shadow-sm".split(" ");
+            const inactiveClass = "text-slate-500 hover:text-slate-700".split(" ");
 
-        // --- AUTH & DATA ---
-        function checkSession() {
-            const u = localStorage.getItem("kasUser");
-            if(u) {
-                $('#loginPage').addClass('hidden');
-                $('#dashboardPage').removeClass('hidden');
-                // Menggunakan ID #userName (sudah ada di nav bar baru)
-                $('#userName').text(JSON.parse(u).name);
-                fetchData();
+            if(module === 'general'){
+                btnGen.classList.add(...activeClass);
+                btnGen.classList.remove(...inactiveClass);
+                btnPre.classList.remove(...activeClass);
+                btnPre.classList.add(...inactiveClass);
+            } else {
+                btnPre.classList.add(...activeClass);
+                btnPre.classList.remove(...inactiveClass);
+                btnGen.classList.remove(...activeClass);
+                btnGen.classList.add(...inactiveClass);
             }
+
+            loadData(module);
         }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const b = $('#btnLogin');
-            b.prop('disabled', true).text('Loading...');
+        async function loadData(module) {
+            const tbody = document.getElementById('table-body');
+            const loader = document.getElementById('loading-state');
+            const empty = document.getElementById('empty-state');
             
-            fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify({
-                    action: "login",
-                    email: $('#email').val(),
-                    password: $('#password').val()
-                })
-            }).then(r=>r.json()).then(d=>{
-                if(d.status === "success") {
-                    localStorage.setItem("kasUser", JSON.stringify(d.user));
-                    checkSession();
-                } else {
-                    $('#loginError').text(d.message).removeClass('hidden');
-                    b.prop('disabled', false).text('Masuk');
+            // Reset UI
+            tbody.innerHTML = '';
+            empty.classList.add('hidden');
+            loader.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_URL}?module=${module}&action=list`);
+                const json = await response.json();
+
+                loader.classList.add('hidden');
+
+                if (json.status !== 'success' || !json.data || json.data.length === 0) {
+                    empty.classList.remove('hidden');
+                    return;
                 }
-            });
-        }
 
-        function logout() { localStorage.clear(); location.reload(); }
-
-        function fetchData() {
-            const start = $('#filterStart').val();
-            const end = $('#filterEnd').val();
-            
-            $('#tableLoading').removeClass('hidden');
-            $('#tableBody').empty();
-
-            fetch(`${API_URL}?action=getData&start=${start}&end=${end}`)
-            .then(r=>r.json())
-            .then(d => {
-                $('#tableLoading').addClass('hidden');
-                if(d.status === "success") {
-                    globalData = d.data; // Store for Export
+                // Render Data
+                json.data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-50 transition-colors group cursor-pointer";
+                    row.onclick = () => openDetail(item.orderNumber);
                     
-                    // Setup Accounts
-                    accountData.expense = d.accounts.expense;
-                    accountData.income = d.accounts.income;
-                    accountData.tax = d.accounts.taxTypes;
-                    currentLock = d.lockDate;
+                    // Status Color Logic
+                    let statusColor = "bg-slate-100 text-slate-600";
+                    if(item.status && item.status.toLowerCase().includes('pending')) statusColor = "bg-sky-100 text-sky-700";
+                    if(item.status && item.status.toLowerCase().includes('approved')) statusColor = "bg-emerald-100 text-emerald-700";
 
-                    if(currentLock) {
-                        $('#lockStatus').removeClass('hidden');
-                        $('#lockDateDisplay').text(formatDateID(currentLock));
-                    } else {
-                        $('#lockStatus').addClass('hidden');
-                    }
-
-                    renderStats(d.stats);
-                    renderTable(d.data);
-                }
-            });
-        }
-
-        // --- RENDERING ---
-        function renderStats(s) {
-            const fmt = n => "Rp " + new Intl.NumberFormat('id-ID').format(n);
-            $('#valSaldo').text(fmt(s.saldo));
-            $('#valDebit').text(fmt(s.debit));
-            $('#valKredit').text(fmt(s.kredit));
-        }
-
-        function renderTable(rows) {
-            const tb = $('#tableBody');
-            if(rows.length === 0) {
-                tb.html('<tr><td colspan="7" class="text-center py-8 text-slate-400">Tidak ada data di periode ini.</td></tr>');
-                return;
-            }
-
-            const fmt = n => n===0 ? '-' : new Intl.NumberFormat('id-ID').format(n);
-            const isLock = (dateISO) => currentLock && new Date(dateISO) <= new Date(currentLock);
-
-            rows.forEach((r, i) => {
-                let statusClass = "bg-slate-100 text-slate-500";
-                let debit = "-", kredit = "-";
-                
-                if(r.debit > 0) debit = `<span class="text-emerald-600 font-bold">+ ${fmt(r.debit)}</span>`;
-                if(r.kredit > 0) kredit = `<span class="text-rose-600 font-bold">- ${fmt(r.kredit)}</span>`;
-
-                // Actions
-                let locked = isLock(r.dateISO);
-                
-                // Edit Button Logic
-                let btnEdit = locked ? 
-                    `<span class="text-slate-300 cursor-not-allowed"><i class="fas fa-lock"></i></span>` :
-                    `<button onclick="openModal('edit', ${i})" class="text-amber-400 hover:text-amber-600 transition"><i class="fas fa-pen"></i></button>`;
-                
-                // Delete Button Logic (NEW)
-                let btnDelete = locked ?
-                    `<span class="text-slate-300 cursor-not-allowed" title="Terkunci"><i class="fas fa-trash"></i></span>` :
-                    `<button onclick="deleteTransaction('${r.ref}')" class="text-rose-400 hover:text-rose-600 transition" title="Hapus"><i class="fas fa-trash"></i></button>`;
-
-                let btnView = r.attach ? `<button onclick="openPreview('${r.attach}')" class="text-blue-400 hover:text-blue-600"><i class="fas fa-eye"></i></button>` : '';
-                
-                let btnSync = "";
-                if(r.kredit > 0) {
-                    if(String(r.syncStatus).toLowerCase() === 'imported') {
-                        btnSync = `<span class="text-emerald-400" title="Synced"><i class="fas fa-check-circle"></i></span>`;
-                    } else {
-                        btnSync = `<button onclick="sync('${r.ref}')" class="text-indigo-400 hover:text-indigo-600" title="Sync to Xero"><i class="fas fa-sync"></i></button>`;
-                    }
-                }
-
-                const tr = `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
-                        <td class="px-6 py-4 whitespace-nowrap">${r.date}</td>
-                        <td class="px-6 py-4 font-mono text-xs text-slate-500">${r.ref}</td>
-                        <td class="px-6 py-4 truncate max-w-xs" title="${r.desc}">${r.desc}</td>
-                        <td class="px-6 py-4 text-xs bg-slate-50 rounded mx-2">${r.account}</td>
-                        <td class="px-6 py-4 text-right">${r.debit > 0 ? debit : kredit}</td>
-                        <td class="px-6 py-4 text-right font-bold text-slate-700">${fmt(r.saldo)}</td>
-                        <td class="px-6 py-4 text-center space-x-3">
-                            ${btnView} ${btnEdit} ${btnDelete} ${btnSync}
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-slate-900">${item.orderNumber}</td>
+                        <td class="px-6 py-4 text-slate-600">${item.customer}</td>
+                        <td class="px-6 py-4 text-slate-500">${item.issueDate}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${statusColor}">
+                                ${item.status || 'Unknown'}
+                            </span>
                         </td>
-                    </tr>
-                `;
-                tb.append(tr);
-            });
-        }
-
-        // --- DELETE FUNCTION (NEW) ---
-        function deleteTransaction(ref) {
-            if(!confirm(`PERINGATAN!\n\nApakah Anda yakin ingin menghapus transaksi dengan Ref: ${ref}?\nTindakan ini tidak dapat dibatalkan.`)) return;
-
-            // Tampilkan loading sederhana (optional: bisa dibuat lebih bagus)
-            $('#tableLoading').removeClass('hidden');
-            $('#tableBody').empty();
-
-            fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify({
-                    action: "deleteTransaction",
-                    ref: ref
-                })
-            })
-            .then(r => r.json())
-            .then(d => {
-                alert(d.message);
-                fetchData(); // Refresh data table
-            })
-            .catch(err => {
-                alert("Error: " + err);
-                fetchData();
-            });
-        }
-
-        // --- MODAL LOGIC ---
-        function toggleType(type) {
-            const ind = $('#activeIndicator');
-            const lblM = $('#lblMasuk');
-            const lblK = $('#lblKeluar');
-            const btn = $('#btnSubmit');
-
-            if(type === 'Masuk') {
-                ind.css('transform', 'translateX(100%)');
-                lblM.removeClass('text-slate-400').addClass('text-emerald-600');
-                lblK.removeClass('text-rose-600').addClass('text-slate-400');
-                btn.removeClass('bg-slate-900').addClass('bg-emerald-600');
-                populateCoa(accountData.income);
-            } else {
-                ind.css('transform', 'translateX(0)');
-                lblK.removeClass('text-slate-400').addClass('text-rose-600');
-                lblM.removeClass('text-emerald-600').addClass('text-slate-400');
-                btn.removeClass('bg-emerald-600').addClass('bg-slate-900');
-                populateCoa(accountData.expense);
-            }
-        }
-
-        function populateCoa(list) {
-            const s = $('#akun');
-            s.empty();
-            s.append(new Option('', ''));
-            if(list) list.forEach(x => s.append(new Option(x.name, x.name)));
-            s.trigger('change');
-        }
-
-        function populateTax() {
-            const s = $('#taxType');
-            s.empty().append('<option value="">None</option>');
-            if(accountData.tax) accountData.tax.forEach(x => s.append(`<option value="${x}">${x}</option>`));
-        }
-
-        function calcTotal() {
-            const q = parseFloat($('#qty').val()) || 0;
-            const p = parseFloat($('#price').val()) || 0;
-            const tot = q * p;
-            $('#nominal').val("Rp " + new Intl.NumberFormat('id-ID').format(tot));
-            $('#nominalVal').val(tot);
-        }
-
-        function openModal(mode, idx=null) {
-            $('#modalAdd').removeClass('hidden');
-            $('#addForm')[0].reset();
-            populateTax();
-            
-            // Default State
-            $('#qty').val(1);
-            
-            if(mode === 'add') {
-                $('#modalTitle').text('Transaksi Baru');
-                $('#formMode').val('add');
-                $('#tgl').val(new Date().toISOString().split('T')[0]);
-                $('input[name=tipe][value=Keluar]').prop('checked', true).trigger('change');
-            } else {
-                const d = globalData[idx];
-                $('#modalTitle').text(`Edit ${d.ref}`);
-                $('#formMode').val('edit');
-                $('#editRef').val(d.ref);
-                
-                $('#tgl').val(d.dateISO);
-                $('#desc').val(d.desc);
-                $('#contact').val(d.contact);
-                $('#taxType').val(d.taxType);
-                $('#tagihan').val(d.noTagihan);
-                
-                // Set Values for Calc
-                $('#qty').val(d.qty || 1);
-                $('#price').val(d.price || 0);
-                calcTotal();
-
-                // Set Type
-                const type = d.debit > 0 ? 'Masuk' : 'Keluar';
-                $(`input[name=tipe][value=${type}]`).prop('checked', true).trigger('change');
-                
-                setTimeout(() => $('#akun').val(d.account).trigger('change'), 100);
-            }
-            // Auto resize textarea
-            setTimeout(() => autoResize(document.getElementById('desc')), 100);
-        }
-
-        function closeModal() { $('#modalAdd').addClass('hidden'); }
-
-        function submitTransaction(e) {
-            e.preventDefault();
-            // Validate
-            const req = ['#tgl', '#contact', '#desc', '#nominalVal'];
-            let valid = true;
-            req.forEach(id => {
-                if(!$(id).val()) { $(id).addClass('border-red-500'); valid=false; }
-                else $(id).removeClass('border-red-500');
-            });
-            if(!$('#akun').val()) { alert("Pilih Akun!"); return; }
-            if(!valid) return;
-
-            const btn = $('#btnSubmit');
-            const orig = $('#btnText').text();
-            btn.prop('disabled', true);
-            $('#btnText').text('Menyimpan...');
-
-            const formData = {
-                action: $('#formMode').val() === 'edit' ? 'editTransaction' : 'addTransaction',
-                ref: $('#editRef').val(),
-                tanggal: $('#tgl').val(),
-                tipe: $('input[name=tipe]:checked').val(),
-                akun: $('#akun').val(),
-                deskripsi: $('#desc').val(),
-                nominal: $('#nominalVal').val(),
-                noTagihan: $('#tagihan').val(),
-                contact: $('#contact').val(),
-                taxType: $('#taxType').val(),
-                qty: $('#qty').val(),
-                price: $('#price').val()
-            };
-
-            const fileInput = document.getElementById('file');
-            const send = (pl) => {
-                fetch(API_URL, { method: "POST", body: JSON.stringify(pl) })
-                .then(r=>r.json())
-                .then(d=>{
-                    if(d.status === "success") {
-                        closeModal();
-                        fetchData();
-                    } else { alert(d.message); }
-                })
-                .finally(() => {
-                    btn.prop('disabled', false);
-                    $('#btnText').text(orig);
+                        <td class="px-6 py-4 text-right">
+                            <button class="text-primary opacity-0 group-hover:opacity-100 transition-opacity font-medium text-sm flex items-center justify-end gap-1 ml-auto">
+                                View <i class="ph-bold ph-arrow-right"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
                 });
-            };
 
-            if(fileInput.files.length > 0) {
-                const r = new FileReader();
-                r.onload = x => {
-                    formData.fileData = x.target.result;
-                    formData.fileName = fileInput.files[0].name;
-                    send(formData);
-                };
-                r.readAsDataURL(fileInput.files[0]);
-            } else { send(formData); }
+            } catch (error) {
+                console.error(error);
+                loader.classList.add('hidden');
+                empty.innerHTML = `<p class="text-red-500">Error loading data.</p>`;
+                empty.classList.remove('hidden');
+            }
         }
 
-        function sync(ref) {
-            if(!confirm("Sync ke Xero?")) return;
-            fetch(API_URL, { method: "POST", body: JSON.stringify({action:'syncTransaction', ref:ref}) })
-            .then(r=>r.json()).then(d=> { alert(d.message); fetchData(); });
-        }
-
-     // --- PREVIEW LOGIC (FIXED WIDTH 50%) ---
-function openPreview(url) {
-    // 1. Validasi URL & Fix Google Drive Link
-    if(!url) return alert("Link file tidak valid");
-    let previewUrl = url;
-    if (url.includes("drive.google.com") && url.includes("/view")) {
-        previewUrl = url.replace(/\/view.*/, "/preview");
-    }
-
-    // 2. Setup Elemen DOM
-    const mainContent = document.getElementById("mainContent");
-    const previewPane = document.getElementById("previewPane");
-    const iframe = document.getElementById("previewFrame");
-    const btnNewTab = document.getElementById("btnNewTab");
-    
-    // 3. Set Source & Link
-    iframe.src = previewUrl;
-    btnNewTab.href = url;
-
-    // 4. Animasi Layout (Menggunakan Width Class Tailwind)
-    // Hapus margin kanan paksa (mr-...) yang bikin layout rusak
-    mainContent.classList.remove("mr-[50%]"); 
-    
-    // Transisi Lebar: Main Content mengecil, Preview membesar
-    previewPane.classList.remove("w-0", "hidden");
-    previewPane.classList.add("w-1/2"); // Preview jadi 50%
-    
-    // Kita paksa Main Content jadi 50% juga agar seimbang
-    // Tapi karena ini Flexbox, biasanya cukup biarkan 'flex-grow' bekerja atau set explicit width
-    // Cara paling aman dengan struktur HTML yang ada:
-    mainContent.style.width = "50%"; 
-}
-
-function closePreview() {
-    const mainContent = document.getElementById("mainContent");
-    const previewPane = document.getElementById("previewPane");
-    const iframe = document.getElementById("previewFrame");
-
-    // Kembalikan Layout
-    previewPane.classList.remove("w-1/2");
-    previewPane.classList.add("w-0");
-    
-    // Kembalikan Main Content jadi Full Width
-    mainContent.style.width = "100%";
-
-    // Bersihkan Iframe setelah animasi selesai (300ms)
-    setTimeout(() => {
-        iframe.src = ""; 
-        previewPane.classList.add("hidden"); 
-    }, 300);
-}
-
-        // --- EXPORT FIX (POINT 2) ---
-        // --- UPDATE FUNGSI EXPORT CSV ---
-function downloadCSV() {
-    // Cek apakah ada data
-    if(!globalData || globalData.length === 0) return alert("Tidak ada data untuk diekspor");
-
-    // 1. UPDATE HEADER: Tambahkan "Check Number" di akhir array
-    const rows = [
-        ["*Date", "*Amount", "Payee", "Description", "Reference", "Check Number"] 
-    ];
-
-    globalData.forEach(d => {
-        // Hitung amount (+ untuk income, - untuk expense)
-        let amt = d.debit > 0 ? d.debit : (d.kredit * -1);
+        // --- DETAIL MODAL ---
         
-        // Bersihkan tanda kutip ganda pada deskripsi agar CSV tidak error
-        let desc = d.desc ? d.desc.replace(/"/g, '""') : "";
-        let contact = d.contact ? d.contact.replace(/"/g, '""') : "";
+        async function openDetail(invId) {
+            // Show Modal Overlay immediately with loader logic if needed
+            const overlay = document.getElementById('modal-overlay');
+            const container = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            
+            // Basic Open Animation
+            overlay.classList.remove('hidden');
+            container.classList.remove('hidden');
+            // Small delay to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                content.classList.remove('opacity-0', 'scale-95');
+                content.classList.add('scale-100');
+            }, 10);
 
-        // 2. UPDATE DATA: Tambahkan string kosong "" di akhir untuk mengisi kolom Check Number
-        rows.push([
-            d.date,          // *Date
-            amt,             // *Amount
-            `"${contact}"`,  // Payee
-            `"${desc}"`,     // Description
-            d.ref,           // Reference
-            ""               // Check Number (Dikosongkan default)
-        ]);
-    });
+            // Set loading state in modal title
+            document.getElementById('detail-title').innerText = "Loading...";
+            document.getElementById('detail-items').innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-400"><div class="inline-block w-6 h-6 border-2 border-slate-300 border-t-primary rounded-full animate-spin"></div></td></tr>';
 
-    // Proses pembuatan file CSV
-    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-    const link = document.createElement("a");
-    link.href = encodeURI(csvContent);
-    
-    // Nama file dinamis sesuai filter tanggal
-    link.download = `KasKecil_${$('#filterStart').val()}_${$('#filterEnd').val()}.csv`;
-    
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-}
+            try {
+                const response = await fetch(`${API_URL}?module=${currentModule}&action=detail&inv=${invId}`);
+                const json = await response.json();
 
-    // --- FIXED PRINT PDF FUNCTION ---
-function printPDF() {
-    // 1. Cek Data
-    if (!globalData || globalData.length === 0) return alert("Tidak ada data untuk dicetak!");
-
-    // 2. Siapkan Format Angka
-    const fmt = n => n === 0 ? '-' : new Intl.NumberFormat('id-ID').format(n);
-    const startDate = $('#filterStart').val();
-    const endDate = $('#filterEnd').val();
-    const user = JSON.parse(localStorage.getItem("kasUser") || "{}").name || "Admin";
-
-    // 3. Generate Baris Tabel (HTML String)
-    let rowsHtml = "";
-    globalData.forEach(d => {
-        let debitClass = d.debit > 0 ? "text-emerald-700 font-medium" : "text-gray-400";
-        let kreditClass = d.kredit > 0 ? "text-rose-700 font-medium" : "text-gray-400";
-        
-        // Escape karakter khusus agar HTML tidak error
-        const cleanDesc = d.desc.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-        rowsHtml += `
-            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                <td class="py-2 pr-2 align-top whitespace-nowrap">${d.date}</td>
-                <td class="py-2 px-2 align-top font-mono text-[10px] text-gray-500">${d.ref}</td>
-                <td class="py-2 px-2 align-top">${cleanDesc}</td>
-                <td class="py-2 px-2 align-top text-right ${debitClass}">${fmt(d.debit)}</td>
-                <td class="py-2 px-2 align-top text-right ${kreditClass}">${fmt(d.kredit)}</td>
-                <td class="py-2 pl-2 align-top text-right font-bold text-gray-800">${fmt(d.saldo)}</td>
-            </tr>
-        `;
-    });
-
-    // 4. Buat Halaman HTML Baru (Isolated Environment)
-    const printContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Laporan Kas Kecil</title>
-            <script src="https://cdn.tailwindcss.com"><\/script>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-                body { font-family: 'Inter', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                @page { size: A4; margin: 1cm; }
-            </style>
-        </head>
-        <body class="p-8 text-gray-800">
-            <div class="mb-8 border-b-2 border-gray-800 pb-4 flex justify-between items-end">
-                <div>
-                    <h1 class="text-2xl font-bold uppercase tracking-wide text-gray-900">Laporan Mutasi Kas</h1>
-                    <p class="text-sm text-gray-500 mt-1">Periode: <span class="font-semibold text-gray-700">${startDate}</span> s/d <span class="font-semibold text-gray-700">${endDate}</span></p>
-                </div>
-                <div class="text-right text-xs text-gray-400">
-                    <p>Printed by: ${user}</p>
-                    <p>Date: ${new Date().toLocaleString('id-ID')}</p>
-                </div>
-            </div>
-
-            <table class="w-full text-xs border-collapse">
-                <thead>
-                    <tr class="border-b-2 border-gray-300 bg-gray-50">
-                        <th class="py-3 pr-2 text-left font-bold text-gray-600 uppercase w-20">Tanggal</th>
-                        <th class="py-3 px-2 text-left font-bold text-gray-600 uppercase w-24">Ref</th>
-                        <th class="py-3 px-2 text-left font-bold text-gray-600 uppercase">Deskripsi</th>
-                        <th class="py-3 px-2 text-right font-bold text-gray-600 uppercase w-24">Masuk</th>
-                        <th class="py-3 px-2 text-right font-bold text-gray-600 uppercase w-24">Keluar</th>
-                        <th class="py-3 pl-2 text-right font-bold text-gray-600 uppercase w-28">Saldo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rowsHtml}
-                </tbody>
-            </table>
-
-            <div class="mt-8 flex justify-end">
-                <div class="w-1/3 bg-gray-50 p-4 rounded border border-gray-200">
-                    <div class="flex justify-between text-xs mb-2">
-                        <span class="text-gray-500">Total Masuk</span>
-                        <span class="font-bold text-emerald-600">${$("#valDebit").text()}</span>
-                    </div>
-                    <div class="flex justify-between text-xs mb-2">
-                        <span class="text-gray-500">Total Keluar</span>
-                        <span class="font-bold text-rose-600">${$("#valKredit").text()}</span>
-                    </div>
-                    <div class="border-t border-gray-300 my-2"></div>
-                    <div class="flex justify-between text-sm font-bold">
-                        <span>Saldo Akhir</span>
-                        <span>${$("#valSaldo").text()}</span>
-                    </div>
-                </div>
-            </div>
-
-            <script>
-                // Tunggu sebentar agar Tailwind load, lalu print
-                setTimeout(() => {
-                    window.print();
-                    // window.close(); // Opsional: tutup otomatis setelah print
-                }, 800);
-            <\/script>
-        </body>
-        </html>
-    `;
-
-    // 5. Eksekusi Popup
-    const popup = window.open('', '_blank', 'width=1000,height=800');
-    popup.document.open();
-    popup.document.write(printContent);
-    popup.document.close();
-}
-
-        function formatDateID(dateStr) {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                if(json.status === 'success') {
+                    renderDetail(json);
+                } else {
+                    alert("Gagal mengambil detail invoice.");
+                    closeModal();
+                }
+            } catch (e) {
+                alert("Koneksi error.");
+                closeModal();
+            }
         }
+
+        function renderDetail(json) {
+            const h = json.header;
+            
+            // Header Info
+            document.getElementById('detail-title').innerText = h.orderNumber;
+            document.getElementById('detail-customer').innerText = h.customer;
+            document.getElementById('detail-date').innerText = h.issueDate;
+            document.getElementById('detail-delivery').innerText = h.estDelivery;
+            document.getElementById('detail-term').innerText = h.termPayment;
+            
+            const statusBadge = document.getElementById('detail-status');
+            statusBadge.innerText = h.status || 'Draft';
+            // Simple status logic
+            if((h.status || '').toLowerCase().includes('pending')) {
+                statusBadge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-700";
+            } else {
+                statusBadge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700";
+            }
+
+            // Items
+            const tbody = document.getElementById('detail-items');
+            tbody.innerHTML = '';
+            
+            let grandTotal = 0;
+
+            json.items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80";
+                
+                const unitPrice = Number(item.unitPrice);
+                const disc = Number(item.discount);
+                const net = item.netPrice || (unitPrice - disc);
+                const total = Number(item.amount); // Pastikan ini Total Row
+                
+                // Jika sheet menyimpan Total sebagai Gross, kita perlu hitung manual Total Net?
+                // Asumsi: item.amount dari backend sudah benar (Net * Qty) atau sesuai gambar
+                
+                grandTotal += total;
+
+                // Format Currency
+                const fmt = (n) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(n);
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-medium">
+                        <div class="text-slate-900">${item.itemName}</div>
+                        <div class="text-xs text-slate-400">${item.satuan || ''}</div>
+                    </td>
+                    <td class="px-4 py-3 text-center text-slate-600">${item.meter || '-'}</td>
+                    <td class="px-4 py-3 text-center font-medium text-slate-900">${item.qty}</td>
+                    <td class="px-4 py-3 text-right text-slate-600">Rp ${fmt(unitPrice)}</td>
+                    <td class="px-4 py-3 text-right text-rose-500 text-xs">${disc > 0 ? '- Rp '+fmt(disc) : '-'}</td>
+                    <td class="px-4 py-3 text-right font-medium text-slate-700">Rp ${fmt(net)}</td>
+                    <td class="px-4 py-3 text-right font-bold text-slate-900 bg-slate-50/50">Rp ${fmt(total)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Set Grand Total
+            document.getElementById('grand-total').innerText = "Rp " + new Intl.NumberFormat('id-ID').format(grandTotal);
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const container = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            
+            overlay.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                container.classList.add('hidden');
+            }, 300); // match transition duration
+        }
+
+        // Close on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") closeModal();
+        });
+        
+        // Close on overlay click
+        document.getElementById('modal-overlay').addEventListener('click', closeModal);
+
     </script>
 </body>
 </html>
