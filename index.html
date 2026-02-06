@@ -649,23 +649,56 @@
             .then(r=>r.json()).then(d=> { alert(d.message); fetchData(); });
         }
 
-        // --- PREVIEW SIZE FIX ---
+     // --- PREVIEW LOGIC (FIXED WIDTH 50%) ---
 function openPreview(url) {
-    if(url.includes('drive.google')) url = url.replace('/view', '/preview');
-    $('#previewFrame').attr('src', url);
-    $('#btnNewTab').attr('href', url);
+    // 1. Validasi URL & Fix Google Drive Link
+    if(!url) return alert("Link file tidak valid");
+    let previewUrl = url;
+    if (url.includes("drive.google.com") && url.includes("/view")) {
+        previewUrl = url.replace(/\/view.*/, "/preview");
+    }
+
+    // 2. Setup Elemen DOM
+    const mainContent = document.getElementById("mainContent");
+    const previewPane = document.getElementById("previewPane");
+    const iframe = document.getElementById("previewFrame");
+    const btnNewTab = document.getElementById("btnNewTab");
     
-    // UBAH DISINI: Ganti pixel mati (400px) jadi persentase (w-1/2 = 50%)
-    $('#previewPane').removeClass('w-0').addClass('w-1/2'); 
-    $('#mainContent').addClass('mr-[50%]'); // Geser konten utama 50% juga
+    // 3. Set Source & Link
+    iframe.src = previewUrl;
+    btnNewTab.href = url;
+
+    // 4. Animasi Layout (Menggunakan Width Class Tailwind)
+    // Hapus margin kanan paksa (mr-...) yang bikin layout rusak
+    mainContent.classList.remove("mr-[50%]"); 
+    
+    // Transisi Lebar: Main Content mengecil, Preview membesar
+    previewPane.classList.remove("w-0", "hidden");
+    previewPane.classList.add("w-1/2"); // Preview jadi 50%
+    
+    // Kita paksa Main Content jadi 50% juga agar seimbang
+    // Tapi karena ini Flexbox, biasanya cukup biarkan 'flex-grow' bekerja atau set explicit width
+    // Cara paling aman dengan struktur HTML yang ada:
+    mainContent.style.width = "50%"; 
 }
 
 function closePreview() {
-    // Reset kembali
-    $('#previewPane').removeClass('w-1/2').addClass('w-0');
-    $('#mainContent').removeClass('mr-[50%]');
+    const mainContent = document.getElementById("mainContent");
+    const previewPane = document.getElementById("previewPane");
+    const iframe = document.getElementById("previewFrame");
+
+    // Kembalikan Layout
+    previewPane.classList.remove("w-1/2");
+    previewPane.classList.add("w-0");
     
-    setTimeout(() => $('#previewFrame').attr('src', ''), 300);
+    // Kembalikan Main Content jadi Full Width
+    mainContent.style.width = "100%";
+
+    // Bersihkan Iframe setelah animasi selesai (300ms)
+    setTimeout(() => {
+        iframe.src = ""; 
+        previewPane.classList.add("hidden"); 
+    }, 300);
 }
 
         // --- EXPORT FIX (POINT 2) ---
