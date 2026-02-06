@@ -1,398 +1,314 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Portal</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f6f7fa; font-family: 'Segoe UI', sans-serif; }
+    .xero-card { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 3px solid transparent; }
+    .xero-card.active { border-top-color: #0d6efd; }
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    .table thead th { font-size: 0.85rem; color: #555; text-transform: uppercase; font-weight: 600; border-bottom: 2px solid #eee; }
+    .table tbody td { vertical-align: middle; font-size: 0.95rem; color: #333; }
+    .status-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    .status-imported { background-color: #e6f7ed; color: #1e7e34; border: 1px solid #c3e6cb; }
+    .status-pending { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
     
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    .invoice-link { color: #0d6efd; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .invoice-link:hover { text-decoration: underline; }
 
-    <script>
-        tailwind.config = {
-            theme: {
-                fontFamily: {
-                    sans: ['Inter', 'sans-serif'],
-                },
-                extend: {
-                    colors: {
-                        primary: '#2563EB', // Royal Blue
-                        secondary: '#64748B', // Slate
-                        bgLight: '#F8FAFC',
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        /* Custom Scrollbar for sleek look */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
-        
-        /* Loading Animation */
-        .shimmer {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
-        /* Modal Transition */
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.2s ease-out; }
-        .modal-exit { opacity: 1; transform: scale(1); }
-        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: all 0.2s ease-in; }
-    </style>
+    #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+  </style>
 </head>
-<body class="bg-bgLight text-slate-800 antialiased min-h-screen flex flex-col">
+<body>
 
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-lg">X</div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-900">Xero<span class="text-primary">View</span></h1>
-            </div>
-            <div class="text-xs text-slate-400 font-medium">Data Sync v1.0</div>
-        </div>
-    </nav>
+<div class="container-fluid py-4 px-4">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-dark"><i class="fas fa-file-invoice me-2"></i>Invoice Manager</h3>
+    <div class="btn-group" role="group">
+      <input type="radio" class="btn-check" name="sheetType" id="btnGen" autocomplete="off" value="general" checked onchange="changeTab()">
+      <label class="btn btn-outline-primary" for="btnGen">General Order</label>
 
-    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
-        <div class="flex space-x-1 bg-slate-200 p-1 rounded-xl w-fit mb-8">
-            <button onclick="switchModule('general')" id="btn-general" class="px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm bg-white text-slate-900">
-                General Order
-            </button>
-            <button onclick="switchModule('preorder')" id="btn-preorder" class="px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-500 hover:text-slate-700">
-                Pre-Order
-            </button>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                            <th class="px-6 py-4">Order Number</th>
-                            <th class="px-6 py-4">Customer</th>
-                            <th class="px-6 py-4">Issue Date</th>
-                            <th class="px-6 py-4 text-center">Status</th>
-                            <th class="px-6 py-4 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
-                        </tbody>
-                </table>
-            </div>
-            
-            <div id="loading-state" class="hidden p-12 text-center">
-                <div class="inline-block w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
-                <p class="mt-4 text-slate-400 text-sm">Mengambil data terbaru...</p>
-            </div>
-            
-            <div id="empty-state" class="hidden p-12 text-center">
-                <i class="ph ph-folder-open text-4xl text-slate-300 mb-2"></i>
-                <p class="text-slate-500 font-medium">Tidak ada data ditemukan.</p>
-            </div>
-        </div>
-    </main>
-
-    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden transition-opacity opacity-0" aria-hidden="true"></div>
-    
-    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden pointer-events-none">
-        <div id="modal-content" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto max-h-[90vh] flex flex-col">
-            
-            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-start bg-slate-50/50 rounded-t-2xl">
-                <div>
-                    <div class="flex items-center gap-3 mb-1">
-                        <h2 class="text-2xl font-bold text-slate-900" id="detail-title">Order #...</h2>
-                        <span id="detail-status" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Pending</span>
-                    </div>
-                    <p class="text-slate-500 text-sm">General Order Detail</p>
-                </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-full transition">
-                    <i class="ph ph-x text-xl"></i>
-                </button>
-            </div>
-
-            <div class="p-8 overflow-y-auto">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Customer</p>
-                        <p class="text-lg font-medium text-slate-800" id="detail-customer">-</p>
-                        
-                        <p class="text-xs font-semibold text-slate-400 uppercase mt-4 mb-1">Payment Term</p>
-                        <p class="text-sm text-slate-700" id="detail-term">-</p>
-                    </div>
-                    <div class="md:text-right">
-                        <div class="inline-block text-left md:text-right">
-                            <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Issue Date</p>
-                            <p class="text-sm font-medium text-slate-800 mb-3" id="detail-date">-</p>
-                            
-                            <p class="text-xs font-semibold text-slate-400 uppercase mb-1">Est. Delivery</p>
-                            <p class="text-sm font-medium text-slate-800" id="detail-delivery">-</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="border border-slate-200 rounded-lg overflow-hidden mb-6">
-                    <table class="w-full text-sm">
-                        <thead class="bg-slate-50 text-xs font-semibold text-slate-500 uppercase">
-                            <tr>
-                                <th class="px-4 py-3 text-left w-1/3">Item Name</th>
-                                <th class="px-4 py-3 text-center">Meter</th>
-                                <th class="px-4 py-3 text-center">Qty</th>
-                                <th class="px-4 py-3 text-right">Price</th>
-                                <th class="px-4 py-3 text-right text-red-500">Disc</th>
-                                <th class="px-4 py-3 text-right">Net</th>
-                                <th class="px-4 py-3 text-right bg-slate-100/50">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="detail-items" class="divide-y divide-slate-100 text-slate-700">
-                            </tbody>
-                    </table>
-                </div>
-
-                <div class="flex justify-end">
-                    <div class="bg-blue-50/50 p-6 rounded-xl min-w-[250px] text-right">
-                        <p class="text-sm text-slate-500 mb-1">Total Amount (Inc. PPN)</p>
-                        <p class="text-3xl font-bold text-slate-900" id="grand-total">Rp 0</p>
-                        <p class="text-xs text-slate-400 mt-1 italic">Harga sudah termasuk PPN</p>
-                    </div>
-                </div>
-            </div>
-            
-        </div>
+      <input type="radio" class="btn-check" name="sheetType" id="btnPre" autocomplete="off" value="preorder" onchange="changeTab()">
+      <label class="btn btn-outline-primary" for="btnPre">Pre Order</label>
     </div>
+  </div>
 
-    <script>
-        // --- CONFIG ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbysLDiLHEVphuE9lTbJ32Hm2Bit2xUt6V16BOEGpjWQXwsCkwfup5Y5pGWSO8xdpgo6/exec";
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="xero-card p-3">
+        <small class="text-muted text-uppercase fw-bold">Total Invoices</small>
+        <h2 class="mb-0 mt-1" id="stat-total">0</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="xero-card p-3 border-start border-success border-4">
+        <small class="text-muted text-uppercase fw-bold">Imported (Xero)</small>
+        <h2 class="mb-0 mt-1 text-success" id="stat-imported">0</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="xero-card p-3 border-start border-warning border-4">
+        <small class="text-muted text-uppercase fw-bold">Pending Import</small>
+        <h2 class="mb-0 mt-1 text-warning" id="stat-pending">0</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body p-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search Customer or Inv#..." onkeyup="debounceSearch()">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select id="statusFilter" class="form-select" onchange="reloadData()">
+            <option value="All">All Status</option>
+            <option value="Imported">Imported Only</option>
+            <option value="Pending">Pending Only</option>
+          </select>
+        </div>
+        <div class="col-md-6 text-end">
+          <button class="btn btn-light border" onclick="reloadData()"><i class="fas fa-sync-alt me-1"></i> Refresh</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="ps-4">Invoice #</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Due Date</th>
+            <th class="text-end">Total Amount</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody id="invoiceTableBody">
+          </tbody>
+      </table>
+    </div>
+    
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+      <span class="text-muted small" id="pageInfo">Showing 0 of 0</span>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item"><button class="page-link" onclick="changePage(-1)">Previous</button></li>
+          <li class="page-item disabled"><span class="page-link" id="currPageDisplay">1</span></li>
+          <li class="page-item"><button class="page-link" onclick="changePage(1)">Next</button></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+</div>
+
+<div id="loadingOverlay">
+  <div class="spinner-border text-primary" role="status"></div>
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="modalTitle">Invoice Detail</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-4">
+          <div class="col-6">
+            <h6 class="text-muted text-uppercase small">Customer</h6>
+            <h5 class="fw-bold" id="modalCustomer">-</h5>
+          </div>
+          <div class="col-6 text-end">
+            <h6 class="text-muted text-uppercase small">Total Amount</h6>
+            <h4 class="fw-bold text-primary" id="modalTotalBig">-</h4>
+          </div>
+        </div>
         
-        let currentModule = 'general';
+        <table class="table table-sm table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Item Name</th>
+              <th class="text-end">Qty</th>
+              <th class="text-end">Price</th>
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody id="modalItemsBody">
+            </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ==========================================
+  // CONFIGURATION: PASTE URL DEPLOYMENT DISINI
+  // ==========================================
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7ZhlPsTP782PTuRpmHIM0xHNCR-6fhhCrw25LIybT7mxD9JiTsRkoRVzZgva8sESn/exec"; 
+  // Contoh: "https://script.google.com/macros/s/AKfycbx..../exec"
+
+  let STATE = {
+    page: 1,
+    limit: 15,
+    type: 'general', 
+    status: 'All',
+    search: '',
+    currentData: [] 
+  };
+
+  window.onload = function() {
+    if(APPS_SCRIPT_URL.includes("PASTE_URL")) {
+      alert("HARAP EDIT HTML: Masukkan URL Apps Script terlebih dahulu!");
+    } else {
+      reloadData();
+    }
+  };
+
+  function changeTab() {
+    const radios = document.getElementsByName('sheetType');
+    for (let r of radios) { if (r.checked) STATE.type = r.value; }
+    STATE.page = 1; 
+    reloadData();
+  }
+
+  function reloadData() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    STATE.status = document.getElementById('statusFilter').value;
+    STATE.search = document.getElementById('searchInput').value;
+
+    // Membangun URL dengan parameter
+    const url = `${APPS_SCRIPT_URL}?type=${STATE.type}&page=${STATE.page}&limit=${STATE.limit}&status=${STATE.status}&search=${encodeURIComponent(STATE.search)}`;
+
+    // Panggil API menggunakan Fetch
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        renderDashboard(data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Gagal mengambil data. Pastikan Script dideploy sebagai 'Anyone'.");
+        document.getElementById('loadingOverlay').style.display = 'none';
+      });
+  }
+
+  function renderDashboard(response) {
+    if (response.error) {
+      alert(response.error);
+      document.getElementById('loadingOverlay').style.display = 'none';
+      return;
+    }
+
+    const tbody = document.getElementById('invoiceTableBody');
+    tbody.innerHTML = '';
+    STATE.currentData = response.data; 
+
+    // Render Stats
+    document.getElementById('stat-total').innerText = response.stats.totalCount;
+    document.getElementById('stat-imported').innerText = response.stats.importedCount;
+    document.getElementById('stat-pending').innerText = response.stats.pendingCount;
+
+    // Render Table
+    if (response.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No data found</td></tr>';
+    } else {
+      response.data.forEach((inv, index) => {
+        const badgeClass = inv.status === 'Imported' ? 'status-imported' : 'status-pending';
+        const badgeText = inv.status === 'Imported' ? 'IMPORTED' : 'PENDING IMPORT';
         
-        // --- INIT ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData(currentModule);
-        });
+        const tr = `
+          <tr>
+            <td class="ps-4 fw-bold"><a href="#" class="invoice-link" onclick="openDetail(${index})">${inv.id}</a></td>
+            <td>${inv.customer}</td>
+            <td>${inv.date}</td>
+            <td>${inv.dueDate}</td>
+            <td class="text-end fw-bold">${formatRupiah(inv.totalAmount)}</td>
+            <td class="text-center"><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+            <td class="text-center">
+               <button class="btn btn-sm btn-outline-secondary" onclick="openDetail(${index})"><i class="fas fa-eye"></i></button>
+            </td>
+          </tr>
+        `;
+        tbody.innerHTML += tr;
+      });
+    }
 
-        // --- FUNCTIONS ---
-        
-        function switchModule(module) {
-            if (currentModule === module) return;
-            currentModule = module;
-            
-            // UI Toggle
-            const btnGen = document.getElementById('btn-general');
-            const btnPre = document.getElementById('btn-preorder');
-            const activeClass = "bg-white text-slate-900 shadow-sm".split(" ");
-            const inactiveClass = "text-slate-500 hover:text-slate-700".split(" ");
+    document.getElementById('currPageDisplay').innerText = response.pagination.currentPage;
+    document.getElementById('pageInfo').innerText = `Showing page ${response.pagination.currentPage} of ${response.pagination.totalPages} (${response.pagination.totalItems} Total)`;
+    
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
 
-            if(module === 'general'){
-                btnGen.classList.add(...activeClass);
-                btnGen.classList.remove(...inactiveClass);
-                btnPre.classList.remove(...activeClass);
-                btnPre.classList.add(...inactiveClass);
-            } else {
-                btnPre.classList.add(...activeClass);
-                btnPre.classList.remove(...inactiveClass);
-                btnGen.classList.remove(...activeClass);
-                btnGen.classList.add(...inactiveClass);
-            }
+  function changePage(direction) {
+    if (direction === -1 && STATE.page > 1) {
+      STATE.page--;
+      reloadData();
+    } else if (direction === 1) {
+      STATE.page++;
+      reloadData();
+    }
+  }
 
-            loadData(module);
-        }
+  let timeout = null;
+  function debounceSearch() {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      STATE.page = 1;
+      reloadData();
+    }, 800);
+  }
 
-        async function loadData(module) {
-            const tbody = document.getElementById('table-body');
-            const loader = document.getElementById('loading-state');
-            const empty = document.getElementById('empty-state');
-            
-            // Reset UI
-            tbody.innerHTML = '';
-            empty.classList.add('hidden');
-            loader.classList.remove('hidden');
+  function openDetail(index) {
+    const inv = STATE.currentData[index];
+    if (!inv) return;
 
-            try {
-                const response = await fetch(`${API_URL}?module=${module}&action=list`);
-                const json = await response.json();
+    document.getElementById('modalTitle').innerText = `Invoice #${inv.id}`;
+    document.getElementById('modalCustomer').innerText = inv.customer;
+    document.getElementById('modalTotalBig').innerText = formatRupiah(inv.totalAmount);
 
-                loader.classList.add('hidden');
+    const tbody = document.getElementById('modalItemsBody');
+    tbody.innerHTML = '';
 
-                if (json.status !== 'success' || !json.data || json.data.length === 0) {
-                    empty.classList.remove('hidden');
-                    return;
-                }
+    inv.items.forEach(item => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${item.name}</td>
+          <td class="text-end">${item.qty}</td>
+          <td class="text-end">${formatRupiah(item.price)}</td>
+          <td class="text-end fw-bold">${formatRupiah(item.total)}</td>
+        </tr>
+      `;
+    });
 
-                // Render Data
-                json.data.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-50 transition-colors group cursor-pointer";
-                    row.onclick = () => openDetail(item.orderNumber);
-                    
-                    // Status Color Logic
-                    let statusColor = "bg-slate-100 text-slate-600";
-                    if(item.status && item.status.toLowerCase().includes('pending')) statusColor = "bg-sky-100 text-sky-700";
-                    if(item.status && item.status.toLowerCase().includes('approved')) statusColor = "bg-emerald-100 text-emerald-700";
+    const myModal = new bootstrap.Modal(document.getElementById('detailModal'));
+    myModal.show();
+  }
 
-                    row.innerHTML = `
-                        <td class="px-6 py-4 font-medium text-slate-900">${item.orderNumber}</td>
-                        <td class="px-6 py-4 text-slate-600">${item.customer}</td>
-                        <td class="px-6 py-4 text-slate-500">${item.issueDate}</td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${statusColor}">
-                                ${item.status || 'Unknown'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button class="text-primary opacity-0 group-hover:opacity-100 transition-opacity font-medium text-sm flex items-center justify-end gap-1 ml-auto">
-                                View <i class="ph-bold ph-arrow-right"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
+  function formatRupiah(amount) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+  }
+</script>
 
-            } catch (error) {
-                console.error(error);
-                loader.classList.add('hidden');
-                empty.innerHTML = `<p class="text-red-500">Error loading data.</p>`;
-                empty.classList.remove('hidden');
-            }
-        }
-
-        // --- DETAIL MODAL ---
-        
-        async function openDetail(invId) {
-            // Show Modal Overlay immediately with loader logic if needed
-            const overlay = document.getElementById('modal-overlay');
-            const container = document.getElementById('modal-container');
-            const content = document.getElementById('modal-content');
-            
-            // Basic Open Animation
-            overlay.classList.remove('hidden');
-            container.classList.remove('hidden');
-            // Small delay to allow display:block to apply before opacity transition
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                content.classList.remove('opacity-0', 'scale-95');
-                content.classList.add('scale-100');
-            }, 10);
-
-            // Set loading state in modal title
-            document.getElementById('detail-title').innerText = "Loading...";
-            document.getElementById('detail-items').innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-400"><div class="inline-block w-6 h-6 border-2 border-slate-300 border-t-primary rounded-full animate-spin"></div></td></tr>';
-
-            try {
-                const response = await fetch(`${API_URL}?module=${currentModule}&action=detail&inv=${invId}`);
-                const json = await response.json();
-
-                if(json.status === 'success') {
-                    renderDetail(json);
-                } else {
-                    alert("Gagal mengambil detail invoice.");
-                    closeModal();
-                }
-            } catch (e) {
-                alert("Koneksi error.");
-                closeModal();
-            }
-        }
-
-        function renderDetail(json) {
-            const h = json.header;
-            
-            // Header Info
-            document.getElementById('detail-title').innerText = h.orderNumber;
-            document.getElementById('detail-customer').innerText = h.customer;
-            document.getElementById('detail-date').innerText = h.issueDate;
-            document.getElementById('detail-delivery').innerText = h.estDelivery;
-            document.getElementById('detail-term').innerText = h.termPayment;
-            
-            const statusBadge = document.getElementById('detail-status');
-            statusBadge.innerText = h.status || 'Draft';
-            // Simple status logic
-            if((h.status || '').toLowerCase().includes('pending')) {
-                statusBadge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-700";
-            } else {
-                statusBadge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700";
-            }
-
-            // Items
-            const tbody = document.getElementById('detail-items');
-            tbody.innerHTML = '';
-            
-            let grandTotal = 0;
-
-            json.items.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/80";
-                
-                const unitPrice = Number(item.unitPrice);
-                const disc = Number(item.discount);
-                const net = item.netPrice || (unitPrice - disc);
-                const total = Number(item.amount); // Pastikan ini Total Row
-                
-                // Jika sheet menyimpan Total sebagai Gross, kita perlu hitung manual Total Net?
-                // Asumsi: item.amount dari backend sudah benar (Net * Qty) atau sesuai gambar
-                
-                grandTotal += total;
-
-                // Format Currency
-                const fmt = (n) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(n);
-
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium">
-                        <div class="text-slate-900">${item.itemName}</div>
-                        <div class="text-xs text-slate-400">${item.satuan || ''}</div>
-                    </td>
-                    <td class="px-4 py-3 text-center text-slate-600">${item.meter || '-'}</td>
-                    <td class="px-4 py-3 text-center font-medium text-slate-900">${item.qty}</td>
-                    <td class="px-4 py-3 text-right text-slate-600">Rp ${fmt(unitPrice)}</td>
-                    <td class="px-4 py-3 text-right text-rose-500 text-xs">${disc > 0 ? '- Rp '+fmt(disc) : '-'}</td>
-                    <td class="px-4 py-3 text-right font-medium text-slate-700">Rp ${fmt(net)}</td>
-                    <td class="px-4 py-3 text-right font-bold text-slate-900 bg-slate-50/50">Rp ${fmt(total)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Set Grand Total
-            document.getElementById('grand-total').innerText = "Rp " + new Intl.NumberFormat('id-ID').format(grandTotal);
-        }
-
-        function closeModal() {
-            const overlay = document.getElementById('modal-overlay');
-            const container = document.getElementById('modal-container');
-            const content = document.getElementById('modal-content');
-            
-            overlay.classList.add('opacity-0');
-            content.classList.remove('scale-100');
-            content.classList.add('opacity-0', 'scale-95');
-            
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                container.classList.add('hidden');
-            }, 300); // match transition duration
-        }
-
-        // Close on escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "Escape") closeModal();
-        });
-        
-        // Close on overlay click
-        document.getElementById('modal-overlay').addEventListener('click', closeModal);
-
-    </script>
 </body>
 </html>
