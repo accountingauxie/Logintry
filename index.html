@@ -321,7 +321,14 @@
           <div class="col-sm-6">
             <label class="small text-muted text-uppercase fw-bold mb-1">Customer Details</label>
             <div class="fs-5 fw-bold text-dark" id="modalCustomer">-</div>
-            <div class="text-muted small">Due Date: <span id="modalDueDate">-</span></div>
+            
+            <div class="text-muted small mt-2">
+               <i class="far fa-calendar-alt me-1"></i> Issue Date: <span id="modalIssueDate" class="fw-medium text-dark">-</span>
+            </div>
+            
+            <div class="text-muted small">
+               <i class="far fa-calendar-check me-1"></i> Due Date: <span id="modalDueDate" class="fw-medium text-dark">-</span>
+            </div>
           </div>
           <div class="col-sm-6">
              <div class="modal-total-box">
@@ -360,7 +367,7 @@
   // ==========================================
   // CONFIGURATION
   // ==========================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbxRSqbKK9XtzgsE3TLpGR49Gt0FskyhiDVbyQyyR9RznViaJFSZ1MV207tS1BPo5VCM/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbze3ZpKtRO0aF-k9mhSIyuTqKOZ7AzZYNAwy10-lEMakyaNadR1ZZRfm1ANlQTXZyw/exec"; 
 
   // DATA STORE
   let MASTER_DATA = []; 
@@ -368,7 +375,7 @@
   
   let STATE = {
     page: 1,
-    limit: 10, // Menampilkan 10 item agar lebih rapi
+    limit: 10,
     type: 'general',
     status: 'All',
     search: ''
@@ -410,7 +417,7 @@
            alert("Server Error: " + json.error);
         } else {
            MASTER_DATA = json.data || [];
-           applyLocalFilter(); // Langsung filter & render
+           applyLocalFilter(); 
         }
       })
       .catch(err => {
@@ -436,7 +443,6 @@
         else stats.pending++;
     });
     
-    // Animate numbers? (Optional, here just plain text update)
     document.getElementById('stat-total').innerText = stats.total;
     document.getElementById('stat-imported').innerText = stats.imported;
     document.getElementById('stat-pending').innerText = stats.pending;
@@ -459,7 +465,6 @@
     tbody.innerHTML = '';
 
     const totalItems = DISPLAY_DATA.length;
-    const totalPages = Math.ceil(totalItems / STATE.limit) || 1;
     
     // Pagination Slicing
     const startIndex = (STATE.page - 1) * STATE.limit;
@@ -505,6 +510,10 @@
     document.getElementById('modalTitle').innerText = item.id;
     document.getElementById('modalTypeBadge').innerText = STATE.type === 'general' ? 'General Order' : 'Pre Order';
     document.getElementById('modalCustomer').innerText = item.customer;
+    
+    // REVISI: Mengisi data Issue Date
+    document.getElementById('modalIssueDate').innerText = item.date;
+    
     document.getElementById('modalDueDate').innerText = item.dueDate;
     document.getElementById('modalTotalBig').innerText = formatRupiah(item.totalAmount);
 
