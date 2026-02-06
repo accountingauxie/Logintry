@@ -649,51 +649,67 @@
             .then(r=>r.json()).then(d=> { alert(d.message); fetchData(); });
         }
 
-        // --- PREVIEW ---
-        function openPreview(url) {
-            if(url.includes('drive.google')) url = url.replace('/view', '/preview');
-            $('#previewFrame').attr('src', url);
-            $('#btnNewTab').attr('href', url);
-            $('#previewPane').removeClass('w-0').addClass('w-[400px]');
-            $('#mainContent').addClass('mr-[400px]');
-        }
-        function closePreview() {
-            $('#previewPane').removeClass('w-[400px]').addClass('w-0');
-            $('#mainContent').removeClass('mr-[400px]');
-            setTimeout(() => $('#previewFrame').attr('src', ''), 300);
-        }
+        // --- PREVIEW SIZE FIX ---
+function openPreview(url) {
+    if(url.includes('drive.google')) url = url.replace('/view', '/preview');
+    $('#previewFrame').attr('src', url);
+    $('#btnNewTab').attr('href', url);
+    
+    // UBAH DISINI: Ganti pixel mati (400px) jadi persentase (w-1/2 = 50%)
+    $('#previewPane').removeClass('w-0').addClass('w-1/2'); 
+    $('#mainContent').addClass('mr-[50%]'); // Geser konten utama 50% juga
+}
+
+function closePreview() {
+    // Reset kembali
+    $('#previewPane').removeClass('w-1/2').addClass('w-0');
+    $('#mainContent').removeClass('mr-[50%]');
+    
+    setTimeout(() => $('#previewFrame').attr('src', ''), 300);
+}
 
         // --- EXPORT FIX (POINT 2) ---
-        function downloadCSV() {
-            // Kita gunakan globalData yang SUDAH TERSARING oleh logika fetchData (server-side filter)
-            // Jadi apa yang tampil di tabel, itu yang di download.
-            if(!globalData || globalData.length === 0) return alert("Tidak ada data untuk diekspor");
+        // --- UPDATE FUNGSI EXPORT CSV ---
+function downloadCSV() {
+    // Cek apakah ada data
+    if(!globalData || globalData.length === 0) return alert("Tidak ada data untuk diekspor");
 
-            const rows = [
-                ["*Date", "*Amount", "Payee", "Description", "Reference"] // Header Xero Simple
-            ];
+    // 1. UPDATE HEADER: Tambahkan "Check Number" di akhir array
+    const rows = [
+        ["*Date", "*Amount", "Payee", "Description", "Reference", "Check Number"] 
+    ];
 
-            globalData.forEach(d => {
-                let amt = d.debit > 0 ? d.debit : (d.kredit * -1);
-                // Escape quotes for CSV
-                let desc = d.desc.replace(/"/g, '""');
-                rows.push([
-                    d.date,
-                    amt,
-                    `"${d.contact}"`,
-                    `"${desc}"`,
-                    d.ref
-                ]);
-            });
+    globalData.forEach(d => {
+        // Hitung amount (+ untuk income, - untuk expense)
+        let amt = d.debit > 0 ? d.debit : (d.kredit * -1);
+        
+        // Bersihkan tanda kutip ganda pada deskripsi agar CSV tidak error
+        let desc = d.desc ? d.desc.replace(/"/g, '""') : "";
+        let contact = d.contact ? d.contact.replace(/"/g, '""') : "";
 
-            const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-            const link = document.createElement("a");
-            link.href = encodeURI(csvContent);
-            link.download = `KasKecil_${$('#filterStart').val()}_${$('#filterEnd').val()}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        }
+        // 2. UPDATE DATA: Tambahkan string kosong "" di akhir untuk mengisi kolom Check Number
+        rows.push([
+            d.date,          // *Date
+            amt,             // *Amount
+            `"${contact}"`,  // Payee
+            `"${desc}"`,     // Description
+            d.ref,           // Reference
+            ""               // Check Number (Dikosongkan default)
+        ]);
+    });
+
+    // Proses pembuatan file CSV
+    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+    const link = document.createElement("a");
+    link.href = encodeURI(csvContent);
+    
+    // Nama file dinamis sesuai filter tanggal
+    link.download = `KasKecil_${$('#filterStart').val()}_${$('#filterEnd').val()}.csv`;
+    
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+}
 
     // --- FIXED PRINT PDF FUNCTION ---
 function printPDF() {
