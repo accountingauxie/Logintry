@@ -354,9 +354,14 @@
         </div>
 
       </div>
+      
       <div class="modal-footer bg-light border-0" style="border-radius: 0 0 20px 20px;">
+        <button type="button" class="btn btn-primary px-4 me-2" id="btnSync" onclick="syncToXero()">
+            <i class="fas fa-sync-alt me-2"></i>Sync to Xero
+        </button>
         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
       </div>
+
     </div>
   </div>
 </div>
@@ -367,11 +372,13 @@
   // ==========================================
   // CONFIGURATION
   // ==========================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbze3ZpKtRO0aF-k9mhSIyuTqKOZ7AzZYNAwy10-lEMakyaNadR1ZZRfm1ANlQTXZyw/exec"; 
+  // NEW API URL (UPDATED)
+  const API_URL = "https://script.google.com/macros/s/AKfycbyrHFAIlq80Vgy2vs4qzujr9r0LcllEBpR01YdEYFpU90PlpiKZr5tXB6d8y4Tbhqu2/exec"; 
 
   // DATA STORE
   let MASTER_DATA = []; 
   let DISPLAY_DATA = []; 
+  let CURRENT_INVOICE_ID = null; // Menyimpan ID Invoice yang sedang dibuka di Modal
   
   let STATE = {
     page: 1,
@@ -382,7 +389,7 @@
   };
 
   window.onload = () => {
-     fetchInitialData();
+      fetchInitialData();
   };
 
   // 1. SWITCH TABS
@@ -506,14 +513,13 @@
   function openModal(id) {
     const item = MASTER_DATA.find(x => x.id === id);
     if(!item) return;
+    
+    CURRENT_INVOICE_ID = id; // Simpan ID ke variable Global
 
     document.getElementById('modalTitle').innerText = item.id;
     document.getElementById('modalTypeBadge').innerText = STATE.type === 'general' ? 'General Order' : 'Pre Order';
     document.getElementById('modalCustomer').innerText = item.customer;
-    
-    // REVISI: Mengisi data Issue Date
     document.getElementById('modalIssueDate').innerText = item.date;
-    
     document.getElementById('modalDueDate').innerText = item.dueDate;
     document.getElementById('modalTotalBig').innerText = formatRupiah(item.totalAmount);
 
@@ -535,7 +541,58 @@
         tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3">No item details available</td></tr>`;
     }
 
+    // Reset Tombol Sync (Jika sebelumnya dalam status Loading/Disabled)
+    const btnSync = document.getElementById('btnSync');
+    btnSync.disabled = false;
+    btnSync.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Sync to Xero';
+
     new bootstrap.Modal(document.getElementById('detailModal')).show();
+  }
+
+  // ==========================================
+  // NEW FUNCTION: SYNC TO XERO
+  // ==========================================
+  function syncToXero() {
+    if (!CURRENT_INVOICE_ID) {
+      alert("Error: ID Invoice tidak ditemukan.");
+      return;
+    }
+
+    const btn = document.getElementById('btnSync');
+    const originalText = btn.innerHTML;
+
+    // 1. Ubah Tampilan Tombol jadi Loading
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Syncing...';
+
+    // 2. Kirim Request ke Google Apps Script (doPost)
+    const payload = {
+      action: 'sync_xero',
+      orderId: CURRENT_INVOICE_ID
+    };
+
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(json => {
+      // 3. Handle Respon
+      if(json.success) {
+        alert("Sukses: " + json.message);
+      } else {
+        alert("Gagal: " + json.message);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error: Gagal menghubungi server. Cek koneksi internet anda.");
+    })
+    .finally(() => {
+      // 4. Kembalikan Tombol ke Semula
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    });
   }
 
   // 6. PAGINATION CONTROLS
