@@ -9,7 +9,8 @@
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"> <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"> 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     
     <style>
@@ -91,18 +92,18 @@
 
         /* TABLE WRAPPER */
         .card-table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        .table-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .table-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .table-title h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-main); }
         .table-title p { margin: 4px 0 0; font-size: 13px; color: var(--text-sub); }
 
         /* CUSTOM CONTROLS FOR THIS PAGE */
-        .search-box { position: relative; width: 300px; }
+        .search-box { position: relative; width: 220px; }
         .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-        .search-box input { width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; }
+        .search-box input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; }
         .search-box input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(17, 105, 153, 0.1); }
         
         .nav-pills-custom .nav-link {
-            color: var(--text-sub); font-weight: 600; font-size: 13px; padding: 8px 16px; border-radius: 8px;
+            color: var(--text-sub); font-weight: 600; font-size: 13px; padding: 6px 14px; border-radius: 8px;
         }
         .nav-pills-custom .nav-link.active {
             background-color: #eff8ff; color: var(--primary-color);
@@ -208,28 +209,36 @@
                 <p>Kelola dan sinkronisasi data penjualan ke sistem akuntansi Xero.</p>
             </div>
             
-            <div class="d-flex align-items-center gap-3">
-                <div class="nav nav-pills nav-pills-custom bg-light p-1 rounded">
-                    <a href="#" class="nav-link active" id="tabGen" onclick="switchTab('general')">General Order</a>
-                    <a href="#" class="nav-link" id="tabPre" onclick="switchTab('preorder')">Pre Order</a>
-                </div>
-
-                <div class="d-flex gap-2">
-                    <select id="statusFilter" class="form-select form-select-sm" style="width: 140px; font-size:13px;" onchange="applyLocalFilter()">
-                        <option value="All">Semua Status</option>
-                        <option value="Imported">Sudah Import</option>
-                        <option value="Pending">Pending</option>
-                    </select>
-                    
-                    <div class="search-box">
-                        <i class="bi bi-search"></i>
-                        <input type="text" id="searchInput" placeholder="Cari Invoice # atau Customer..." onkeyup="applyLocalFilter()">
-                    </div>
-
-                    <button class="btn btn-light border btn-sm" onclick="fetchInitialData()" title="Refresh Data">
-                        <i class="bi bi-arrow-clockwise"></i>
+            <div class="d-flex flex-wrap align-items-center gap-2 justify-content-end">
+                
+                <div class="d-flex align-items-center gap-1 bg-light p-1 rounded border">
+                    <input type="date" id="dateFrom" class="form-control form-control-sm border-0 bg-transparent" style="width: 110px; font-size:12px;" title="Dari Tanggal">
+                    <span class="text-muted small">-</span>
+                    <input type="date" id="dateTo" class="form-control form-control-sm border-0 bg-transparent" style="width: 110px; font-size:12px;" title="Sampai Tanggal">
+                    <button class="btn btn-sm btn-white border-start text-primary" onclick="applyLocalFilter()" title="Terapkan Filter Tanggal">
+                        <i class="bi bi-funnel-fill"></i>
                     </button>
                 </div>
+
+                <div class="nav nav-pills nav-pills-custom bg-light p-1 rounded">
+                    <a href="#" class="nav-link active" id="tabGen" onclick="switchTab('general')">General</a>
+                    <a href="#" class="nav-link" id="tabPre" onclick="switchTab('preorder')">PO</a>
+                </div>
+
+                <select id="statusFilter" class="form-select form-select-sm" style="width: 130px; font-size:13px;" onchange="applyLocalFilter()">
+                    <option value="All">Semua Status</option>
+                    <option value="Imported">Sudah Import</option>
+                    <option value="Pending">Pending</option>
+                </select>
+                
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchInput" placeholder="Cari Invoice / Customer..." onkeyup="applyLocalFilter()">
+                </div>
+
+                <button class="btn btn-light border btn-sm" onclick="fetchInitialData()" title="Refresh Data">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
             </div>
         </div>
 
@@ -375,6 +384,10 @@
         document.getElementById('searchInput').value = "";
         document.getElementById('tableBody').innerHTML = '';
         
+        // Reset Date Filters
+        document.getElementById('dateFrom').value = "";
+        document.getElementById('dateTo').value = "";
+
         fetchInitialData();
     }
 
@@ -396,13 +409,45 @@
             .finally(() => document.getElementById('loadingOverlay').style.display = 'none');
     }
 
-    // --- 4. FILTER LOGIC ---
+    // ==========================================
+    // HELPER: PARSE DATE
+    // ==========================================
+    // Mengubah string tanggal (YYYY-MM-DD atau DD/MM/YYYY) menjadi objek Date
+    function parseDate(dateStr) {
+        if (!dateStr) return null;
+        
+        // Jika format sudah YYYY-MM-DD (ISO)
+        if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            return new Date(dateStr);
+        }
+        
+        // Jika format DD/MM/YYYY (Lokal)
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+        
+        return new Date(dateStr); // Fallback
+    }
+
+    // --- 4. FILTER & SORTING LOGIC (UPDATED) ---
     function applyLocalFilter() {
+        // Ambil Value
         STATE.status = document.getElementById('statusFilter').value;
         STATE.search = document.getElementById('searchInput').value.toLowerCase();
+        
+        const dateFromVal = document.getElementById('dateFrom').value;
+        const dateToVal = document.getElementById('dateTo').value;
+        
+        const dateFrom = dateFromVal ? new Date(dateFromVal) : null;
+        const dateTo = dateToVal ? new Date(dateToVal) : null;
+        
+        // Set akhir hari untuk dateTo agar inklusif
+        if(dateTo) dateTo.setHours(23,59,59,999);
+
         STATE.page = 1; 
 
-        // Calculate Stats
+        // Hitung Stats
         let stats = { total: 0, imported: 0, pending: 0 };
         MASTER_DATA.forEach(item => {
             stats.total++;
@@ -415,13 +460,42 @@
         document.getElementById('stat-pending').innerText = stats.pending;
 
         // Filter Data
-        DISPLAY_DATA = MASTER_DATA.filter(item => {
+        let filtered = MASTER_DATA.filter(item => {
+            // A. Search & Status
             const searchMatch = (item.id || "").toLowerCase().includes(STATE.search) || 
                                 (item.customer || "").toLowerCase().includes(STATE.search);
             const statusMatch = (STATE.status === 'All') || (item.status === STATE.status);
-            return searchMatch && statusMatch;
+            
+            // B. Date Range
+            let dateMatch = true;
+            if (dateFrom || dateTo) {
+                const itemDate = parseDate(item.date); // Issue Date
+                if (itemDate) {
+                    if (dateFrom && itemDate < dateFrom) dateMatch = false;
+                    if (dateTo && itemDate > dateTo) dateMatch = false;
+                }
+            }
+            return searchMatch && statusMatch && dateMatch;
         });
 
+        // Sorting Logic: 
+        // 1. Tanggal Lama ke Baru (Ascending)
+        // 2. Jika tanggal sama, Nomor Invoice (Ascending)
+        filtered.sort((a, b) => {
+            const dateA = parseDate(a.date);
+            const dateB = parseDate(b.date);
+            const timeA = dateA ? dateA.getTime() : 0;
+            const timeB = dateB ? dateB.getTime() : 0;
+
+            if (timeA !== timeB) {
+                return timeA - timeB; // Lama ke Baru
+            }
+            
+            // Jika tanggal sama, urutkan ID (Natural Sort)
+            return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        DISPLAY_DATA = filtered;
         renderTable();
     }
 
