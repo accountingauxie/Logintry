@@ -223,6 +223,7 @@
                 <div class="nav nav-pills nav-pills-custom bg-light p-1 rounded">
                     <a href="#" class="nav-link active" id="tabGen" onclick="switchTab('general')">General</a>
                     <a href="#" class="nav-link" id="tabPre" onclick="switchTab('preorder')">PO</a>
+                    <a href="#" class="nav-link" id="tabPrt" onclick="switchTab('prt')">PRT</a>
                 </div>
 
                 <select id="statusFilter" class="form-select form-select-sm" style="width: 130px; font-size:13px;" onchange="applyLocalFilter()">
@@ -333,7 +334,7 @@
     // ==========================================
     // CONFIGURATION
     // ==========================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbyrHFAIlq80Vgy2vs4qzujr9r0LcllEBpR01YdEYFpU90PlpiKZr5tXB6d8y4Tbhqu2/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbxTNcjtnFX3x9qLfDdRov5LZKoH0RISSnTZwLQKhY-5qyxE9gBa1X0CKfqVRwufBjUy/exec"; 
     
     let MASTER_DATA = []; 
     let DISPLAY_DATA = []; 
@@ -372,15 +373,21 @@
         window.location.href = "https://accountingauxie.github.io/Auxilium-Portal-Sukses-Jaya/";
     }
 
-    // --- 2. SWITCH TABS ---
+    // --- 2. SWITCH TABS (UPDATED) ---
     function switchTab(type) {
+        // Reset class active
         document.getElementById('tabGen').classList.remove('active');
         document.getElementById('tabPre').classList.remove('active');
+        document.getElementById('tabPrt').classList.remove('active'); // NEW
         
+        // Set class active
         if(type === 'general') document.getElementById('tabGen').classList.add('active');
-        else document.getElementById('tabPre').classList.add('active');
+        else if(type === 'preorder') document.getElementById('tabPre').classList.add('active');
+        else if(type === 'prt') document.getElementById('tabPrt').classList.add('active'); // NEW
 
-        STATE.type = type; STATE.page = 1; STATE.search = "";
+        STATE.type = type; 
+        STATE.page = 1; 
+        STATE.search = "";
         document.getElementById('searchInput').value = "";
         document.getElementById('tableBody').innerHTML = '';
         
@@ -430,7 +437,7 @@
         return new Date(dateStr); // Fallback
     }
 
-    // --- 4. FILTER & SORTING LOGIC (UPDATED) ---
+    // --- 4. FILTER & SORTING LOGIC ---
     function applyLocalFilter() {
         // Ambil Value
         STATE.status = document.getElementById('statusFilter').value;
@@ -545,7 +552,15 @@
         
         CURRENT_INVOICE_ID = id;
         document.getElementById('modalTitle').innerText = item.id;
-        document.getElementById('modalTypeBadge').innerText = STATE.type === 'general' ? 'General Order' : 'Pre Order';
+        
+        // --- LOGIC LABEL TIPE (UPDATED) ---
+        let badgeText = 'General Order';
+        if(STATE.type === 'preorder') badgeText = 'Pre Order';
+        else if(STATE.type === 'prt') badgeText = 'PRT Order'; // NEW
+        
+        document.getElementById('modalTypeBadge').innerText = badgeText;
+        // -----------------------------------
+
         document.getElementById('modalCustomer').innerText = item.customer;
         document.getElementById('modalIssueDate').innerText = item.date;
         document.getElementById('modalDueDate').innerText = item.dueDate;
